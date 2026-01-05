@@ -43,15 +43,7 @@ const ChartContainer = React.forwardRef<
     >["children"]
   }
 >(({ id, className, children, config, ...props }, ref) => {
-  const [uniqueId, setUniqueId] = React.useState<string | undefined>(undefined);
-
-  React.useEffect(() => {
-    // Generate ID on client to avoid hydration mismatch
-    setUniqueId(`chart-${Math.random().toString(36).substring(7)}`);
-  }, []);
-  
-  const chartId = id || uniqueId;
-
+  const chartId = React.useId()
 
   return (
     <ChartContext.Provider value={{ config }}>
@@ -64,7 +56,7 @@ const ChartContainer = React.forwardRef<
         )}
         {...props}
       >
-        {chartId ? <ChartStyle id={chartId} config={config} /> : null}
+        <ChartStyle id={chartId} config={config} />
         <RechartsPrimitive.ResponsiveContainer>
           {children}
         </RechartsPrimitive.ResponsiveContainer>
