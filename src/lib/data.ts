@@ -16,7 +16,7 @@ export type Equipment = {
 export type Inspector = {
   id: string;
   name: string;
-  email: string;
+  phone: string;
 };
 
 export type ChecklistQuestion = {
@@ -59,9 +59,9 @@ export const equipments: Equipment[] = [
 ];
 
 export const inspectors: Inspector[] = [
-  { id: 'insp-1', name: 'João da Silva', email: 'joao.silva@example.com' },
-  { id: 'insp-2', name: 'Maria Oliveira', email: 'maria.oliveira@example.com' },
-  { id: 'insp-3', name: 'Carlos Pereira', email: 'carlos.pereira@example.com' },
+  { id: 'insp-1', name: 'João da Silva', phone: '(11) 98765-4321' },
+  { id: 'insp-2', name: 'Maria Oliveira', phone: '(21) 91234-5678' },
+  { id: 'insp-3', name: 'Carlos Pereira', phone: '(31) 95555-4444' },
 ];
 
 export const checklists: Checklist[] = [

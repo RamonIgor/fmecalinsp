@@ -18,7 +18,7 @@ import type { Inspector } from "@/lib/data";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
-  email: z.string().email("Email inválido"),
+  phone: z.string().min(10, "Telefone inválido"),
 });
 
 type InspectorFormProps = {
@@ -32,7 +32,7 @@ export function InspectorForm({ inspector, closeDialog }: InspectorFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: inspector?.name || "",
-      email: inspector?.email || "",
+      phone: inspector?.phone || "",
     },
   });
 
@@ -63,12 +63,12 @@ export function InspectorForm({ inspector, closeDialog }: InspectorFormProps) {
         />
         <FormField
           control={form.control}
-          name="email"
+          name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Telefone</FormLabel>
               <FormControl>
-                <Input placeholder="ex: joao.silva@email.com" {...field} />
+                <Input placeholder="ex: (11) 99999-9999" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

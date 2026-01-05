@@ -29,7 +29,7 @@ export default function InspectorsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>Telefone</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -45,7 +45,7 @@ export default function InspectorsPage() {
                     <span>{inspector.name}</span>
                   </div>
                 </TableCell>
-                <TableCell>{inspector.email}</TableCell>
+                <TableCell>{inspector.phone}</TableCell>
                 <TableCell className="text-right">
                   <InspectorActions inspector={inspector} />
                 </TableCell>
