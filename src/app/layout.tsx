@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   title: 'CraneCheck - Inspeções Simplificadas',
   description: 'Uma aplicação full-stack para inspeção técnica de pontes rolantes, com um PWA offline-first para inspetores e um painel de administração web para gerentes.',
   manifest: "/manifest.json",
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
+  themeColor: "#333333",
 };
 
 export default function RootLayout({
