@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ConnectionStatus } from "@/components/connection-status";
 import Logo from "@/components/logo";
-import { Grid, ListChecks, Wrench, ChevronRight } from "lucide-react";
+import { Grid, ListChecks, Wrench } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AppLayout({
@@ -11,14 +11,14 @@ export default function AppLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b bg-card text-card-foreground shadow-md">
+      <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b border-border/20 bg-card text-card-foreground">
         <div className="flex items-center gap-2">
             <Logo className="w-8 h-8 text-primary" />
             <span className="font-headline text-xl font-bold text-primary">CraneCheck</span>
         </div>
         <div className="flex items-center gap-4">
             <ConnectionStatus />
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-9 w-9">
                 <AvatarImage src="https://picsum.photos/seed/inspector/100/100" alt="Inspetor" />
                 <AvatarFallback>I</AvatarFallback>
             </Avatar>
@@ -29,7 +29,7 @@ export default function AppLayout({
         {children}
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 h-16 border-t bg-card text-card-foreground">
+      <footer className="fixed bottom-0 left-0 right-0 h-16 border-t border-border/20 bg-card text-card-foreground">
         <nav className="flex items-center justify-around h-full">
             <Link href="/app" className="flex flex-col items-center justify-center text-primary gap-1">
                 <Grid className="h-6 w-6"/>
