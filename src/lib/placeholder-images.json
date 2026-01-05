@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "landing-background",
+      "description": "An overhead crane in a large industrial factory, with light streaming through the windows.",
+      "imageUrl": "https://images.unsplash.com/photo-1630073251867-323df09c36e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxpbmR1c3RyaWFsJTIwY3JhbmV8ZW58MHx8fHwxNzY3NjM2NjU0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "industrial crane"
+    },
+    {
+      "id": "equipment-placeholder-1",
+      "description": "Close-up of a yellow overhead crane hook.",
+      "imageUrl": "https://images.unsplash.com/photo-1762608674180-2e6e19ffb614?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxvdmVyaGVhZCUyMGNyYW5lfGVufDB8fHx8MTc2NzYzNjY1NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "overhead crane"
+    },
+    {
+      "id": "equipment-placeholder-2",
+      "description": "Side view of a gantry crane in an outdoor yard.",
+      "imageUrl": "https://images.unsplash.com/photo-1562590761-84a8fb108f23?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxnYW50cnklMjBjcmFuZXxlbnwwfHx8fDE3Njc2MzY2NTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "gantry crane"
+    },
+    {
+      "id": "equipment-placeholder-3",
+      "description": "A small jib crane mounted on a factory wall.",
+      "imageUrl": "https://images.unsplash.com/photo-1738676455943-1ceba4d60ac1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxqaWIlMjBjcmFuZXxlbnwwfHx8fDE3Njc2MzY2NTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "jib crane"
+    },
+    {
+      "id": "dashboard-card-bg",
+      "description": "A subtle blueprint design.",
+      "imageUrl": "https://images.unsplash.com/photo-1756040732460-0b399e2cab33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Ymx1ZXByaW50JTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3Njc2MzY2NTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "blueprint background"
+    },
+    {
+      "id": "inspector-photo",
+      "description": "Inspector taking a photo of equipment.",
+      "imageUrl": "https://images.unsplash.com/photo-1766524789958-b0ec578d7d41?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxpbnNwZWN0b3IlMjBzYWZldHl8ZW58MHx8fHwxNzY3NjM2NjU0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "inspector safety"
+    }
+  ]
 }
