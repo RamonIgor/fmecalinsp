@@ -11,11 +11,11 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function getStatusVariant(status: Equipment['status']) {
   switch (status) {
-    case 'Operational':
+    case 'Operacional':
       return 'default';
-    case 'Requires Attention':
+    case 'Requer Atenção':
       return 'secondary';
-    case 'Out of Service':
+    case 'Fora de Serviço':
       return 'destructive';
     default:
       return 'outline';
@@ -29,11 +29,11 @@ export default function InspectorAppPage() {
     <div className="flex flex-col gap-4">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input placeholder="Search equipment by TAG or name..." className="pl-10 h-12 text-lg" />
+        <Input placeholder="Buscar equipamento por TAG ou nome..." className="pl-10 h-12 text-lg" />
       </div>
 
       <div className="space-y-4">
-        <h2 className="font-headline text-2xl font-bold">Select Equipment</h2>
+        <h2 className="font-headline text-2xl font-bold">Selecionar Equipamento</h2>
         {equipments.map((equipment, index) => {
           const image = placeholderImages[index % placeholderImages.length];
           return (

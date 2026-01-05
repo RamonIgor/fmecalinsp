@@ -14,11 +14,11 @@ import { EquipmentActions } from "./components/equipment-actions";
 
 function getStatusVariant(status: Equipment['status']) {
   switch (status) {
-    case "Operational":
+    case "Operacional":
       return "default";
-    case "Requires Attention":
+    case "Requer Atenção":
       return "secondary";
-    case "Out of Service":
+    case "Fora de Serviço":
       return "destructive";
     default:
       return "outline";
@@ -30,9 +30,9 @@ export default function EquipmentPage() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-            <CardTitle>Equipment Management</CardTitle>
+            <CardTitle>Gerenciamento de Equipamentos</CardTitle>
             <CardDescription>
-                View, add, edit, or remove crane equipment.
+                Visualize, adicione, edite ou remova equipamentos de guindaste.
             </CardDescription>
         </div>
         <EquipmentActions />
@@ -42,11 +42,11 @@ export default function EquipmentPage() {
           <TableHeader>
             <TableRow>
               <TableHead>TAG</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden md:table-cell">Sector</TableHead>
-              <TableHead className="hidden sm:table-cell">Last Inspection</TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead className="hidden md:table-cell">Setor</TableHead>
+              <TableHead className="hidden sm:table-cell">Última Inspeção</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

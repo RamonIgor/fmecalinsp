@@ -25,14 +25,14 @@ export function EquipmentActions({ equipment }: { equipment?: Equipment }) {
         <DialogTrigger asChild>
           <Button size="sm" className="gap-1">
             <PlusCircle className="h-4 w-4" />
-            Add Equipment
+            Adicionar Equipamento
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Equipment</DialogTitle>
+            <DialogTitle>Adicionar Novo Equipamento</DialogTitle>
             <DialogDescription>
-              Fill in the details for the new crane equipment.
+              Preencha os detalhes para o novo equipamento de guindaste.
             </DialogDescription>
           </DialogHeader>
           <EquipmentForm closeDialog={() => setIsDialogOpen(false)} />
@@ -47,22 +47,22 @@ export function EquipmentActions({ equipment }: { equipment?: Equipment }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">Abrir menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DialogTrigger asChild>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem>Editar</DropdownMenuItem>
           </DialogTrigger>
-          <DropdownMenuItem className="text-red-500">Delete</DropdownMenuItem>
+          <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Equipment</DialogTitle>
+          <DialogTitle>Editar Equipamento</DialogTitle>
           <DialogDescription>
-            Update the details for {equipment.name}.
+            Atualize os detalhes para {equipment.name}.
           </DialogDescription>
         </DialogHeader>
         <EquipmentForm

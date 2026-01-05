@@ -8,8 +8,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 export const metadata: Metadata = {
-  title: 'CraneCheck - Inspections Made Easy',
-  description: 'A full-stack application for technical inspection of overhead cranes, featuring an offline-first PWA for inspectors and a web-based admin panel for managers.',
+  title: 'CraneCheck - Inspeções Simplificadas',
+  description: 'Uma aplicação full-stack para inspeção técnica de pontes rolantes, com um PWA offline-first para inspetores e um painel de administração web para gerentes.',
 };
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="pt-BR" className="dark">
       <body className={cn('min-h-screen font-body antialiased', inter.variable, spaceGrotesk.variable)}>
         {children}
         <Toaster />

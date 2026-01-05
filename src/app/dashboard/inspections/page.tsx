@@ -27,20 +27,20 @@ export default function InspectionsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Inspection Records</CardTitle>
+        <CardTitle>Registros de Inspeção</CardTitle>
         <CardDescription>
-          Browse and manage all submitted inspection reports.
+          Navegue e gerencie todos os relatórios de inspeção enviados.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Equipment</TableHead>
-              <TableHead className="hidden sm:table-cell">Inspector</TableHead>
-              <TableHead className="hidden md:table-cell">Date</TableHead>
+              <TableHead>Equipamento</TableHead>
+              <TableHead className="hidden sm:table-cell">Inspetor</TableHead>
+              <TableHead className="hidden md:table-cell">Data</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -30,26 +30,26 @@ export default function Home() {
           CraneCheck
         </h1>
         <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mb-10">
-          Streamlining crane inspections with offline-first technology for inspectors and powerful analytics for managers.
+          Otimizando inspeções de guindastes com tecnologia offline-first para inspetores e análises poderosas para gerentes.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <Button asChild size="lg" className="w-full sm:w-auto">
             <Link href="/app">
               <HardHat className="mr-2" />
-              Open Inspector App
+              Abrir App do Inspetor
               <ArrowRight className="ml-2" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
             <Link href="/dashboard">
               <LayoutDashboard className="mr-2" />
-              Access Admin Panel
+              Acessar Painel do Admin
             </Link>
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-8">
-          Built for reliability in the toughest industrial environments.
+          Construído para confiabilidade nos ambientes industriais mais exigentes.
         </p>
       </div>
     </main>

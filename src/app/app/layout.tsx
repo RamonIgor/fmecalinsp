@@ -26,15 +26,15 @@ export default function AppLayout({
         <nav className="flex items-center justify-around h-full">
             <Link href="/app" className="flex flex-col items-center justify-center text-primary">
                 <Home className="h-6 w-6"/>
-                <span className="text-xs">Equipments</span>
+                <span className="text-xs">Equipamentos</span>
             </Link>
             <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors">
                 <ListChecks className="h-6 w-6"/>
-                <span className="text-xs">My Inspections</span>
+                <span className="text-xs">Minhas Inspeções</span>
             </Link>
             <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors">
                 <HardHat className="h-6 w-6"/>
-                <span className="text-xs">Profile</span>
+                <span className="text-xs">Perfil</span>
             </Link>
         </nav>
       </footer>

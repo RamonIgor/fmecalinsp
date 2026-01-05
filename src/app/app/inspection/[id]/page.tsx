@@ -15,7 +15,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
   const checklist = checklists.find(c => c.id === 'cl-nr11'); // Assuming NR-11 for all
 
   if (!equipment || !checklist) {
-    return <div>Equipment or Checklist not found.</div>;
+    return <div>Equipamento ou Checklist não encontrado.</div>;
   }
 
   const groupedQuestions = checklist.questions.reduce((acc, q) => {
@@ -27,7 +27,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Inspecting: {equipment.name} ({equipment.tag})</CardTitle>
+          <CardTitle className="font-headline text-2xl">Inspecionando: {equipment.name} ({equipment.tag})</CardTitle>
         </CardHeader>
       </Card>
       

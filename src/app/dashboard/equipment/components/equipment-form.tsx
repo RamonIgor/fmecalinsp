@@ -24,10 +24,10 @@ import { useToast } from "@/hooks/use-toast";
 import type { Equipment } from "@/lib/data";
 
 const formSchema = z.object({
-  tag: z.string().min(1, "TAG is required"),
-  name: z.string().min(1, "Name is required"),
-  sector: z.string().min(1, "Sector is required"),
-  status: z.enum(["Operational", "Requires Attention", "Out of Service"]),
+  tag: z.string().min(1, "TAG é obrigatório"),
+  name: z.string().min(1, "Nome é obrigatório"),
+  sector: z.string().min(1, "Setor é obrigatório"),
+  status: z.enum(["Operacional", "Requer Atenção", "Fora de Serviço"]),
 });
 
 type EquipmentFormProps = {
@@ -43,7 +43,7 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
       tag: equipment?.tag || "",
       name: equipment?.name || "",
       sector: equipment?.sector || "",
-      status: equipment?.status || "Operational",
+      status: equipment?.status || "Operacional",
     },
   });
 
@@ -51,8 +51,8 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
     // In a real app, you would send this to your backend
     console.log(values);
     toast({
-      title: `Equipment ${equipment ? "Updated" : "Added"}`,
-      description: `The equipment "${values.name}" has been saved successfully.`,
+      title: `Equipamento ${equipment ? "Atualizado" : "Adicionado"}`,
+      description: `O equipamento "${values.name}" foi salvo com sucesso.`,
     });
     closeDialog();
   }
@@ -67,7 +67,7 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
             <FormItem>
               <FormLabel>TAG</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., PR-001" {...field} />
+                <Input placeholder="ex: PR-001" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -78,9 +78,9 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Ponte Rolante 10T" {...field} />
+                <Input placeholder="ex: Ponte Rolante 10T" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -91,9 +91,9 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
           name="sector"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Sector</FormLabel>
+              <FormLabel>Setor</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Produção A" {...field} />
+                <Input placeholder="ex: Produção A" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -108,15 +108,15 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a status" />
+                    <SelectValue placeholder="Selecione um status" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Operational">Operational</SelectItem>
-                  <SelectItem value="Requires Attention">
-                    Requires Attention
+                  <SelectItem value="Operacional">Operacional</SelectItem>
+                  <SelectItem value="Requer Atenção">
+                    Requer Atenção
                   </SelectItem>
-                  <SelectItem value="Out of Service">Out of Service</SelectItem>
+                  <SelectItem value="Fora de Serviço">Fora de Serviço</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -125,9 +125,9 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
         />
         <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={closeDialog}>
-            Cancel
+            Cancelar
           </Button>
-          <Button type="submit">Save</Button>
+          <Button type="submit">Salvar</Button>
         </div>
       </form>
     </Form>

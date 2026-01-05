@@ -33,9 +33,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Logo from "@/components/logo";
 
 const navItems = [
-    { href: "/dashboard", icon: Home, label: "Dashboard" },
-    { href: "/dashboard/inspections", icon: ListChecks, label: "Inspections" },
-    { href: "/dashboard/equipment", icon: Wrench, label: "Equipment" },
+    { href: "/dashboard", icon: Home, label: "Painel" },
+    { href: "/dashboard/inspections", icon: ListChecks, label: "Inspeções" },
+    { href: "/dashboard/equipment", icon: Wrench, label: "Equipamentos" },
 ];
 
 export default function DashboardLayout({
@@ -68,9 +68,9 @@ export default function DashboardLayout({
         </SidebarContent>
         <SidebarFooter>
             <Link href="#" className="w-full">
-                <SidebarMenuButton tooltip="Settings">
+                <SidebarMenuButton tooltip="Configurações">
                     <Settings />
-                    <span>Settings</span>
+                    <span>Configurações</span>
                 </SidebarMenuButton>
             </Link>
         </SidebarFooter>
@@ -84,25 +84,25 @@ export default function DashboardLayout({
           <div className="flex items-center gap-4">
              <Button variant="ghost" size="icon" className="rounded-full">
                 <Bell className="h-5 w-5" />
-                <span className="sr-only">Toggle notifications</span>
+                <span className="sr-only">Alternar notificações</span>
               </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full flex gap-2 pl-2">
                   <Avatar>
-                    <AvatarImage src="https://picsum.photos/seed/manager/100/100" alt="Manager" />
-                    <AvatarFallback>M</AvatarFallback>
+                    <AvatarImage src="https://picsum.photos/seed/manager/100/100" alt="Gerente" />
+                    <AvatarFallback>G</AvatarFallback>
                   </Avatar>
                   <ChevronDown className="h-4 w-4 text-muted-foreground"/>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuItem>Configurações</DropdownMenuItem>
+                <DropdownMenuItem>Suporte</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem>Sair</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

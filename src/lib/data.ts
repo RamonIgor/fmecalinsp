@@ -4,7 +4,7 @@ export type Equipment = {
   name: string;
   sector: string;
   lastInspection: string | null;
-  status: 'Operational' | 'Requires Attention' | 'Out of Service';
+  status: 'Operacional' | 'Requer Atenção' | 'Fora de Serviço';
 };
 
 export type ChecklistQuestion = {
@@ -39,11 +39,11 @@ export type Inspection = {
 };
 
 export const equipments: Equipment[] = [
-  { id: 'equip-1', tag: 'PR-001', name: 'Ponte Rolante 10T', sector: 'Produção A', lastInspection: '2024-06-15', status: 'Operational' },
-  { id: 'equip-2', tag: 'PR-002', name: 'Ponte Rolante 5T', sector: 'Produção B', lastInspection: '2024-05-20', status: 'Requires Attention' },
-  { id: 'equip-3', tag: 'PR-003', name: 'Ponte Rolante 20T', sector: 'Estocagem', lastInspection: '2024-07-01', status: 'Operational' },
-  { id: 'equip-4', tag: 'PR-004', name: 'Ponte Rolante 5T', sector: 'Manutenção', lastInspection: '2023-12-10', status: 'Out of Service' },
-  { id: 'equip-5', tag: 'GAN-001', name: 'Pórtico 15T', sector: 'Pátio Externo', lastInspection: '2024-07-05', status: 'Operational' },
+  { id: 'equip-1', tag: 'PR-001', name: 'Ponte Rolante 10T', sector: 'Produção A', lastInspection: '2024-06-15', status: 'Operacional' },
+  { id: 'equip-2', tag: 'PR-002', name: 'Ponte Rolante 5T', sector: 'Produção B', lastInspection: '2024-05-20', status: 'Requer Atenção' },
+  { id: 'equip-3', tag: 'PR-003', name: 'Ponte Rolante 20T', sector: 'Estocagem', lastInspection: '2024-07-01', status: 'Operacional' },
+  { id: 'equip-4', tag: 'PR-004', name: 'Ponte Rolante 5T', sector: 'Manutenção', lastInspection: '2023-12-10', status: 'Fora de Serviço' },
+  { id: 'equip-5', tag: 'GAN-001', name: 'Pórtico 15T', sector: 'Pátio Externo', lastInspection: '2024-07-05', status: 'Operacional' },
 ];
 
 export const checklists: Checklist[] = [

@@ -34,25 +34,25 @@ export function ReportGenerator({ inspection }: { inspection: Inspection }) {
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Inspection_Report_${inspection.id}.pdf`;
+        link.download = `Relatorio_Inspecao_${inspection.id}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
         toast({
-          title: "Report Generated",
-          description: "Your PDF report has been downloaded.",
+          title: "Relatório Gerado",
+          description: "Seu relatório em PDF foi baixado.",
         });
 
       } else {
-         throw new Error("Failed to generate PDF report from AI.");
+         throw new Error("Falha ao gerar o relatório em PDF a partir da IA.");
       }
     } catch (error) {
       console.error(error);
       toast({
         variant: "destructive",
-        title: "Error Generating Report",
-        description: "Could not generate the PDF report. Please try again.",
+        title: "Erro ao Gerar Relatório",
+        description: "Não foi possível gerar o relatório em PDF. Por favor, tente novamente.",
       });
     } finally {
       setLoading(false);
@@ -66,7 +66,7 @@ export function ReportGenerator({ inspection }: { inspection: Inspection }) {
       ) : (
         <FileDown className="mr-2 h-4 w-4" />
       )}
-      Generate Report
+      Gerar Relatório
     </Button>
   );
 }

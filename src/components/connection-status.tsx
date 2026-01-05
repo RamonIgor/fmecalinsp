@@ -18,7 +18,7 @@ export function ConnectionStatus() {
                 </Badge>
             </TooltipTrigger>
             <TooltipContent>
-                <p>{isOnline ? "Your connection is active." : "You are offline. Changes will be synced when you reconnect."}</p>
+                <p>{isOnline ? "Sua conexão está ativa." : "Você está offline. As alterações serão sincronizadas quando você se reconectar."}</p>
             </TooltipContent>
         </Tooltip>
     </TooltipProvider>
