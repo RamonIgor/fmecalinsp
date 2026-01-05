@@ -11,10 +11,16 @@ import {
 } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
 import { EquipmentForm } from "./equipment-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function AddEquipmentButton() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -31,7 +37,7 @@ export function AddEquipmentButton() {
             Preencha os detalhes para o novo equipamento de guindaste.
           </DialogDescription>
         </DialogHeader>
-        <EquipmentForm closeDialog={() => setIsAddDialogOpen(false)} />
+        {isClient && <EquipmentForm closeDialog={() => setIsAddDialogOpen(false)} />}
       </DialogContent>
     </Dialog>
   );

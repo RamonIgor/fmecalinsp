@@ -17,11 +17,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { EquipmentForm } from "./equipment-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Equipment } from "@/lib/data";
 
 export function EquipmentActions({ equipment }: { equipment: Equipment }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -48,10 +53,12 @@ export function EquipmentActions({ equipment }: { equipment: Equipment }) {
             Atualize os detalhes para {equipment.name}.
           </DialogDescription>
         </DialogHeader>
-        <EquipmentForm
-          equipment={equipment}
-          closeDialog={() => setIsEditDialogOpen(false)}
-        />
+        {isClient && (
+            <EquipmentForm
+            equipment={equipment}
+            closeDialog={() => setIsEditDialogOpen(false)}
+            />
+        )}
       </DialogContent>
     </Dialog>
   );
