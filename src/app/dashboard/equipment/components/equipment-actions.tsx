@@ -20,7 +20,6 @@ import { EquipmentForm } from "./equipment-form";
 import { useState } from "react";
 import type { Equipment } from "@/lib/data";
 
-// These are the actions for each row in the table
 export function EquipmentActions({ equipment }: { equipment: Equipment }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -34,9 +33,9 @@ export function EquipmentActions({ equipment }: { equipment: Equipment }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DialogTrigger asChild>
-            <DropdownMenuItem>Editar</DropdownMenuItem>
-          </DialogTrigger>
+          <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+            Editar
+          </DropdownMenuItem>
           <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
