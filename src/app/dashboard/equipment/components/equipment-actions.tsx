@@ -7,7 +7,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -22,19 +21,32 @@ import type { Equipment } from "@/lib/data";
 
 export function EquipmentActions({ equipment }: { equipment: Equipment }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isEditDialogOpen) {
-        setIsClient(true);
-    } else {
-        setIsClient(false);
-    }
-  }, [isEditDialogOpen]);
+    setMounted(true);
+  }, []);
+
+  const handleEditClick = () => {
+    setDropdownOpen(false);
+    setTimeout(() => {
+      setIsEditDialogOpen(true);
+    }, 100);
+  };
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" className="h-8 w-8 p-0" disabled>
+        <span className="sr-only">Abrir menu</span>
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    );
+  }
 
   return (
-    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-      <DropdownMenu>
+    <>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Abrir menu</span>
@@ -42,28 +54,27 @@ export function EquipmentActions({ equipment }: { equipment: Equipment }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DialogTrigger asChild>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              Editar
-            </DropdownMenuItem>
-          </DialogTrigger>
+          <DropdownMenuItem onSelect={handleEditClick}>
+            Editar
+          </DropdownMenuItem>
           <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Editar Equipamento</DialogTitle>
-          <DialogDescription>
-            Atualize os detalhes para {equipment.name}.
-          </DialogDescription>
-        </DialogHeader>
-        {isClient && (
-            <EquipmentForm
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Equipamento</DialogTitle>
+            <DialogDescription>
+              Atualize os detalhes para {equipment.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <EquipmentForm
             equipment={equipment}
             closeDialog={() => setIsEditDialogOpen(false)}
-            />
-        )}
-      </DialogContent>
-    </Dialog>
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,0 +1,59 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { inspectors } from "@/lib/data";
+import { AddInspectorButton } from "./components/add-inspector-button";
+import { InspectorActions } from "./components/inspector-actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+export default function InspectorsPage() {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle>Gerenciamento de Inspetores</CardTitle>
+            <CardDescription>
+                Visualize, adicione, edite ou remova inspetores da equipe.
+            </CardDescription>
+        </div>
+        <AddInspectorButton />
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nome</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {inspectors.map((inspector) => (
+              <TableRow key={inspector.id}>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={`https://picsum.photos/seed/${inspector.id}/100/100`} alt={inspector.name} />
+                      <AvatarFallback>{inspector.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span>{inspector.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell>{inspector.email}</TableCell>
+                <TableCell className="text-right">
+                  <InspectorActions inspector={inspector} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}

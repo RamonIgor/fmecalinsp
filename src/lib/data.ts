@@ -13,6 +13,12 @@ export type Equipment = {
   components: EquipmentComponent[];
 };
 
+export type Inspector = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 export type ChecklistQuestion = {
   id: string;
   category: string;
@@ -50,6 +56,12 @@ export const equipments: Equipment[] = [
   { id: 'equip-3', tag: 'PR-003', name: 'Ponte Rolante 20T', sector: 'Estocagem', lastInspection: '2024-07-01', status: 'Operacional', components: [] },
   { id: 'equip-4', tag: 'PR-004', name: 'Ponte Rolante 5T', sector: 'Manutenção', lastInspection: '2023-12-10', status: 'Fora de Serviço', components: [] },
   { id: 'equip-5', tag: 'GAN-001', name: 'Pórtico 15T', sector: 'Pátio Externo', lastInspection: '2024-07-05', status: 'Operacional', components: [] },
+];
+
+export const inspectors: Inspector[] = [
+  { id: 'insp-1', name: 'João da Silva', email: 'joao.silva@example.com' },
+  { id: 'insp-2', name: 'Maria Oliveira', email: 'maria.oliveira@example.com' },
+  { id: 'insp-3', name: 'Carlos Pereira', email: 'carlos.pereira@example.com' },
 ];
 
 export const checklists: Checklist[] = [

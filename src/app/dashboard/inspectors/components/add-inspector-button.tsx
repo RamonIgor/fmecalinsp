@@ -10,10 +10,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
-import { EquipmentForm } from "./equipment-form";
+import { InspectorForm } from "./inspector-form";
 import { useState, useEffect } from "react";
 
-export function AddEquipmentButton() {
+export function AddInspectorButton() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -25,7 +25,7 @@ export function AddEquipmentButton() {
     return (
       <Button size="sm" className="gap-1" disabled>
         <PlusCircle className="h-4 w-4" />
-        Adicionar Equipamento
+        Adicionar Inspetor
       </Button>
     );
   }
@@ -35,17 +35,17 @@ export function AddEquipmentButton() {
       <DialogTrigger asChild>
         <Button size="sm" className="gap-1">
           <PlusCircle className="h-4 w-4" />
-          Adicionar Equipamento
+          Adicionar Inspetor
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Equipamento</DialogTitle>
+          <DialogTitle>Adicionar Novo Inspetor</DialogTitle>
           <DialogDescription>
-            Preencha os detalhes para o novo equipamento de guindaste.
+            Preencha os detalhes do novo membro da equipe.
           </DialogDescription>
         </DialogHeader>
-        <EquipmentForm closeDialog={() => setIsAddDialogOpen(false)} />
+        <InspectorForm closeDialog={() => setIsAddDialogOpen(false)} />
       </DialogContent>
     </Dialog>
   );

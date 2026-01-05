@@ -6,7 +6,8 @@ import {
   Settings,
   ListChecks,
   Wrench,
-  ChevronDown
+  ChevronDown,
+  Users
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +37,7 @@ const navItems = [
     { href: "/dashboard", icon: Home, label: "Painel" },
     { href: "/dashboard/inspections", icon: ListChecks, label: "Inspeções" },
     { href: "/dashboard/equipment", icon: Wrench, label: "Equipamentos" },
+    { href: "/dashboard/inspectors", icon: Users, label: "Inspetores" },
 ];
 
 export default function DashboardLayout({
