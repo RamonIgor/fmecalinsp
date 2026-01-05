@@ -30,22 +30,20 @@ export function InspectorActions({ inspector }: { inspector: Inspector }) {
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-            </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        Editar
-                    </DropdownMenuItem>
-                </DialogTrigger>
-                <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Abrir menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+            Editar
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Editar Inspetor</DialogTitle>
@@ -53,10 +51,12 @@ export function InspectorActions({ inspector }: { inspector: Inspector }) {
             Atualize os detalhes para {inspector.name}.
           </DialogDescription>
         </DialogHeader>
-        {isClient && <InspectorForm
-          inspector={inspector}
-          closeDialog={() => setIsEditDialogOpen(false)}
-        />}
+        {isClient && (
+          <InspectorForm
+            inspector={inspector}
+            closeDialog={() => setIsEditDialogOpen(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
