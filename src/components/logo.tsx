@@ -13,6 +13,7 @@ const CraneHookIcon = (props: SVGProps<SVGSVGElement>) => (
     strokeLinecap="round"
     strokeLinejoin="round"
     {...props}
+    id="crane-logo"
   >
     <path d="M14 5a2 2 0 1 0-4 0v9.5a5.5 5.5 0 1 0 11 0" />
     <path d="M9 5V2" />

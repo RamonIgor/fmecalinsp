@@ -1,0 +1,22 @@
+{
+  "name": "CraneCheck",
+  "short_name": "CraneCheck",
+  "description": "Uma aplicação full-stack para inspeção técnica de pontes rolantes, com um PWA offline-first para inspetores e um painel de administração web para gerentes.",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#FFD700",
+  "background_color": "#1F1F1F",
+  "start_url": "/app",
+  "display": "standalone",
+  "orientation": "portrait"
+}
