@@ -1,3 +1,5 @@
+"use client";
+
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Wrench, CheckCircle, AlertTriangle, XCircle, HardHat } from "lucide-react";
