@@ -1,73 +1,90 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search, ArrowRight } from 'lucide-react';
-import { equipments } from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
-import type { Equipment } from '@/lib/data';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+"use client";
 
-function getStatusVariant(status: Equipment['status']) {
-  switch (status) {
-    case 'Operacional':
-      return 'default';
-    case 'Requer Atenção':
-      return 'secondary';
-    case 'Fora de Serviço':
-      return 'destructive';
-    default:
-      return 'outline';
-  }
+import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, CheckCircle, Clock, ListChecks, TriangleAlert, FilePlus2, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+
+function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Bom dia";
+    if (hour < 18) return "Boa tarde";
+    return "Boa noite";
 }
 
-const placeholderImages = PlaceHolderImages.filter(p => p.id.startsWith('equipment-placeholder'));
-
 export default function InspectorAppPage() {
+    const [greeting, setGreeting] = useState("Olá");
+
+    useEffect(() => {
+        setGreeting(getGreeting());
+    }, []);
+
+
+  const stats = [
+    { title: 'Inspeções Hoje', value: '0', icon: ListChecks, color: 'text-primary' },
+    { title: 'Pendentes', value: '1', icon: Clock, color: 'text-yellow-500' },
+    { title: 'Alertas Ativos', value: '0', icon: TriangleAlert, color: 'text-red-500' },
+    { title: 'Concluídas (Mês)', value: '0', icon: CheckCircle, color: 'text-green-500' },
+  ];
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input placeholder="Buscar equipamento por TAG ou nome..." className="pl-10 h-12 text-lg" />
+    <div className="flex flex-col gap-6">
+      <div>
+        <div className="flex justify-between items-center mb-1">
+            <h1 className="text-2xl font-bold text-foreground">
+                {greeting}, base44! 👋
+            </h1>
+            <Button variant="ghost" size="icon">
+                <LogOut className="h-5 w-5 text-muted-foreground"/>
+            </Button>
+        </div>
+        <p className="text-muted-foreground">Veja o resumo das suas atividades</p>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="font-headline text-2xl font-bold">Selecionar Equipamento</h2>
-        {equipments.map((equipment, index) => {
-          const image = placeholderImages[index % placeholderImages.length];
-          return (
-            <Link href={`/app/inspection/${equipment.id}`} key={equipment.id}>
-              <Card className="hover:bg-secondary/50 transition-colors flex overflow-hidden">
-                <div className="w-1/3 relative">
-                    {image && (
-                        <Image 
-                            src={image.imageUrl}
-                            alt={equipment.name}
-                            width={200}
-                            height={133}
-                            className="object-cover h-full w-full"
-                            data-ai-hint={image.imageHint}
-                        />
-                    )}
-                </div>
-                <div className="flex-1">
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-base font-bold">{equipment.tag}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{equipment.name}</p>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                    <Badge variant={getStatusVariant(equipment.status)}>{equipment.status}</Badge>
-                  </CardContent>
-                </div>
-                <div className="flex items-center justify-center px-3">
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                </div>
+      <div className="grid grid-cols-2 gap-4">
+        {stats.map(stat => (
+          <Card key={stat.title}>
+            <CardContent className="p-4 flex flex-col items-start gap-2">
+              <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              <p className="text-muted-foreground text-sm">{stat.title}</p>
+              <p className="text-3xl font-bold">{stat.value}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold mb-2">Ações Rápidas</h2>
+        <div className="grid grid-cols-2 gap-4">
+            <Link href="/app/inspection/equip-1">
+              <Card className="bg-foreground text-background hover:bg-foreground/90">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 aspect-square">
+                    <FilePlus2 className="h-8 w-8"/>
+                    <span className="font-semibold">Nova Inspeção</span>
+                </CardContent>
               </Card>
             </Link>
-          );
-        })}
+            <Card>
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 aspect-square">
+                    <TriangleAlert className="h-8 w-8 text-yellow-500"/>
+                    <span className="font-semibold text-muted-foreground">Reportar Problema</span>
+                </CardContent>
+            </Card>
+        </div>
       </div>
+
+       <div>
+        <h2 className="text-lg font-semibold mb-2">Próximas Inspeções</h2>
+        <Card>
+            <CardContent className="p-8 flex flex-col items-center justify-center text-center gap-4">
+                <Clock className="h-10 w-10 text-muted-foreground"/>
+                <p className="text-muted-foreground">Nenhuma inspeção agendada</p>
+            </CardContent>
+        </Card>
+      </div>
+
     </div>
   );
 }

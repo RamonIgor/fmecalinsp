@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ConnectionStatus } from "@/components/connection-status";
 import Logo from "@/components/logo";
-import { HardHat, ListChecks, Home } from "lucide-react";
+import { Grid, ListChecks, Wrench, ChevronRight } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AppLayout({
   children,
@@ -9,32 +10,38 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col min-h-screen bg-card">
-      <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b bg-background/80 backdrop-blur-sm">
-        <Link href="/app" className="flex items-center gap-2">
-            <Logo className="w-8 h-8 text-primary"/>
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b bg-card text-card-foreground shadow-md">
+        <div className="flex items-center gap-2">
+            <Logo className="w-8 h-8 text-primary" />
             <span className="font-headline text-xl font-bold text-primary">CraneCheck</span>
-        </Link>
-        <ConnectionStatus />
+        </div>
+        <div className="flex items-center gap-4">
+            <ConnectionStatus />
+            <Avatar className="h-8 w-8">
+                <AvatarImage src="https://picsum.photos/seed/inspector/100/100" alt="Inspetor" />
+                <AvatarFallback>I</AvatarFallback>
+            </Avatar>
+        </div>
       </header>
       
       <main className="flex-1 overflow-y-auto p-4 pb-24">
         {children}
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 h-16 border-t bg-background/95 backdrop-blur-sm">
+      <footer className="fixed bottom-0 left-0 right-0 h-16 border-t bg-card text-card-foreground">
         <nav className="flex items-center justify-around h-full">
-            <Link href="/app" className="flex flex-col items-center justify-center text-primary">
-                <Home className="h-6 w-6"/>
-                <span className="text-xs">Equipamentos</span>
+            <Link href="/app" className="flex flex-col items-center justify-center text-primary gap-1">
+                <Grid className="h-6 w-6"/>
+                <span className="text-xs font-medium">Início</span>
             </Link>
-            <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors">
+            <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors gap-1">
                 <ListChecks className="h-6 w-6"/>
-                <span className="text-xs">Minhas Inspeções</span>
+                <span className="text-xs">Inspeções</span>
             </Link>
-            <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors">
-                <HardHat className="h-6 w-6"/>
-                <span className="text-xs">Perfil</span>
+            <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors gap-1">
+                <Wrench className="h-6 w-6"/>
+                <span className="text-xs">Ativos</span>
             </Link>
         </nav>
       </footer>
