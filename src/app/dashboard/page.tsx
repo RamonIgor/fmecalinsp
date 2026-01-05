@@ -1,29 +1,10 @@
 "use client";
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Wrench, CheckCircle, AlertTriangle, XCircle, HardHat } from "lucide-react";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { equipments, inspections } from "@/lib/data";
-
-const inspectionStatusData = [
-  { status: "Finalizado", count: inspections.filter(i => i.status === 'Finalizado').length, fill: "hsl(var(--chart-2))" },
-  { status: "Pendente", count: inspections.filter(i => i.status === 'Pendente').length, fill: "hsl(var(--chart-1))" },
-];
-
-const chartConfig = {
-  count: {
-    label: "Contagem",
-  },
-  finalizado: {
-    label: "Finalizado",
-    color: "hsl(var(--chart-2))",
-  },
-  pendente: {
-    label: "Pendente",
-    color: "hsl(var(--chart-1))",
-  },
-};
+import { InspectionStatusChart } from "./components/inspection-status-chart";
+import { RecentActivity } from "./components/recent-activity";
 
 export default function DashboardPage() {
   const totalEquipments = equipments.length;
@@ -76,50 +57,8 @@ export default function DashboardPage() {
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Visão Geral das Inspeções</CardTitle>
-            <CardDescription>Status das inspeções recentes.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={inspectionStatusData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
-                  <XAxis dataKey="status" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip cursor={{fill: 'hsl(var(--card))'}} content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card>
-           <CardHeader>
-            <CardTitle>Atividade Recente</CardTitle>
-            <CardDescription>Últimas inspeções finalizadas.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {inspections.slice(0,3).map((inspection) => (
-                <div key={inspection.id} className="flex items-center gap-4">
-                  <div className="p-2 bg-muted rounded-full">
-                    <HardHat className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium leading-none">
-                      {equipments.find(e => e.id === inspection.equipmentId)?.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Inspecionado por {inspection.inspectorName}
-                    </p>
-                  </div>
-                  <div className="text-sm text-muted-foreground">{new Date(inspection.date).toLocaleDateString()}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <InspectionStatusChart />
+        <RecentActivity />
       </div>
     </div>
   );
