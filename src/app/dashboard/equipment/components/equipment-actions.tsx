@@ -33,9 +33,11 @@ export function EquipmentActions({ equipment }: { equipment: Equipment }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
-            Editar
-          </DropdownMenuItem>
+          <DialogTrigger asChild>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              Editar
+            </DropdownMenuItem>
+          </DialogTrigger>
           <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
