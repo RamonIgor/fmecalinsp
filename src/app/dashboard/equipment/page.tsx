@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { equipments } from "@/lib/data";
 import type { Equipment } from "@/lib/data";
 import { EquipmentActions } from "./components/equipment-actions";
+import { AddEquipmentButton } from "./components/add-equipment-button";
 import { HardDrive } from "lucide-react";
 
 function getStatusVariant(status: Equipment['status']) {
@@ -36,7 +37,7 @@ export default function EquipmentPage() {
                 Visualize, adicione, edite ou remova equipamentos de guindaste.
             </CardDescription>
         </div>
-        <EquipmentActions />
+        <AddEquipmentButton />
       </CardHeader>
       <CardContent>
         <Table>
