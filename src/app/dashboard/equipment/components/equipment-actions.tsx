@@ -25,8 +25,12 @@ export function EquipmentActions({ equipment }: { equipment: Equipment }) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (isEditDialogOpen) {
+        setIsClient(true);
+    } else {
+        setIsClient(false);
+    }
+  }, [isEditDialogOpen]);
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

@@ -21,6 +21,15 @@ export function AddEquipmentButton() {
     setIsClient(true);
   }, []);
 
+  // Reset isClient when dialog closes to ensure it's re-evaluated on next open
+  useEffect(() => {
+    if (!isAddDialogOpen) {
+      setIsClient(false);
+    } else {
+      setIsClient(true);
+    }
+  }, [isAddDialogOpen]);
+
 
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
