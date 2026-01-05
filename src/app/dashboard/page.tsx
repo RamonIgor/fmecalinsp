@@ -1,8 +1,7 @@
-"use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Wrench, CheckCircle, AlertTriangle, XCircle, HardHat } from "lucide-react";
-import { equipments, inspections } from "@/lib/data";
+import { Wrench, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { equipments } from "@/lib/data";
 import { InspectionStatusChart } from "./components/inspection-status-chart";
 import { RecentActivity } from "./components/recent-activity";
 
