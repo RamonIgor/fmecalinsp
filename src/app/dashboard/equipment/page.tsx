@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { equipments } from "@/lib/data";
 import type { Equipment } from "@/lib/data";
 import { EquipmentActions } from "./components/equipment-actions";
+import { HardDrive } from "lucide-react";
 
 function getStatusVariant(status: Equipment['status']) {
   switch (status) {
@@ -43,7 +44,7 @@ export default function EquipmentPage() {
             <TableRow>
               <TableHead>TAG</TableHead>
               <TableHead>Nome</TableHead>
-              <TableHead className="hidden md:table-cell">Setor</TableHead>
+              <TableHead className="hidden md:table-cell">Componentes</TableHead>
               <TableHead className="hidden sm:table-cell">Última Inspeção</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -54,7 +55,12 @@ export default function EquipmentPage() {
               <TableRow key={equipment.id}>
                 <TableCell className="font-medium">{equipment.tag}</TableCell>
                 <TableCell>{equipment.name}</TableCell>
-                <TableCell className="hidden md:table-cell">{equipment.sector}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                   <div className="flex items-center gap-2">
+                     <HardDrive className="h-4 w-4 text-muted-foreground"/>
+                     <span className="text-muted-foreground">{equipment.components?.length || 0}</span>
+                   </div>
+                </TableCell>
                 <TableCell className="hidden sm:table-cell">{equipment.lastInspection || 'N/A'}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(equipment.status)}>{equipment.status}</Badge>
