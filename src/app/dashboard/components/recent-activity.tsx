@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { HardHat } from "lucide-react";
 import { equipments, inspections } from "@/lib/data";
-import { formatInTimeZone } from 'date-fns-tz';
 
 export function RecentActivity() {
     return (
@@ -28,7 +27,7 @@ export function RecentActivity() {
                     </p>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {formatInTimeZone(inspection.date, 'UTC', 'dd/MM/yyyy')}
+                    {new Date(inspection.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
                   </div>
                 </div>
               ))}
