@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ConnectionStatus } from "@/components/connection-status";
 import Logo from "@/components/logo";
-import { Grid, ListChecks, Wrench } from "lucide-react";
+import { Grid, ListChecks, Wrench, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+
 
 export default function AppLayout({
   children,
@@ -12,16 +14,18 @@ export default function AppLayout({
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b border-border/20 bg-card text-card-foreground">
-        <div className="flex items-center gap-2">
-            <Logo className="w-8 h-8 text-primary" />
-            <span className="font-headline text-xl font-bold text-primary">CraneCheck</span>
-        </div>
         <div className="flex items-center gap-4">
-            <ConnectionStatus />
             <Avatar className="h-9 w-9">
                 <AvatarImage src="https://picsum.photos/seed/inspector/100/100" alt="Inspetor" />
                 <AvatarFallback>I</AvatarFallback>
             </Avatar>
+            <span className="font-bold text-lg text-foreground">base44</span>
+        </div>
+        <div className="flex items-center gap-2">
+            <ConnectionStatus />
+             <Button variant="ghost" size="icon">
+                <LogOut className="h-5 w-5 text-muted-foreground"/>
+            </Button>
         </div>
       </header>
       
