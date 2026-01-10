@@ -1,14 +1,13 @@
+
 'use client';
 
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   ListChecks,
   Clock,
   TriangleAlert,
   CheckCircle,
-  FilePlus2,
   HardHat,
   ChevronRight,
 } from 'lucide-react';
@@ -41,47 +40,49 @@ export default function InspectorAppPage() {
   }, []);
 
   const stats = [
-    { title: 'Inspeções Hoje', value: '0', icon: ListChecks, color: 'text-primary' },
-    { title: 'Pendentes', value: '0', icon: Clock, color: 'text-amber-400' },
-    { title: 'Alertas Ativos', value: '2', icon: TriangleAlert, color: 'text-red-500' },
-    { title: 'Concluídas (Mês)', value: '12', icon: CheckCircle, color: 'text-green-500' },
+    { title: 'Inspeções Hoje', value: '0', icon: ListChecks, color: 'text-primary', borderColor: 'border-primary/50' },
+    { title: 'Pendentes', value: '0', icon: Clock, color: 'text-amber-500', borderColor: 'border-amber-500/50' },
+    { title: 'Alertas Ativos', value: '2', icon: TriangleAlert, color: 'text-destructive', borderColor: 'border-destructive/50' },
+    { title: 'Concluídas (Mês)', value: '12', icon: CheckCircle, color: 'text-status-green', borderColor: 'border-status-green/50' },
   ];
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">
+        <h1 className="text-2xl font-bold text-foreground">
           {greeting}, {user?.displayName?.split(' ')[0] || 'Inspetor'}! 👋
         </h1>
-        <p className="text-lg text-muted-foreground">Pronto para começar?</p>
+        <p className="text-md text-muted-foreground">Pronto para começar?</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardContent className="p-4 flex flex-col items-start gap-2">
-              <stat.icon className={`h-7 w-7 ${stat.color}`} />
-              <p className="text-muted-foreground text-sm font-medium">{stat.title}</p>
-              <p className="text-4xl font-bold">{stat.value}</p>
+          <Card key={stat.title} className={`rounded-2xl shadow-sm border-2 ${stat.borderColor}`}>
+            <CardContent className="p-4 flex flex-col items-start justify-between h-full gap-2">
+              <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              <div>
+                <p className="text-3xl font-bold">{stat.value}</p>
+                <p className="text-muted-foreground text-xs font-medium">{stat.title}</p>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-3">Iniciar Inspeção</h2>
-        <Card>
-          <CardContent className="p-4">
+        <h2 className="text-lg font-semibold mb-3">Iniciar Inspeção</h2>
+        <Card className="rounded-2xl">
+          <CardContent className="p-2">
             {isLoadingEquipments && (
-              <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+              <div className="space-y-2 p-2">
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-14 w-full" />
               </div>
             )}
             <ul className="divide-y divide-border">
               {equipments?.map((equipment) => (
                 <li key={equipment.id}>
-                  <Link href={`/app/inspection/${equipment.id}`} className="flex items-center justify-between p-3 -mx-3 rounded-md hover:bg-muted">
+                  <Link href={`/app/inspection/${equipment.id}`} className="flex items-center justify-between p-4 rounded-md hover:bg-muted">
                     <div>
                       <p className="font-semibold">{equipment.name}</p>
                       <p className="text-sm text-muted-foreground">{equipment.tag} - {equipment.sector}</p>
@@ -92,9 +93,9 @@ export default function InspectorAppPage() {
               ))}
             </ul>
              {!isLoadingEquipments && equipments?.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                    <HardHat className="mx-auto h-12 w-12" />
-                    <p className="mt-4 font-medium">Nenhum equipamento cadastrado.</p>
+                <div className="text-center text-muted-foreground py-10">
+                    <HardHat className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-4 font-semibold">Nenhum equipamento cadastrado.</p>
                     <p className="text-sm">Peça a um administrador para adicionar equipamentos no painel.</p>
                 </div>
             )}

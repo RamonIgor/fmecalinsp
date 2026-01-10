@@ -2,15 +2,21 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ConnectionStatus } from "@/components/connection-status";
-import Logo from "@/components/logo";
-import { Grid, ListChecks, Wrench, LogOut, Loader2 } from "lucide-react";
+import { Grid, ListChecks, Wrench, LogOut, Loader2, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth, useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { cn } from "@/lib/utils";
 
+const navItems = [
+    { href: "/app", icon: Grid, label: "Início" },
+    { href: "/app/inspections", icon: ListChecks, label: "Inspeções" },
+    { href: "/app/equipment", icon: Wrench, label: "Ativos" },
+];
 
 export default function AppLayout({
   children,
@@ -20,8 +26,10 @@ export default function AppLayout({
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
+    if (!auth) return;
     await auth.signOut();
     router.push('/login');
   };
@@ -41,19 +49,18 @@ export default function AppLayout({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b border-border/20 bg-card text-card-foreground">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-background">
+      <header className="sticky top-0 z-10 flex items-center justify-between h-20 px-4 bg-background dark:bg-background border-b border-border/20">
         <div className="flex items-center gap-4">
-            <Avatar className="h-9 w-9">
+            <Avatar className="h-12 w-12 border-2 border-primary">
                 <AvatarImage src={`https://picsum.photos/seed/${user.uid}/100/100`} alt="Inspetor" />
                 <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-bold text-lg text-foreground">{user.displayName || 'Inspetor'}</span>
         </div>
         <div className="flex items-center gap-2">
             <ConnectionStatus />
-             <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="h-5 w-5 text-muted-foreground"/>
+             <Button variant="ghost" size="icon" onClick={() => { /* TODO: Navigate to settings */ }}>
+                <Settings className="h-6 w-6 text-muted-foreground"/>
              </Button>
         </div>
       </header>
@@ -64,18 +71,18 @@ export default function AppLayout({
 
       <footer className="fixed bottom-0 left-0 right-0 h-16 border-t border-border/20 bg-card text-card-foreground">
         <nav className="flex items-center justify-around h-full">
-            <Link href="/app" className="flex flex-col items-center justify-center text-primary gap-1">
-                <Grid className="h-6 w-6"/>
-                <span className="text-xs font-medium">Início</span>
-            </Link>
-            <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors gap-1">
-                <ListChecks className="h-6 w-6"/>
-                <span className="text-xs">Inspeções</span>
-            </Link>
-            <Link href="#" className="flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors gap-1">
-                <Wrench className="h-6 w-6"/>
-                <span className="text-xs">Ativos</span>
-            </Link>
+            {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                     <Link key={item.label} href={item.href} className={cn(
+                        "flex flex-col items-center justify-center gap-1 w-full h-full",
+                        isActive ? "text-primary" : "text-muted-foreground hover:text-primary transition-colors"
+                     )}>
+                        <item.icon className="h-6 w-6"/>
+                        <span className="text-xs font-medium">{item.label}</span>
+                    </Link>
+                )
+            })}
         </nav>
       </footer>
     </div>

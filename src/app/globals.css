@@ -26,13 +26,13 @@
     --radius: 0.75rem; /* 12px */
 
     /* Custom Status Colors */
-    --status-green: 160 84% 39%; /* #10b981 */
+    --status-green: 145 63% 42%; /* #10b981 mapped to a slightly darker shade for better contrast */
     --status-yellow: 38 92% 50%; /* #f59e0b */
     --status-red: 0 84% 60%; /* #ef4444 */
 
     /* Chart Colors */
     --chart-1: 38 92% 50%; /* Orange */
-    --chart-2: 160 84% 39%; /* Green */
+    --chart-2: 145 63% 42%; /* Green */
 
     /* Sidebar Colors */
     --sidebar-background: 217 33% 17%; /* #1e293b */
@@ -46,33 +46,33 @@
   }
 
   .dark {
-    --background: 222 84% 4.9%;
+    --background: 224 71% 4%; /* #020817 - a very dark blue */
     --foreground: 210 20% 98%;
-    --card: 217.2 32.6% 17.5%;
+    --card: 224 71% 4%;
     --card-foreground: 210 20% 98%;
-    --popover: 222 84% 4.9%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 20% 98%;
     --primary: 38 92% 50%;
     --primary-foreground: 210 20% 98%;
-    --secondary: 217 33% 17%;
+    --secondary: 215 28% 17%;
     --secondary-foreground: 210 20% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 215 28% 17%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 215 28% 17%;
     --accent-foreground: 210 20% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 20% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
     --ring: 38 92% 50%;
-    --radius: 0.75rem;
+    --radius: 1rem; /* 16px */
 
-    --status-green: 160 84% 39%;
+    --status-green: 145 63% 42%;
     --status-yellow: 38 92% 50%;
-    --status-red: 0 84% 60%;
+    --status-red: 0 72% 51%;
 
     --chart-1: 38 92% 50%;
-    --chart-2: 160 84% 39%;
+    --chart-2: 145 63% 42%;
 
     --sidebar-background: 217 33% 17%;
     --sidebar-foreground: 210 20% 98%;
