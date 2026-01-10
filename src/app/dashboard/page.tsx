@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { RecentActivity } from "./components/recent-activity";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import type { Equipment } from "@/lib/data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
   const firestore = useFirestore();
@@ -21,53 +23,73 @@ export default function DashboardPage() {
   const requiresAttention = equipments?.filter(e => e.status === 'Requer Atenção').length ?? 0;
   const outOfService = equipments?.filter(e => e.status === 'Fora de Serviço').length ?? 0;
 
+  const StatCard = ({ title, value, icon: Icon, description, color, isLoading }: {
+    title: string;
+    value: string | number;
+    icon: React.ElementType;
+    description: string;
+    color: string;
+    isLoading: boolean;
+  }) => (
+    <Card className="shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <Icon className={`h-5 w-5 ${color}`} />
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-8 w-1/4" />
+        ) : (
+          <div className="text-3xl font-bold">{value}</div>
+        )}
+        <p className="text-xs text-muted-foreground pt-1">{description}</p>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Equipamentos</CardTitle>
-            <Wrench className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? '...' : totalEquipments}</div>
-            <p className="text-xs text-muted-foreground">Total de guindastes registrados</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Operacional</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? '...' : operational}</div>
-            <p className="text-xs text-muted-foreground">Nenhum problema relatado</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Requer Atenção</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? '...' : requiresAttention}</div>
-            <p className="text-xs text-muted-foreground">Problemas menores encontrados</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fora de Serviço</CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? '...' : outOfService}</div>
-            <p className="text-xs text-muted-foreground">Falhas críticas detectadas</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total de Equipamentos"
+          value={totalEquipments}
+          icon={Wrench}
+          description="Total de guindastes registrados"
+          color="text-muted-foreground"
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Operacional"
+          value={operational}
+          icon={CheckCircle}
+          description="Nenhum problema relatado"
+          color="text-green-500"
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Requer Atenção"
+          value={requiresAttention}
+          icon={AlertTriangle}
+          description="Problemas menores encontrados"
+          color="text-yellow-500"
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Fora de Serviço"
+          value={outOfService}
+          icon={XCircle}
+          description="Falhas críticas detectadas"
+          color="text-red-500"
+          isLoading={isLoading}
+        />
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <InspectionStatusChart />
-        <RecentActivity />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <InspectionStatusChart />
+        </div>
+        <div>
+          <RecentActivity />
+        </div>
       </div>
     </div>
   );

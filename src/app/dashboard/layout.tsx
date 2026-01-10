@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Bell,
   Home,
@@ -13,19 +14,9 @@ import {
   Users,
   Factory,
   LogOut,
+  Loader2,
 } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarInset,
-  SidebarFooter
-} from "@/components/ui/sidebar";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -41,6 +32,7 @@ import { useAuth, useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const navItems = [
     { href: "/dashboard", icon: Home, label: "Painel" },
@@ -72,15 +64,16 @@ function UserNav() {
     return (
          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative flex items-center gap-2 rounded-full p-1 h-auto">
-                <Avatar className="h-8 w-8">
+            <Button variant="ghost" className="relative flex items-center gap-2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+                <Avatar className="h-9 w-9">
                 <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/100/100`} alt="Gerente" />
                 <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <ChevronDown className="h-4 w-4 text-muted-foreground"/>
+                <span className="hidden md:block">{user?.displayName}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground hidden md:block"/>
             </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
                 <p>Minha Conta</p>
                 <p className="text-xs text-muted-foreground font-normal">{user?.email}</p>
@@ -105,6 +98,7 @@ export default function DashboardLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -114,61 +108,47 @@ export default function DashboardLayout({
 
   if (isUserLoading || !user) {
     return (
-        <div className="flex h-screen w-full items-center justify-center">
+        <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
     )
   }
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-            <div className="flex items-center gap-2 p-2">
-              <Logo className="w-8 h-8 text-primary" />
-              <span className="font-headline text-2xl font-semibold text-primary">CraneCheck</span>
+    <div className="min-h-screen w-full flex bg-gray-50">
+        <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-secondary sm:flex">
+            <div className="flex h-16 items-center gap-2 px-6 border-b border-sidebar-border">
+                <Logo className="h-8 w-8 text-primary" />
+                <span className="font-headline text-2xl font-bold text-white">CraneCheck</span>
             </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <Link href={item.href} className="w-full">
-                  <SidebarMenuButton tooltip={item.label}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-            <Link href="#" className="w-full">
-                <SidebarMenuButton tooltip="Configurações">
-                    <Settings />
-                    <span>Configurações</span>
-                </SidebarMenuButton>
-            </Link>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <SidebarTrigger className="sm:hidden" />
-          <div className="flex-1">
-             {/* Can add breadcrumbs or page title here */}
-          </div>
-          <div className="flex items-center gap-4">
-             <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="h-5 w-5" />
-                <span className="sr-only">Alternar notificações</span>
-              </Button>
-            <UserNav />
-          </div>
-        </header>
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+            <nav className="flex flex-col gap-2 p-4">
+                {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.label}
+                            href={item.href}
+                            className={cn(
+                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                isActive && "bg-sidebar-accent text-sidebar-accent-foreground border-l-4 border-primary -ml-1 pl-4"
+                            )}
+                        >
+                            <item.icon className="h-5 w-5" />
+                            <span>{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </nav>
+        </aside>
+
+        <div className="flex flex-col w-full sm:pl-64">
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6">
+                <UserNav />
+            </header>
+            <main className="flex-1 p-4 sm:p-6 bg-gray-100">
+                {children}
+            </main>
+        </div>
+    </div>
   );
 }
-import { Loader2 } from "lucide-react";
