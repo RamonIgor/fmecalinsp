@@ -21,6 +21,11 @@ service cloud.firestore {
     function isInspector() {
       return isSignedIn() && getUserData().role == 'inspector';
     }
+    
+    function isAssignedInspector(workOrderId) {
+      let workOrder = get(/databases/$(database)/documents/workOrders/$(workOrderId)).data;
+      return workOrder.inspectorId == request.auth.uid;
+    }
 
     match /users/{userId} {
       allow read, write: if isOwner(userId) || isAdmin();
@@ -49,6 +54,12 @@ service cloud.firestore {
     match /inspections/{inspectionId} {
       allow read: if isSignedIn();
       allow write: if isAdmin() || isInspector();
+    }
+
+    match /workOrders/{workOrderId} {
+      allow read: if isAdmin() || (isInspector() && isAssignedInspector(workOrderId));
+      allow list: if isAdmin() || isInspector(); // Inspectors can list to find their assigned orders
+      allow create, update, delete: if isAdmin();
     }
   }
 }

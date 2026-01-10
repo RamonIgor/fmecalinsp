@@ -10,12 +10,14 @@ import {
   CheckCircle,
   HardHat,
   ChevronRight,
+  CalendarCheck,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import type { Equipment } from '@/lib/data';
-import { collection } from 'firebase/firestore';
+import type { WorkOrder, Equipment, Client } from '@/lib/data';
+import { collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -29,21 +31,32 @@ export default function InspectorAppPage() {
   const firestore = useFirestore();
   const [greeting, setGreeting] = useState('Olá');
 
-  const equipmentsCollection = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'equipment') : null),
-    [firestore]
+  const workOrdersQuery = useMemoFirebase(
+    () => (user ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente')) : null),
+    [firestore, user]
   );
+  const { data: workOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
+
+  const equipmentsCollection = useMemoFirebase(() => collection(firestore, 'equipment'), [firestore]);
   const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
+
+  const clientsCollection = useMemoFirebase(() => collection(firestore, 'clients'), [firestore]);
+  const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
 
   useEffect(() => {
     setGreeting(getGreeting());
   }, []);
 
+  const getEquipment = (id: string) => equipments?.find(e => e.id === id);
+  const getClient = (id: string) => clients?.find(c => c.id === id);
+
+  const isLoading = isLoadingWorkOrders || isLoadingEquipments || isLoadingClients;
+
   const stats = [
-    { title: 'Inspeções Hoje', value: '0', icon: ListChecks, color: 'text-primary', borderColor: 'border-primary/50' },
-    { title: 'Pendentes', value: '0', icon: Clock, color: 'text-amber-500', borderColor: 'border-amber-500/50' },
-    { title: 'Alertas Ativos', value: '2', icon: TriangleAlert, color: 'text-destructive', borderColor: 'border-destructive/50' },
-    { title: 'Concluídas (Mês)', value: '12', icon: CheckCircle, color: 'text-status-green', borderColor: 'border-status-green/50' },
+    { title: 'Inspeções Hoje', value: workOrders?.length ?? 0, icon: ListChecks, color: 'text-primary', borderColor: 'border-primary/50' },
+    { title: 'Pendentes', value: workOrders?.filter(wo => wo.status === 'Pendente').length ?? 0, icon: Clock, color: 'text-amber-500', borderColor: 'border-amber-500/50' },
+    { title: 'Alertas Ativos', value: '0', icon: TriangleAlert, color: 'text-destructive', borderColor: 'border-destructive/50' },
+    { title: 'Concluídas (Mês)', value: '0', icon: CheckCircle, color: 'text-status-green', borderColor: 'border-status-green/50' },
   ];
 
   return (
@@ -52,7 +65,7 @@ export default function InspectorAppPage() {
         <h1 className="text-2xl font-bold text-foreground">
           {greeting}, {user?.displayName?.split(' ')[0] || 'Inspetor'}! 👋
         </h1>
-        <p className="text-md text-muted-foreground">Pronto para começar?</p>
+        <p className="text-md text-muted-foreground">Suas tarefas pendentes de hoje.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -70,33 +83,44 @@ export default function InspectorAppPage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold mb-3">Iniciar Inspeção</h2>
+        <h2 className="text-lg font-semibold mb-3">Minhas Ordens de Serviço</h2>
         <Card className="rounded-2xl">
           <CardContent className="p-2">
-            {isLoadingEquipments && (
+            {isLoading && (
               <div className="space-y-2 p-2">
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
               </div>
             )}
             <ul className="divide-y divide-border">
-              {equipments?.map((equipment) => (
-                <li key={equipment.id}>
-                  <Link href={`/app/inspection/${equipment.id}`} className="flex items-center justify-between p-4 rounded-md hover:bg-muted">
-                    <div>
-                      <p className="font-semibold">{equipment.name}</p>
-                      <p className="text-sm text-muted-foreground">{equipment.tag} - {equipment.sector}</p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </Link>
-                </li>
-              ))}
+              {workOrders?.map((wo) => {
+                const equipment = getEquipment(wo.equipmentId);
+                const client = getClient(wo.clientId);
+                return (
+                  <li key={wo.id}>
+                    <Link href={`/app/inspection/${equipment?.id}`} className="block p-4 rounded-md hover:bg-muted">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="font-semibold">{equipment?.name}</p>
+                                <p className="text-sm text-muted-foreground">{client?.name} - {equipment?.sector}</p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                            <Badge variant="secondary">{wo.status}</Badge>
+                            <span>•</span>
+                            <span>Data: {new Date(wo.scheduledDate).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                    </Link>
+                  </li>
+                )
+            })}
             </ul>
-             {!isLoadingEquipments && equipments?.length === 0 && (
+             {!isLoading && workOrders?.length === 0 && (
                 <div className="text-center text-muted-foreground py-10">
-                    <HardHat className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-4 font-semibold">Nenhum equipamento cadastrado.</p>
-                    <p className="text-sm">Peça a um administrador para adicionar equipamentos no painel.</p>
+                    <CalendarCheck className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-4 font-semibold">Nenhuma ordem de serviço pendente.</p>
+                    <p className="text-sm">Você está em dia com suas tarefas!</p>
                 </div>
             )}
           </CardContent>

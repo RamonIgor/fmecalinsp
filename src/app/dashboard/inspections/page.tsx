@@ -32,13 +32,13 @@ export default function InspectionsPage() {
   const firestore = useFirestore();
 
   const inspectionsCollection = useMemoFirebase(
-    () => collection(firestore, "inspections"),
+    () => (firestore ? collection(firestore, "inspections") : null),
     [firestore]
   );
   const { data: inspections, isLoading: isLoadingInspections } = useCollection<Inspection>(inspectionsCollection);
 
   const equipmentsCollection = useMemoFirebase(
-    () => collection(firestore, "equipment"),
+    () => (firestore ? collection(firestore, "equipment") : null),
     [firestore]
   );
   const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
@@ -48,9 +48,9 @@ export default function InspectionsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Registros de Inspeção</CardTitle>
+        <CardTitle>Relatórios de Inspeção</CardTitle>
         <CardDescription>
-          Navegue e gerencie todos os relatórios de inspeção enviados.
+          Navegue e gerencie todos os relatórios de inspeção finalizados.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -96,7 +96,7 @@ export default function InspectionsPage() {
             })}
              {!isLoading && inspections?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center h-24">Nenhuma inspeção encontrada.</TableCell>
+                <TableCell colSpan={5} className="text-center h-24">Nenhum relatório de inspeção encontrado.</TableCell>
               </TableRow>
             )}
           </TableBody>

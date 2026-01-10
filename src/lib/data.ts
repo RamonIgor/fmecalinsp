@@ -23,6 +23,7 @@ export type Equipment = {
   lastInspection: string | null;
   status: 'Operacional' | 'Requer Atenção' | 'Fora de Serviço';
   components?: EquipmentComponent[]; // Optional because it's a subcollection
+  clientId?: string; // Foreign key to clients
 };
 
 export type Inspector = {
@@ -59,7 +60,7 @@ export type InspectionItem = {
 };
 
 export type Inspection = {
-  id: string;
+  id:string;
   equipmentId: string;
   inspectorId: string;
   inspectorName: string;
@@ -68,3 +69,13 @@ export type Inspection = {
   items: InspectionItem[];
   signatureUrl?: string;
 };
+
+export type WorkOrder = {
+  id: string;
+  clientId: string;
+  equipmentId: string;
+  inspectorId: string;
+  scheduledDate: string;
+  status: 'Pendente' | 'Em Andamento' | 'Concluída' | 'Cancelada';
+  notes?: string;
+}

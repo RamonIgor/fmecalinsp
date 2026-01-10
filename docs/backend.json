@@ -63,12 +63,16 @@
           "description": "Date of the last inspection.",
           "format": "date"
         },
-         "status": {
+        "status": {
           "type": "string",
           "enum": ["Operacional", "Requer Atenção", "Fora de Serviço"]
+        },
+        "clientId": {
+          "type": "string",
+          "description": "ID of the client this equipment belongs to."
         }
       },
-      "required": ["tag", "name", "sector", "status"]
+      "required": ["tag", "name", "sector", "status", "clientId"]
     },
     "EquipmentComponent": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -103,6 +107,21 @@
         }
       },
       "required": ["name", "phone", "userId"]
+    },
+    "WorkOrder": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WorkOrder",
+      "type": "object",
+      "description": "Represents a scheduled inspection task.",
+      "properties": {
+        "clientId": { "type": "string", "description": "ID of the client." },
+        "equipmentId": { "type": "string", "description": "ID of the equipment to be inspected." },
+        "inspectorId": { "type": "string", "description": "ID of the assigned inspector (user UID)." },
+        "scheduledDate": { "type": "string", "format": "date", "description": "Date the inspection is scheduled for." },
+        "status": { "type": "string", "enum": ["Pendente", "Em Andamento", "Concluída", "Cancelada"], "description": "Current status of the work order." },
+        "notes": { "type": "string", "description": "Additional notes or instructions from the admin." }
+      },
+      "required": ["clientId", "equipmentId", "inspectorId", "scheduledDate", "status"]
     }
   },
   "auth": {
@@ -156,6 +175,15 @@
           "schema": { "$ref": "#/backend/entities/Inspector" },
           "description": "Stores inspector profiles.",
           "params": [{ "name": "inspectorId", "description": "Unique identifier for the inspector profile." }]
+        }
+      },
+      {
+        "path": "/workOrders/{workOrderId}",
+        "definition": {
+          "entityName": "WorkOrder",
+          "schema": { "$ref": "#/backend/entities/WorkOrder" },
+          "description": "Stores scheduled inspection work orders.",
+          "params": [{ "name": "workOrderId", "description": "Unique ID for the work order." }]
         }
       }
     ]

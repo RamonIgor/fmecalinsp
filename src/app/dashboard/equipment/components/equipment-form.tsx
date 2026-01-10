@@ -22,11 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import type { Equipment } from "@/lib/data";
+import type { Equipment, Client } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFirestore } from "@/firebase/provider";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase/provider";
 import { collection, doc, writeBatch } from "firebase/firestore";
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 
@@ -40,6 +40,7 @@ const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   sector: z.string().min(1, "Setor é obrigatório"),
   status: z.enum(["Operacional", "Requer Atenção", "Fora de Serviço"]),
+  clientId: z.string().min(1, "Cliente é obrigatório"),
   components: z.array(componentSchema),
 });
 
@@ -51,6 +52,9 @@ type EquipmentFormProps = {
 export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
+
+  const clientsCollection = useMemoFirebase(() => collection(firestore, "clients"), [firestore]);
+  const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,6 +63,7 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
       name: equipment?.name || "",
       sector: equipment?.sector || "",
       status: equipment?.status || "Operacional",
+      clientId: equipment?.clientId || "",
       components: equipment?.components || [],
     },
   });
@@ -123,6 +128,28 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <ScrollArea className="h-[60vh]">
           <div className="space-y-4 p-6">
+            <FormField
+              control={form.control}
+              name="clientId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cliente</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingClients}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={isLoadingClients ? "Carregando clientes..." : "Selecione um cliente"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {clients?.map(client => (
+                        <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="tag"

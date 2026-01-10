@@ -94,7 +94,7 @@ export default function EquipmentPage() {
             <div className="text-center text-muted-foreground py-20 rounded-lg border-2 border-dashed">
                 <HardDrive className="mx-auto h-12 w-12 text-gray-400" />
                 <p className="mt-4 font-semibold">Nenhum equipamento cadastrado.</p>
-                <p className="text-sm">Clique em "+ Novo Equipamento" para começar.</p>
+                <p className="text-sm">Clique em "+ Adicionar Equipamento" para começar.</p>
             </div>
         )}
     </div>

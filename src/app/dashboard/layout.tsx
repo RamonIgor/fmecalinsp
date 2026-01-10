@@ -15,6 +15,8 @@ import {
   Factory,
   LogOut,
   Loader2,
+  CalendarPlus,
+  FileText,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -36,7 +38,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
     { href: "/dashboard", icon: Home, label: "Painel" },
-    { href: "/dashboard/inspections", icon: ListChecks, label: "Inspeções" },
+    { href: "/dashboard/work-orders", icon: CalendarPlus, label: "Ordens de Serviço" },
+    { href: "/dashboard/inspections", icon: FileText, label: "Relatórios" },
     { href: "/dashboard/clients", icon: Factory, label: "Clientes" },
     { href: "/dashboard/equipment", icon: Wrench, label: "Equipamentos" },
     { href: "/dashboard/users", icon: Users, label: "Usuários" },
@@ -48,6 +51,7 @@ function UserNav() {
     const router = useRouter();
 
     const handleLogout = async () => {
+        if (!auth) return;
         await auth.signOut();
         router.push('/login');
     };
@@ -115,7 +119,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen w-full flex bg-gray-50">
+    <div className="min-h-screen w-full flex bg-gray-50 dark:bg-zinc-950">
         <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-secondary sm:flex">
             <div className="flex h-16 items-center gap-2 px-6 border-b border-sidebar-border">
                 <Logo className="h-8 w-8 text-primary" />
@@ -123,7 +127,7 @@ export default function DashboardLayout({
             </div>
             <nav className="flex flex-col gap-2 p-4">
                 {navItems.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive = pathname.startsWith(item.href);
                     return (
                         <Link
                             key={item.label}
@@ -142,10 +146,10 @@ export default function DashboardLayout({
         </aside>
 
         <div className="flex flex-col w-full sm:pl-64">
-            <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6">
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-card px-4 sm:px-6">
                 <UserNav />
             </header>
-            <main className="flex-1 p-4 sm:p-6 bg-gray-100">
+            <main className="flex-1 p-4 sm:p-6 bg-gray-100 dark:bg-background">
                 {children}
             </main>
         </div>
