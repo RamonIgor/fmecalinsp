@@ -54,7 +54,7 @@ export default function DashboardPage() {
           title="Total de Equipamentos"
           value={totalEquipments}
           icon={Wrench}
-          description="Total de guindastes registrados"
+          description={`Total de pontes rolantes registradas`}
           color="text-muted-foreground"
           isLoading={isLoading}
         />

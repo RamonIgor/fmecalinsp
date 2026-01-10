@@ -192,7 +192,7 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
             <div>
               <h3 className="text-lg font-medium">Componentes</h3>
               <FormDescription>
-                Liste as partes principais do equipamento a serem inspecionadas.
+                Liste as partes principais da ponte rolante a serem inspecionadas.
               </FormDescription>
               <div className="space-y-4 mt-4">
                 {fields.map((field, index) => (

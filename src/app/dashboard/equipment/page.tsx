@@ -40,7 +40,7 @@ export default function EquipmentPage() {
             <div>
               <CardTitle className="text-3xl font-bold tracking-tight">Equipamentos</CardTitle>
               <CardDescription>
-                  Visualize, adicione, edite ou remova equipamentos de guindaste.
+                  Visualize, adicione, edite ou remova pontes rolantes.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">

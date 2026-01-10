@@ -42,7 +42,7 @@ export function AddEquipmentButton() {
         <DialogHeader>
           <DialogTitle>Adicionar Novo Equipamento</DialogTitle>
           <DialogDescription>
-            Preencha os detalhes para o novo equipamento de guindaste.
+            Preencha os detalhes para a nova ponte rolante.
           </DialogDescription>
         </DialogHeader>
         <EquipmentForm closeDialog={() => setIsAddDialogOpen(false)} />
