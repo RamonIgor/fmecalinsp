@@ -1,6 +1,8 @@
 // This file now only contains type definitions.
 // The mock data has been removed as we are now using Firestore.
 
+export type WithId<T> = T & { id: string };
+
 export type EquipmentComponent = {
   id: string;
   name: string;
@@ -13,13 +15,14 @@ export type Equipment = {
   sector: string;
   lastInspection: string | null;
   status: 'Operacional' | 'Requer Atenção' | 'Fora de Serviço';
-  components: EquipmentComponent[];
+  components?: EquipmentComponent[]; // Optional because it's a subcollection
 };
 
 export type Inspector = {
   id: string;
   name: string;
   phone: string;
+  userId?: string;
 };
 
 export type Client = {
