@@ -10,11 +10,14 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { doc, setDoc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase'; // We need the config from it
+import { getApps, initializeApp, getApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { firebaseConfig } from '@/firebase/config';
 
 const CreateUserInputSchema = z.object({
-  email: z.string().email().describe('The new user\'s email address.'),
-  password: z.string().min(6).describe('The new user\'s password (at least 6 characters).'),
+  email: z.string().email().describe("The new user's email address."),
+  password: z.string().min(6).describe("The new user's password (at least 6 characters)."),
   role: z.enum(['admin', 'inspector']).describe('The role to assign to the new user.'),
   displayName: z.string().describe('The display name for the new user.')
 });
@@ -36,17 +39,17 @@ const createUserFlow = ai.defineFlow(
     outputSchema: UserManagementOutputSchema,
   },
   async (input) => {
-    const { firestore, firebaseApp } = initializeFirebase();
     // This is a workaround. In a real app, you'd use the Admin SDK on a server.
     // We create a temporary, secondary app instance to create the user.
     // This avoids signing out the currently logged-in admin.
     const { initializeApp: initializeAppSecondary, deleteApp } = await import('firebase/app');
     const { getAuth: getAuthSecondary, createUserWithEmailAndPassword: createUserSecondary } = await import('firebase/auth');
-    
+    const { getFirestore: getFirestoreSecondary } = await import('firebase/firestore');
+
     const tempAppName = `create-user-${Date.now()}`;
-    // We can't call initializeFirebase() directly, but we can get the config from the already initialized app
-    const secondaryApp = initializeAppSecondary(firebaseApp.options, tempAppName);
+    const secondaryApp = initializeAppSecondary(firebaseConfig, tempAppName);
     const secondaryAuth = getAuthSecondary(secondaryApp);
+    const secondaryFirestore = getFirestoreSecondary(secondaryApp);
 
     try {
       const userCredential = await createUserSecondary(secondaryAuth, input.email, input.password);
@@ -56,8 +59,8 @@ const createUserFlow = ai.defineFlow(
         throw new Error('User creation failed in Firebase Auth.');
       }
       
-      // Now, create the user profile in Firestore using the main app's firestore instance
-      const userRef = doc(firestore, 'users', user.uid);
+      // Now, create the user profile in Firestore using the secondary firestore instance
+      const userRef = doc(secondaryFirestore, 'users', user.uid);
       await setDoc(userRef, {
         email: user.email,
         role: input.role,
