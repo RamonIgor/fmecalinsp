@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -7,12 +9,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { inspectors } from "@/lib/data";
+import { useCollection } from "@/firebase";
+import { collection } from "firebase/firestore";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { AddInspectorButton } from "./components/add-inspector-button";
 import { InspectorActions } from "./components/inspector-actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { Inspector } from "@/lib/data";
+
 
 export default function InspectorsPage() {
+  const firestore = useFirestore();
+  const inspectorsCollection = useMemoFirebase(
+    () => collection(firestore, "inspectors"),
+    [firestore]
+  );
+  const { data: inspectors, isLoading } = useCollection<Inspector>(inspectorsCollection);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -34,7 +47,12 @@ export default function InspectorsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {inspectors.map((inspector) => (
+            {isLoading && (
+                <TableRow>
+                    <TableCell colSpan={3} className="text-center">Carregando...</TableCell>
+                </TableRow>
+            )}
+            {inspectors?.map((inspector) => (
               <TableRow key={inspector.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">

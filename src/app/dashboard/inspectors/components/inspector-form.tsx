@@ -15,6 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { Inspector } from "@/lib/data";
+import { useFirestore } from "@/firebase/provider";
+import { collection, doc } from "firebase/firestore";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -28,6 +31,8 @@ type InspectorFormProps = {
 
 export function InspectorForm({ inspector, closeDialog }: InspectorFormProps) {
   const { toast } = useToast();
+  const firestore = useFirestore();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,7 +42,14 @@ export function InspectorForm({ inspector, closeDialog }: InspectorFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const inspectorsCollection = collection(firestore, "inspectors");
+    if (inspector) {
+      const inspectorDoc = doc(inspectorsCollection, inspector.id);
+      updateDocumentNonBlocking(inspectorDoc, values);
+    } else {
+      addDocumentNonBlocking(inspectorsCollection, values);
+    }
+    
     toast({
       title: `Inspetor ${inspector ? "Atualizado" : "Adicionado"}`,
       description: `O inspetor "${values.name}" foi salvo com sucesso.`,

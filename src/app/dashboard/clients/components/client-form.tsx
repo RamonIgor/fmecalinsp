@@ -15,6 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { Client } from "@/lib/data";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
+import { collection, doc } from "firebase/firestore";
+import { useFirestore } from "@/firebase/provider";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -28,6 +31,8 @@ type ClientFormProps = {
 
 export function ClientForm({ client, closeDialog }: ClientFormProps) {
   const { toast } = useToast();
+  const firestore = useFirestore();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,7 +42,14 @@ export function ClientForm({ client, closeDialog }: ClientFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const clientsCollection = collection(firestore, "clients");
+    if (client) {
+      const clientDoc = doc(clientsCollection, client.id);
+      updateDocumentNonBlocking(clientDoc, values);
+    } else {
+      addDocumentNonBlocking(clientsCollection, values);
+    }
+    
     toast({
       title: `Cliente ${client ? "Atualizado" : "Adicionado"}`,
       description: `O cliente "${values.name}" foi salvo com sucesso.`,

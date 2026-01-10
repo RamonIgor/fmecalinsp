@@ -7,7 +7,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -19,14 +18,30 @@ import { MoreHorizontal } from "lucide-react";
 import { InspectorForm } from "./inspector-form";
 import { useState, useEffect } from "react";
 import type { Inspector } from "@/lib/data";
+import { useFirestore } from "@/firebase/provider";
+import { collection, doc } from "firebase/firestore";
+import { deleteDocumentNonBlocking } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 export function InspectorActions({ inspector }: { inspector: Inspector }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const firestore = useFirestore();
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleDelete = () => {
+    const inspectorDoc = doc(collection(firestore, "inspectors"), inspector.id);
+    deleteDocumentNonBlocking(inspectorDoc);
+    toast({
+        title: "Inspetor Excluído",
+        description: `O inspetor "${inspector.name}" foi excluído.`,
+        variant: "destructive"
+    });
+  }
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -41,7 +56,12 @@ export function InspectorActions({ inspector }: { inspector: Inspector }) {
           <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
             Editar
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
+          <DropdownMenuItem 
+            className="text-red-500"
+            onSelect={handleDelete}
+          >
+              Excluir
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>

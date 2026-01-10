@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -8,11 +10,13 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { equipments } from "@/lib/data";
 import type { Equipment } from "@/lib/data";
 import { EquipmentActions } from "./components/equipment-actions";
 import { AddEquipmentButton } from "./components/add-equipment-button";
 import { HardDrive } from "lucide-react";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
+import { collection } from "firebase/firestore";
+import { useCollection } from "@/firebase";
 
 function getStatusVariant(status: Equipment['status']) {
   switch (status) {
@@ -28,6 +32,13 @@ function getStatusVariant(status: Equipment['status']) {
 }
 
 export default function EquipmentPage() {
+  const firestore = useFirestore();
+  const equipmentsCollection = useMemoFirebase(
+    () => collection(firestore, "equipment"),
+    [firestore]
+  );
+  const { data: equipments, isLoading } = useCollection<Equipment>(equipmentsCollection);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -52,7 +63,12 @@ export default function EquipmentPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {equipments.map((equipment) => (
+            {isLoading && (
+                <TableRow>
+                    <TableCell colSpan={6} className="text-center">Carregando...</TableCell>
+                </TableRow>
+            )}
+            {equipments?.map((equipment) => (
               <TableRow key={equipment.id}>
                 <TableCell className="font-medium">{equipment.tag}</TableCell>
                 <TableCell>{equipment.name}</TableCell>

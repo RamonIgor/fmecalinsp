@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,12 @@ import type { Equipment } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useFirestore } from "@/firebase/provider";
+import { collection, doc, writeBatch } from "firebase/firestore";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 
 const componentSchema = z.object({
-    id: z.string(),
+    id: z.string().optional(),
     name: z.string().min(1, "Nome do componente é obrigatório"),
 });
 
@@ -47,6 +50,8 @@ type EquipmentFormProps = {
 
 export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
   const { toast } = useToast();
+  const firestore = useFirestore();
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,8 +68,49 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
     name: "components",
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { components, ...equipmentData } = values;
+    const equipmentCollection = collection(firestore, "equipment");
+
+    if (equipment) {
+      // Update logic
+      const equipmentDoc = doc(equipmentCollection, equipment.id);
+      updateDocumentNonBlocking(equipmentDoc, equipmentData);
+      
+      const batch = writeBatch(firestore);
+      const componentsCollection = collection(equipmentDoc, "components");
+      
+      // Handle component updates/creations
+      components.forEach(comp => {
+        const compDoc = comp.id ? doc(componentsCollection, comp.id) : doc(componentsCollection);
+        batch.set(compDoc, { name: comp.name });
+      });
+
+      // Handle component deletions
+      const currentComponentIds = components.map(c => c.id).filter(Boolean);
+      equipment.components?.forEach(existingComp => {
+        if (!currentComponentIds.includes(existingComp.id)) {
+          batch.delete(doc(componentsCollection, existingComp.id));
+        }
+      });
+      await batch.commit();
+
+    } else {
+      // Create logic
+      const newDocRefPromise = addDocumentNonBlocking(equipmentCollection, equipmentData);
+      newDocRefPromise.then(newDocRef => {
+        if(newDocRef) {
+          const componentsCollection = collection(newDocRef, "components");
+          const batch = writeBatch(firestore);
+          components.forEach(comp => {
+            const compDoc = doc(componentsCollection);
+            batch.set(compDoc, { name: comp.name });
+          });
+          batch.commit();
+        }
+      })
+    }
+    
     toast({
       title: `Equipamento ${equipment ? "Atualizado" : "Adicionado"}`,
       description: `O equipamento "${values.name}" foi salvo com sucesso.`,

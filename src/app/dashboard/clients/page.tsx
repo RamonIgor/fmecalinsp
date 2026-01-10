@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -7,11 +9,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { clients } from "@/lib/data";
+import { useCollection } from "@/firebase";
+import { collection } from "firebase/firestore";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { AddClientButton } from "./components/add-client-button";
 import { ClientActions } from "./components/client-actions";
+import type { Client } from "@/lib/data";
 
 export default function ClientsPage() {
+  const firestore = useFirestore();
+  const clientsCollection = useMemoFirebase(
+    () => collection(firestore, "clients"),
+    [firestore]
+  );
+  const { data: clients, isLoading } = useCollection<Client>(clientsCollection);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -33,7 +45,12 @@ export default function ClientsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {clients.map((client) => (
+            {isLoading && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center">Carregando...</TableCell>
+              </TableRow>
+            )}
+            {clients?.map((client) => (
               <TableRow key={client.id}>
                 <TableCell className="font-medium">
                   {client.name}
