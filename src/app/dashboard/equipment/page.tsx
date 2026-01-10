@@ -6,9 +6,8 @@ import type { Equipment } from "@/lib/data";
 import { EquipmentActions } from "./components/equipment-actions";
 import { AddEquipmentButton } from "./components/add-equipment-button";
 import { HardDrive, Search } from "lucide-react";
-import { useFirestore, useMemoFirebase } from "@/firebase/provider";
+import { useFirestore, useMemoFirebase, useCollection } from "@/firebase";
 import { collection } from "firebase/firestore";
-import { useCollection } from "@/firebase";
 import Logo from "@/components/logo";
 import { Input } from "@/components/ui/input";
 

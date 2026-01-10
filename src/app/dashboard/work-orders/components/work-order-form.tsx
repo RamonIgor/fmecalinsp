@@ -24,7 +24,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Client, Equipment, User } from "@/lib/data";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase/provider";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -54,7 +54,6 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      status: "Pendente",
       notes: ""
     },
   });

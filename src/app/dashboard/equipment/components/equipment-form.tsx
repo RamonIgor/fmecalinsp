@@ -26,7 +26,7 @@ import type { Equipment, Client } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase/provider";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc, writeBatch } from "firebase/firestore";
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 
@@ -118,7 +118,7 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
     
     toast({
       title: `Equipamento ${equipment ? "Atualizado" : "Adicionado"}`,
-      description: `O equipamento "${values.name}" foi salvo com sucesso.`,
+      description: `A ponte rolante "${values.name}" foi salva com sucesso.`,
     });
     closeDialog();
   }

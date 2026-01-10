@@ -9,9 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useCollection } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
-import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { AddInspectorButton } from "./components/add-inspector-button";
 import { InspectorActions } from "./components/inspector-actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
