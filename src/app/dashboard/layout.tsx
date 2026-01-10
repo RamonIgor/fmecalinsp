@@ -7,7 +7,8 @@ import {
   ListChecks,
   Wrench,
   ChevronDown,
-  Users
+  Users,
+  Factory
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +37,7 @@ import Logo from "@/components/logo";
 const navItems = [
     { href: "/dashboard", icon: Home, label: "Painel" },
     { href: "/dashboard/inspections", icon: ListChecks, label: "Inspeções" },
+    { href: "/dashboard/clients", icon: Factory, label: "Clientes" },
     { href: "/dashboard/equipment", icon: Wrench, label: "Equipamentos" },
     { href: "/dashboard/inspectors", icon: Users, label: "Inspetores" },
 ];

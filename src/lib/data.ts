@@ -19,6 +19,11 @@ export type Inspector = {
   phone: string;
 };
 
+export type Client = {
+    id: string;
+    name: string;
+};
+
 export type ChecklistQuestion = {
   id: string;
   category: string;
@@ -49,6 +54,12 @@ export type Inspection = {
   items: InspectionItem[];
   signatureUrl?: string;
 };
+
+export const clients: Client[] = [
+    { id: 'client-1', name: 'Usina A' },
+    { id: 'client-2', name: 'Usina B' },
+    { id: 'client-3', name: 'Usina C' },
+];
 
 export const equipments: Equipment[] = [
   { id: 'equip-1', tag: 'PR-001', name: 'Ponte Rolante 10T', sector: 'Produção A', lastInspection: '2024-06-15', status: 'Operacional', components: [{id: 'comp-1', name: 'Estrutura Principal'}, {id: 'comp-2', name: 'Carro de Elevação'}] },
