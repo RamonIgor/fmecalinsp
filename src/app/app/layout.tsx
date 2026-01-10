@@ -16,6 +16,7 @@ const navItems = [
     { href: "/app", icon: Grid, label: "Início" },
     { href: "/app/inspections", icon: ListChecks, label: "Inspeções" },
     { href: "/app/equipment", icon: Wrench, label: "Ativos" },
+    { isLogout: true, icon: LogOut, label: "Sair" },
 ];
 
 export default function AppLayout({
@@ -72,9 +73,18 @@ export default function AppLayout({
       <footer className="fixed bottom-0 left-0 right-0 h-16 border-t border-border/20 bg-card text-card-foreground">
         <nav className="flex items-center justify-around h-full">
             {navItems.map((item) => {
+                if ('isLogout' in item && item.isLogout) {
+                    return (
+                        <button key={item.label} onClick={handleLogout} className="flex flex-col items-center justify-center gap-1 w-full h-full text-muted-foreground hover:text-primary transition-colors">
+                            <item.icon className="h-6 w-6"/>
+                            <span className="text-xs font-medium">{item.label}</span>
+                        </button>
+                    )
+                }
+
                 const isActive = pathname === item.href;
                 return (
-                     <Link key={item.label} href={item.href} className={cn(
+                     <Link key={item.label} href={item.href!} className={cn(
                         "flex flex-col items-center justify-center gap-1 w-full h-full",
                         isActive ? "text-primary" : "text-muted-foreground hover:text-primary transition-colors"
                      )}>
