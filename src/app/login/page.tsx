@@ -50,7 +50,6 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // Fetch user role from Firestore
       const userDocRef = doc(firestore, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
@@ -68,7 +67,6 @@ export default function LoginPage() {
         } else if (role === 'inspector') {
           router.push('/app');
         } else {
-          // Default redirect if role is not defined
           router.push('/login');
         }
       } else {
@@ -92,52 +90,74 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-            <div className="mx-auto mb-4">
+    <main className="relative min-h-screen w-full lg:grid lg:grid-cols-2">
+      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+        <div 
+            className="absolute inset-0 bg-cover bg-center" 
+            style={{backgroundImage: "url('https://images.unsplash.com/photo-1630073251867-323df09c36e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxpbmR1c3RyaWFsJTIwY3JhbmV8ZW58MHx8fHwxNzY3NjM2NjU0fDA&ixlib=rb-4.1.0&q=80&w=1080')"}}
+        >
+            <div className="absolute inset-0 bg-zinc-900/60" />
+        </div>
+        <div className="relative z-20 flex items-center text-lg font-medium">
+            <Logo className="h-8 w-8 mr-2 text-primary" />
+            <span className="font-headline text-3xl font-semibold">CraneCheck</span>
+        </div>
+        <div className="relative z-20 mt-auto">
+            <blockquote className="space-y-2">
+            <p className="text-lg">
+                “Qualidade significa fazer o certo quando ninguém está olhando.”
+            </p>
+            <footer className="text-sm">- Henry Ford</footer>
+            </blockquote>
+        </div>
+      </div>
+      <div className="flex items-center justify-center py-12">
+        <Card className="w-full max-w-sm border-0 bg-transparent shadow-none lg:border lg:bg-card lg:shadow-sm">
+            <CardHeader className="text-center">
+            <div className="mx-auto mb-4 lg:hidden">
                 <Logo className="h-16 w-auto text-primary" />
             </div>
-          <CardTitle className="font-headline text-3xl">Bem-vindo de volta</CardTitle>
-          <CardDescription>Acesse sua conta para continuar</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="seu.email@empresa.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Entrar
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            <CardTitle className="font-headline text-3xl">Bem-vindo de volta</CardTitle>
+            <CardDescription>Acesse sua conta para continuar</CardDescription>
+            </CardHeader>
+            <CardContent>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                        <Input type="email" placeholder="seu.email@empresa.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Senha</FormLabel>
+                        <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Entrar
+                </Button>
+                </form>
+            </Form>
+            </CardContent>
+        </Card>
+      </div>
     </main>
   );
 }
