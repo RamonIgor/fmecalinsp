@@ -15,9 +15,13 @@
           "type": "string",
           "description": "The role of the user.",
           "enum": ["admin", "inspector"]
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
         }
       },
-      "required": ["email", "role"]
+      "required": ["email", "role", "displayName"]
     },
     "Client": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -83,7 +87,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Inspector",
       "type": "object",
-      "description": "Represents an inspector.",
+      "description": "Represents an inspector's profile, linked to a user account.",
       "properties": {
         "name": {
           "type": "string",
@@ -92,9 +96,13 @@
         "phone": {
           "type": "string",
           "description": "Phone number of the inspector."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the corresponding user in the 'users' collection."
         }
       },
-      "required": ["name", "phone"]
+      "required": ["name", "phone", "userId"]
     }
   },
   "auth": {
@@ -147,7 +155,7 @@
           "entityName": "Inspector",
           "schema": { "$ref": "#/backend/entities/Inspector" },
           "description": "Stores inspector profiles.",
-          "params": [{ "name": "inspectorId", "description": "Unique identifier for the inspector." }]
+          "params": [{ "name": "inspectorId", "description": "Unique identifier for the inspector profile." }]
         }
       }
     ]

@@ -8,6 +8,8 @@ import {
   CollectionReference,
   DocumentReference,
   SetOptions,
+  writeBatch,
+  WriteBatch
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {FirestorePermissionError} from '@/firebase/errors';
@@ -16,8 +18,9 @@ import {FirestorePermissionError} from '@/firebase/errors';
  * Initiates a setDoc operation for a document reference.
  * Does NOT await the write operation internally.
  */
-export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options: SetOptions) {
-  setDoc(docRef, data, options).catch(error => {
+export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options?: SetOptions) {
+  const promise = options ? setDoc(docRef, data, options) : setDoc(docRef, data);
+  promise.catch(error => {
     errorEmitter.emit(
       'permission-error',
       new FirestorePermissionError({
@@ -28,6 +31,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
     )
   })
   // Execution continues immediately
+  return promise;
 }
 
 
@@ -85,5 +89,16 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
           operation: 'delete',
         })
       )
+    });
+}
+
+/**
+ * Commits a write batch non-blockingly.
+ */
+export function commitBatchNonBlocking(batch: WriteBatch) {
+    batch.commit().catch(error => {
+        // Note: Batch write errors don't easily map to a single path or operation.
+        // A more sophisticated error handling might be needed for production.
+        console.error("Batch write failed", error);
     });
 }
