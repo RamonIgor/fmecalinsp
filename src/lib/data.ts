@@ -3,6 +3,13 @@
 
 export type WithId<T> = T & { id: string };
 
+export type User = {
+  id: string;
+  displayName: string;
+  email: string;
+  role: 'admin' | 'inspector';
+}
+
 export type EquipmentComponent = {
   id: string;
   name: string;

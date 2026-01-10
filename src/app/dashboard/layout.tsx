@@ -47,7 +47,7 @@ const navItems = [
     { href: "/dashboard/inspections", icon: ListChecks, label: "Inspeções" },
     { href: "/dashboard/clients", icon: Factory, label: "Clientes" },
     { href: "/dashboard/equipment", icon: Wrench, label: "Equipamentos" },
-    { href: "/dashboard/inspectors", icon: Users, label: "Inspetores" },
+    { href: "/dashboard/users", icon: Users, label: "Usuários" },
 ];
 
 function UserNav() {
