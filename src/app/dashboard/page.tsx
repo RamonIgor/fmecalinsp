@@ -1,15 +1,25 @@
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Wrench, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
-import { equipments } from "@/lib/data";
 import { InspectionStatusChart } from "./components/inspection-status-chart";
 import { RecentActivity } from "./components/recent-activity";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { Equipment } from "@/lib/data";
 
 export default function DashboardPage() {
-  const totalEquipments = equipments.length;
-  const operational = equipments.filter(e => e.status === 'Operacional').length;
-  const requiresAttention = equipments.filter(e => e.status === 'Requer Atenção').length;
-  const outOfService = equipments.filter(e => e.status === 'Fora de Serviço').length;
+  const firestore = useFirestore();
+  const equipmentsCollection = useMemoFirebase(
+    () => collection(firestore, "equipment"),
+    [firestore]
+  );
+  const { data: equipments, isLoading } = useCollection<Equipment>(equipmentsCollection);
+
+  const totalEquipments = equipments?.length ?? 0;
+  const operational = equipments?.filter(e => e.status === 'Operacional').length ?? 0;
+  const requiresAttention = equipments?.filter(e => e.status === 'Requer Atenção').length ?? 0;
+  const outOfService = equipments?.filter(e => e.status === 'Fora de Serviço').length ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -20,7 +30,7 @@ export default function DashboardPage() {
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalEquipments}</div>
+            <div className="text-2xl font-bold">{isLoading ? '...' : totalEquipments}</div>
             <p className="text-xs text-muted-foreground">Total de guindastes registrados</p>
           </CardContent>
         </Card>
@@ -30,7 +40,7 @@ export default function DashboardPage() {
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{operational}</div>
+            <div className="text-2xl font-bold">{isLoading ? '...' : operational}</div>
             <p className="text-xs text-muted-foreground">Nenhum problema relatado</p>
           </CardContent>
         </Card>
@@ -40,7 +50,7 @@ export default function DashboardPage() {
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{requiresAttention}</div>
+            <div className="text-2xl font-bold">{isLoading ? '...' : requiresAttention}</div>
             <p className="text-xs text-muted-foreground">Problemas menores encontrados</p>
           </CardContent>
         </Card>
@@ -50,7 +60,7 @@ export default function DashboardPage() {
             <XCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{outOfService}</div>
+            <div className="text-2xl font-bold">{isLoading ? '...' : outOfService}</div>
             <p className="text-xs text-muted-foreground">Falhas críticas detectadas</p>
           </CardContent>
         </Card>
