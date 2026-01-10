@@ -63,7 +63,7 @@ function UserNav() {
     if (isUserLoading) {
         return (
             <div className="flex items-center gap-2">
-                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-8 w-8 rounded-full" />
                 <Skeleton className="h-4 w-20" />
             </div>
         )
@@ -72,8 +72,8 @@ function UserNav() {
     return (
          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full flex gap-2 pl-2">
-                <Avatar>
+            <Button variant="ghost" className="relative flex items-center gap-2 rounded-full p-1 h-auto">
+                <Avatar className="h-8 w-8">
                 <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/100/100`} alt="Gerente" />
                 <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
