@@ -26,7 +26,7 @@ export function SignaturePad() {
 
       const ctx = getCanvasContext();
       if(ctx) {
-          ctx.strokeStyle = '#D3D3D3';
+          ctx.strokeStyle = '#D3D3D3'; // Using a light gray for dark mode compatibility
           ctx.lineWidth = 3;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
@@ -51,6 +51,7 @@ export function SignaturePad() {
   };
 
   const startDrawing = (event: React.MouseEvent | React.TouchEvent) => {
+    event.preventDefault();
     const ctx = getCanvasContext();
     if (!ctx) return;
     const { x, y } = getCoords(event);
@@ -60,6 +61,7 @@ export function SignaturePad() {
   };
 
   const draw = (event: React.MouseEvent | React.TouchEvent) => {
+    event.preventDefault();
     if (!isDrawing) return;
     const ctx = getCanvasContext();
     if (!ctx) return;

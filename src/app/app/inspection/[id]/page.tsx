@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card';
 import {
   Accordion,
-  AccordionContent,
+AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
@@ -19,8 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Camera, FileSignature, Loader2 } from 'lucide-react';
 import { SignaturePad } from './components/signature-pad';
 import { SaveInspectionButton } from './components/save-inspection-button';
-import { useDoc, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import type { Equipment, Checklist, ChecklistQuestion } from '@/lib/data';
 
 // Mock checklist data until it's moved to Firestore
