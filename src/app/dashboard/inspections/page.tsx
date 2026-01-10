@@ -1,3 +1,6 @@
+
+"use client";
+
 import {
   Table,
   TableBody,
@@ -8,9 +11,11 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { inspections, equipments } from "@/lib/data";
-import type { Inspection } from "@/lib/data";
+import type { Inspection, Equipment } from "@/lib/data";
 import { ReportGenerator } from "./components/report-generator";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getStatusVariant(status: Inspection['status']) {
   switch (status) {
@@ -24,6 +29,22 @@ function getStatusVariant(status: Inspection['status']) {
 }
 
 export default function InspectionsPage() {
+  const firestore = useFirestore();
+
+  const inspectionsCollection = useMemoFirebase(
+    () => collection(firestore, "inspections"),
+    [firestore]
+  );
+  const { data: inspections, isLoading: isLoadingInspections } = useCollection<Inspection>(inspectionsCollection);
+
+  const equipmentsCollection = useMemoFirebase(
+    () => collection(firestore, "equipment"),
+    [firestore]
+  );
+  const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
+  
+  const isLoading = isLoadingInspections || isLoadingEquipments;
+
   return (
     <Card>
       <CardHeader>
@@ -44,8 +65,19 @@ export default function InspectionsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {inspections.map((inspection) => {
-              const equipment = equipments.find(e => e.id === inspection.equipmentId);
+            {isLoading && (
+              [...Array(3)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="h-8 w-32" /></TableCell>
+                </TableRow>
+              ))
+            )}
+            {!isLoading && inspections?.map((inspection) => {
+              const equipment = equipments?.find(e => e.id === inspection.equipmentId);
               return (
                 <TableRow key={inspection.id}>
                   <TableCell className="font-medium">{equipment?.name || 'N/A'} ({equipment?.tag || 'N/A'})</TableCell>
@@ -62,6 +94,11 @@ export default function InspectionsPage() {
                 </TableRow>
               );
             })}
+             {!isLoading && inspections?.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center h-24">Nenhuma inspeção encontrada.</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>
