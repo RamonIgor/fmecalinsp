@@ -28,6 +28,7 @@ export default function ClientsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome do Cliente</TableHead>
+              <TableHead className="hidden md:table-cell">Endereço</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -37,6 +38,7 @@ export default function ClientsPage() {
                 <TableCell className="font-medium">
                   {client.name}
                 </TableCell>
+                <TableCell className="hidden md:table-cell">{client.address}</TableCell>
                 <TableCell className="text-right">
                   <ClientActions client={client} />
                 </TableCell>

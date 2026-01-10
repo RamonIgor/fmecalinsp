@@ -18,6 +18,7 @@ import type { Client } from "@/lib/data";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
+  address: z.string().min(1, "Endereço é obrigatório"),
 });
 
 type ClientFormProps = {
@@ -31,6 +32,7 @@ export function ClientForm({ client, closeDialog }: ClientFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: client?.name || "",
+      address: client?.address || "",
     },
   });
 
@@ -54,6 +56,19 @@ export function ClientForm({ client, closeDialog }: ClientFormProps) {
               <FormLabel>Nome do Cliente</FormLabel>
               <FormControl>
                 <Input placeholder="ex: Usina Hidrelétrica de Itaipu" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Endereço</FormLabel>
+              <FormControl>
+                <Input placeholder="ex: Av. Tancredo Neves, 6732, Foz do Iguaçu - PR" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

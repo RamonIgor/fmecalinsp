@@ -22,6 +22,7 @@ export type Inspector = {
 export type Client = {
     id: string;
     name: string;
+    address: string;
 };
 
 export type ChecklistQuestion = {
@@ -56,9 +57,9 @@ export type Inspection = {
 };
 
 export const clients: Client[] = [
-    { id: 'client-1', name: 'Usina A' },
-    { id: 'client-2', name: 'Usina B' },
-    { id: 'client-3', name: 'Usina C' },
+    { id: 'client-1', name: 'Usina A', address: 'Rua das Turbinas, 123, Cidade A' },
+    { id: 'client-2', name: 'Usina B', address: 'Avenida da Energia, 456, Cidade B' },
+    { id: 'client-3', name: 'Usina C', address: 'Estrada do Gerador, 789, Cidade C' },
 ];
 
 export const equipments: Equipment[] = [
