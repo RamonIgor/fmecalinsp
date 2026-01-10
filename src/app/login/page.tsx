@@ -17,11 +17,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Logo from "@/components/logo";
-import { useAuth } from "@/firebase/provider";
+import { useAuth, useFirestore } from "@/firebase/provider";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
 
 const formSchema = z.object({
   email: z.string().email("Por favor, insira um email válido."),
@@ -31,6 +32,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const { toast } = useToast();
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,17 +47,39 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
-      toast({
-        title: "Login bem-sucedido!",
-        description: "Redirecionando para o painel...",
-      });
-      router.push('/dashboard');
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+
+      // Fetch user role from Firestore
+      const userDocRef = doc(firestore, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        const role = userData.role;
+
+        toast({
+          title: "Login bem-sucedido!",
+          description: "Redirecionando...",
+        });
+
+        if (role === 'admin') {
+          router.push('/dashboard');
+        } else if (role === 'inspector') {
+          router.push('/app');
+        } else {
+          // Default redirect if role is not defined
+          router.push('/login');
+        }
+      } else {
+        throw new Error("Perfil de usuário não encontrado.");
+      }
+
     } catch (error: any) {
       console.error(error);
       let description = "Ocorreu um erro. Tente novamente.";
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        description = "Email ou senha inválidos.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.message === "Perfil de usuário não encontrado.") {
+        description = "Email, senha ou perfil inválidos.";
       }
       toast({
         variant: "destructive",
@@ -75,7 +99,7 @@ export default function LoginPage() {
                 <Logo className="h-16 w-auto text-primary" />
             </div>
           <CardTitle className="font-headline text-3xl">Bem-vindo de volta</CardTitle>
-          <CardDescription>Acesse o painel de administração</CardDescription>
+          <CardDescription>Acesse sua conta para continuar</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
