@@ -203,6 +203,7 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
                           date < new Date(new Date().setHours(0,0,0,0))
                         }
                         initialFocus
+                        locale={ptBR}
                       />
                     </PopoverContent>
                   </Popover>
