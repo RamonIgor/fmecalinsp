@@ -1,5 +1,24 @@
 {
   "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user.",
+          "enum": ["admin", "inspector"]
+        }
+      },
+      "required": ["email", "role"]
+    },
     "Client": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Client",
@@ -79,10 +98,19 @@
     }
   },
   "auth": {
-    "providers": ["anonymous"]
+    "providers": ["email"]
   },
   "firestore": {
     "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": { "$ref": "#/backend/entities/User" },
+          "description": "Stores user profile information and role.",
+          "params": [{ "name": "userId", "description": "Matches the Firebase Auth user UID." }]
+        }
+      },
       {
         "path": "/clients/{clientId}",
         "definition": {
