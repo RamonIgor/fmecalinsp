@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,9 +11,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { doc, setDoc } from 'firebase/firestore';
-import { getApps, initializeApp, getApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
 const CreateUserInputSchema = z.object({

@@ -39,6 +39,17 @@ export default function UsersPage() {
     }
   }
 
+  const getRoleName = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Administrador';
+      case 'inspector':
+        return 'Inspetor';
+      default:
+        return role;
+    }
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -79,7 +90,7 @@ export default function UsersPage() {
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
-                  <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
+                  <Badge variant={getRoleVariant(user.role)}>{getRoleName(user.role)}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <UserActions user={user} />
