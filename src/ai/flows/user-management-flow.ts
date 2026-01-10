@@ -8,10 +8,9 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { z } from 'zod';
 import { doc, setDoc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase } from '@/firebase'; // We need the config from it
 
 const CreateUserInputSchema = z.object({
   email: z.string().email().describe('The new user\'s email address.'),
@@ -37,7 +36,7 @@ const createUserFlow = ai.defineFlow(
     outputSchema: UserManagementOutputSchema,
   },
   async (input) => {
-    const { firestore } = initializeFirebase();
+    const { firestore, firebaseApp } = initializeFirebase();
     // This is a workaround. In a real app, you'd use the Admin SDK on a server.
     // We create a temporary, secondary app instance to create the user.
     // This avoids signing out the currently logged-in admin.
@@ -45,7 +44,8 @@ const createUserFlow = ai.defineFlow(
     const { getAuth: getAuthSecondary, createUserWithEmailAndPassword: createUserSecondary } = await import('firebase/auth');
     
     const tempAppName = `create-user-${Date.now()}`;
-    const secondaryApp = initializeAppSecondary(initializeFirebase().firebaseApp.options, tempAppName);
+    // We can't call initializeFirebase() directly, but we can get the config from the already initialized app
+    const secondaryApp = initializeAppSecondary(firebaseApp.options, tempAppName);
     const secondaryAuth = getAuthSecondary(secondaryApp);
 
     try {
@@ -56,7 +56,7 @@ const createUserFlow = ai.defineFlow(
         throw new Error('User creation failed in Firebase Auth.');
       }
       
-      // Now, create the user profile in Firestore
+      // Now, create the user profile in Firestore using the main app's firestore instance
       const userRef = doc(firestore, 'users', user.uid);
       await setDoc(userRef, {
         email: user.email,
