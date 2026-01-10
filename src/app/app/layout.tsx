@@ -1,9 +1,15 @@
+
+"use client";
+
 import Link from "next/link";
 import { ConnectionStatus } from "@/components/connection-status";
 import Logo from "@/components/logo";
-import { Grid, ListChecks, Wrench, LogOut } from "lucide-react";
+import { Grid, ListChecks, Wrench, LogOut, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAuth, useUser } from "@/firebase";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 
 export default function AppLayout({
@@ -11,21 +17,44 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.replace("/login");
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b border-border/20 bg-card text-card-foreground">
         <div className="flex items-center gap-4">
             <Avatar className="h-9 w-9">
-                <AvatarImage src="https://picsum.photos/seed/inspector/100/100" alt="Inspetor" />
-                <AvatarFallback>I</AvatarFallback>
+                <AvatarImage src={`https://picsum.photos/seed/${user.uid}/100/100`} alt="Inspetor" />
+                <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-bold text-lg text-foreground">base44</span>
+            <span className="font-bold text-lg text-foreground">{user.displayName || 'Inspetor'}</span>
         </div>
         <div className="flex items-center gap-2">
             <ConnectionStatus />
-             <Button variant="ghost" size="icon">
+             <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5 text-muted-foreground"/>
-            </Button>
+             </Button>
         </div>
       </header>
       
