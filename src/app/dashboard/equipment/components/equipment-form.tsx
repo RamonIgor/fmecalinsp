@@ -122,7 +122,7 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <ScrollArea className="h-[60vh]">
-          <div className="space-y-4 pr-6">
+          <div className="space-y-4 p-6">
             <FormField
               control={form.control}
               name="tag"

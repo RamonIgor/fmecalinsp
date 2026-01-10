@@ -113,7 +113,7 @@ export function UserForm({ user, closeDialog }: UserFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <ScrollArea className="h-auto max-h-[70vh]">
-            <div className="space-y-4 pr-6">
+            <div className="space-y-4 p-6">
                 <FormField
                 control={form.control}
                 name="displayName"
