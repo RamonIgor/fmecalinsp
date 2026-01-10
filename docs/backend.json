@@ -1,0 +1,250 @@
+{
+  "entities": {
+    "Equipment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Equipment",
+      "type": "object",
+      "description": "Represents a crane equipment to be inspected.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the equipment."
+        },
+        "tag": {
+          "type": "string",
+          "description": "Tag or identifier for the equipment."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the equipment."
+        },
+        "sector": {
+          "type": "string",
+          "description": "Sector where the equipment is located."
+        },
+        "lastInspection": {
+          "type": "string",
+          "description": "Date of the last inspection.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "tag",
+        "name",
+        "sector"
+      ]
+    },
+    "Checklist": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Checklist",
+      "type": "object",
+      "description": "Represents a checklist used for inspections.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the checklist."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the checklist (e.g., NR-11)."
+        },
+        "questions": {
+          "type": "string",
+          "description": "JSON containing the questions for the checklist. This should be stored as a JSON string in the database."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "questions"
+      ]
+    },
+    "Inspection": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inspection",
+      "type": "object",
+      "description": "Represents an inspection record.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the inspection."
+        },
+        "equipmentId": {
+          "type": "string",
+          "description": "Reference to Equipment. (Relationship: Equipment 1:N Inspection)"
+        },
+        "inspectorId": {
+          "type": "string",
+          "description": "Reference to Inspector. (Relationship: Inspector 1:N Inspection)"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the inspection.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the inspection (Pending/Synchronized)."
+        }
+      },
+      "required": [
+        "id",
+        "equipmentId",
+        "inspectorId",
+        "date",
+        "status"
+      ]
+    },
+    "InspectionItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InspectionItem",
+      "type": "object",
+      "description": "Represents an item within an inspection.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the inspection item."
+        },
+        "inspectionId": {
+          "type": "string",
+          "description": "Reference to Inspection. (Relationship: Inspection 1:N InspectionItem)"
+        },
+        "question": {
+          "type": "string",
+          "description": "The question text from the checklist."
+        },
+        "answer": {
+          "type": "string",
+          "description": "Answer to the question (Conform/Not Conform/NA)."
+        },
+        "observation": {
+          "type": "string",
+          "description": "Observation related to the answer."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "URL of the photo related to the inspection item.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "inspectionId",
+        "question",
+        "answer"
+      ]
+    },
+    "Inspector": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inspector",
+      "type": "object",
+      "description": "Represents an inspector.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the inspector."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the inspector."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/equipment/{equipmentId}",
+        "definition": {
+          "entityName": "Equipment",
+          "schema": {
+            "$ref": "#/backend/entities/Equipment"
+          },
+          "description": "Stores equipment data.",
+          "params": [
+            {
+              "name": "equipmentId",
+              "description": "Unique identifier for the equipment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/checklists/{checklistId}",
+        "definition": {
+          "entityName": "Checklist",
+          "schema": {
+            "$ref": "#/backend/entities/Checklist"
+          },
+          "description": "Stores checklist templates.",
+          "params": [
+            {
+              "name": "checklistId",
+              "description": "Unique identifier for the checklist."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/inspectors/{inspectorId}",
+        "definition": {
+          "entityName": "Inspector",
+          "schema": {
+            "$ref": "#/backend/entities/Inspector"
+          },
+          "description": "Stores inspector profiles.",
+          "params": [
+            {
+              "name": "inspectorId",
+              "description": "Unique identifier for the inspector."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/inspections/{inspectionId}",
+        "definition": {
+          "entityName": "Inspection",
+          "schema": {
+            "$ref": "#/backend/entities/Inspection"
+          },
+          "description": "Stores inspection records. Includes denormalized 'equipmentId' and 'inspectorId' for authorization independence.",
+          "params": [
+            {
+              "name": "inspectionId",
+              "description": "Unique identifier for the inspection."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/inspection_items/{inspectionItemId}",
+        "definition": {
+          "entityName": "InspectionItem",
+          "schema": {
+            "$ref": "#/backend/entities/InspectionItem"
+          },
+          "description": "Stores inspection items. Includes denormalized 'inspectionId' for authorization independence.",
+          "params": [
+            {
+              "name": "inspectionItemId",
+              "description": "Unique identifier for the inspection item."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the CraneCheck application's requirements, focusing on offline-first capabilities and clear data relationships. It leverages path-based ownership for user-related data and denormalization where necessary to ensure authorization independence and efficient data retrieval. Segregation is used to maintain homogeneous security postures within collections.\n\n*   `/equipment/{equipmentId}`: Stores equipment details. This top-level collection allows easy listing of all equipment. A QAP is achieved because there are no sub-collections involved.\n*   `/checklists/{checklistId}`: Stores checklist templates. This allows for easy management and reuse of checklists.A QAP is achieved because there are no sub-collections involved.\n*   `/inspectors/{inspectorId}`: Stores inspector profiles. This separate top level collection allows for easy listing of inspectors. A QAP is achieved because there are no sub-collections involved.\n*   `/inspections/{inspectionId}`: Top-level collection to enable listing all the inspections independently of any user. This enables more complex listing and reporting capabilities. Includes denormalized `equipmentId` and `inspectorId`. This redundancy facilitates querying and avoids the need for complex joins or subqueries. A QAP is achieved because there are no sub-collections involved.\n*   `/inspection_items/{inspectionItemId}`: Top-level collection to enable listing all the inspection items independently of any user or inspection. This enables more complex listing and reporting capabilities. Includes denormalized `inspectionId`. This redundancy facilitates querying and avoids the need for complex joins or subqueries. A QAP is achieved because there are no sub-collections involved.\n\n**Authorization Independence (Denormalization):**\nThe `inspections` collection denormalizes `equipmentId` and `inspectorId` to avoid `get()` calls to the `equipment` and `inspectors` collections within security rules. Similarly, `inspection_items` denormalizes `inspectionId`.\n\n**QAPs (Rules Are Not Filters):**\nThe top level collections ensures efficient listing and querying without complex filtering within security rules.\n\n**Offline-First Support:**\nThe structure supports offline-first functionality by allowing local caching of the `equipment` and `checklists` collections. The `inspections` and `inspection_items` collections can also be cached and synchronized when the device is back online."
+  }
+}

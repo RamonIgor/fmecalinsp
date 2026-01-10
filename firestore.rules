@@ -1,0 +1,182 @@
+/**
+ * Core Philosophy:
+ * This ruleset is designed for the CraneCheck application, prioritizing secure data access
+ * while allowing flexibility for rapid development (Prototyping Mode). The core security
+ * principle is that all data is readable by any authenticated user to support reporting and
+ * data synchronization, but write operations (create, update, delete) are strictly controlled.
+ *
+ * Data Structure:
+ * The data model is flat, with five top-level collections: /equipment, /checklists,
+ * /inspectors, /inspections, and /inspection_items. This structure is deliberately chosen
+ * to simplify queries and improve performance, especially for listing and reporting features,
+ * by avoiding the need to filter based on rules.
+ *
+ * Key Security Decisions:
+ * - Authenticated Access: All read and write operations require the user to be signed in.
+ *   This includes anonymous users, who are still considered authenticated.
+ * - Public Read-Access: All data across all top-level collections is readable by any
+ *   authenticated user. This supports the application's need for offline synchronization and
+ *   comprehensive reporting capabilities.
+ * - Ownership-Based Writes: For collections with a clear ownership field (e.g., 'inspectorId'
+ *   on 'inspections'), write access is restricted to the designated owner.
+ * - Derived Permissions: For collections like 'inspection_items', which are children of another
+ *   entity in concept, write permissions are derived by checking ownership of the parent
+ *   'inspection' document. This requires a 'get()' call but is necessary for security.
+ * - Ambiguous Write Permissions: For collections like 'equipment' and 'checklists' that lack
+ *   an explicit owner field in their schema, updates and deletes are disabled to prevent
+ *   unauthorized modifications. Creation is permitted for flexibility during prototyping,
+ *   but a TODO has been added to implement a proper ownership model.
+ *
+ * Denormalization for Authorization:
+ * The ruleset relies on denormalized fields for efficient authorization. For example, the
+ * 'inspections' documents contain an 'inspectorId' field. This allows rules to verify
+ * ownership directly from the document without needing costly lookups to other collections.
+ * Similarly, 'inspection_items' rely on looking up the parent 'inspection' to determine
+ * write permissions.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    //-------------------------------------------------------------------------
+    // Helper Functions
+    //-------------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * A robust check for update/delete operations, ensuring the document exists
+     * and the current user is the owner.
+     */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /**
+     * For child documents (like inspection_items), this function performs a lookup
+     * on the parent inspection document to verify that the current user is the
+     * assigned inspector. This is a critical check for derived permissions.
+     */
+    function isInspectorForParentInspection(inspectionId) {
+      return get(/databases/$(database)/documents/inspections/$(inspectionId)).data.inspectorId == request.auth.uid;
+    }
+
+    //-------------------------------------------------------------------------
+    // Collection: equipment
+    //-------------------------------------------------------------------------
+
+    /**
+     * @description Manages crane equipment data. All authenticated users can read and create
+     *   equipment records, but modification is disabled pending an ownership model.
+     * @path /equipment/{equipmentId}
+     * @allow (get) An authenticated user reads an equipment document.
+     * @deny (update) An authenticated user tries to update an equipment document.
+     * @principle Public read with restricted writes. Disables modification on entities without a clear owner.
+     */
+    match /equipment/{equipmentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      // CRITICAL: Cannot implement owner-only writes. The 'Equipment' entity is missing an 'ownerId' or 'creatorId' field.
+      // Updates and deletes are disabled to prevent any user from modifying any other user's data.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    //-------------------------------------------------------------------------
+    // Collection: checklists
+    //-------------------------------------------------------------------------
+
+    /**
+     * @description Manages inspection checklist templates. All authenticated users can read
+     *   and create new checklists, but modification is disabled pending an ownership model.
+     * @path /checklists/{checklistId}
+     * @allow (create) An authenticated user creates a new checklist template.
+     * @deny (delete) An authenticated user tries to delete an existing checklist.
+     * @principle Public read with restricted writes. Disables modification on entities without a clear owner.
+     */
+    match /checklists/{checklistId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      // CRITICAL: Cannot implement owner-only writes. The 'Checklist' entity is missing an 'ownerId' or 'creatorId' field.
+      // Updates and deletes are disabled to prevent any user from modifying any other user's data.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    //-------------------------------------------------------------------------
+    // Collection: inspectors
+    //-------------------------------------------------------------------------
+
+    /**
+     * @description Manages inspector profiles. All authenticated users can read and create
+     *   new inspector profiles, but modification is disabled pending an ownership model.
+     * @path /inspectors/{inspectorId}
+     * @allow (list) An authenticated user lists all available inspector profiles.
+     * @deny (update) An authenticated user tries to modify an inspector's name.
+     * @principle Public read with restricted writes. Disables modification on entities without a clear owner.
+     */
+    match /inspectors/{inspectorId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      // CRITICAL: Cannot implement owner-only writes. The 'Inspector' entity is missing an 'ownerId' or 'creatorId' field.
+      // While 'id' exists, it's not guaranteed to be the auth UID. To be secure, updates/deletes are disabled.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    //-------------------------------------------------------------------------
+    // Collection: inspections
+    //-------------------------------------------------------------------------
+
+    /**
+     * @description Manages inspection records. All authenticated users can read inspections.
+     *   Only the assigned inspector can create, update, or delete their own inspection records.
+     * @path /inspections/{inspectionId}
+     * @allow (create) An inspector (auth.uid='user123') creates an inspection with `inspectorId: 'user123'`.
+     * @deny (update) An inspector (auth.uid='user456') tries to update an inspection where `resource.data.inspectorId` is 'user123'.
+     * @principle Enforces document ownership for writes using the 'inspectorId' field.
+     */
+    match /inspections/{inspectionId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.inspectorId == request.auth.uid;
+      allow update: if isSignedIn() && isExistingOwner(resource.data.inspectorId) && request.resource.data.inspectorId == resource.data.inspectorId;
+      allow delete: if isSignedIn() && isExistingOwner(resource.data.inspectorId);
+    }
+
+    //-------------------------------------------------------------------------
+    // Collection: inspection_items
+    //-------------------------------------------------------------------------
+
+    /**
+     * @description Manages individual items within an inspection. All authenticated users can
+     *   read items. Writes are only allowed if the user is the owner of the parent inspection.
+     * @path /inspection_items/{inspectionItemId}
+     * @allow (create) An inspector creates an item for an inspection they own.
+     * @deny (delete) A user tries to delete an item belonging to an inspection they do not own.
+     * @principle Secures a child collection by validating ownership of its parent document.
+     */
+    match /inspection_items/{inspectionItemId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isInspectorForParentInspection(request.resource.data.inspectionId);
+      allow update: if isSignedIn() && resource != null && isInspectorForParentInspection(resource.data.inspectionId) && request.resource.data.inspectionId == resource.data.inspectionId;
+      allow delete: if isSignedIn() && resource != null && isInspectorForParentInspection(resource.data.inspectionId);
+    }
+  }
+}
