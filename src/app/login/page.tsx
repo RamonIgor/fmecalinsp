@@ -115,10 +115,10 @@ export default function LoginPage() {
 
       <div className="relative z-20 w-full max-w-md">
         <Card className="bg-card/80 backdrop-blur-sm">
-          <CardHeader className="text-left">
-             <div className="mb-4 flex items-center gap-2">
-                <Logo className="h-8 w-8 text-primary" />
-                <span className="font-semibold text-2xl">CraneCheck</span>
+          <CardHeader className="items-center text-center">
+             <div className="mb-4 flex flex-col items-center gap-2">
+                <Logo className="h-12 w-12 text-primary" />
+                <span className="font-bold text-3xl">CraneCheck</span>
             </div>
             <CardTitle className="text-2xl font-bold">Bem-vindo de volta</CardTitle>
             <CardDescription>Acesse sua conta para continuar</CardDescription>
@@ -131,9 +131,9 @@ export default function LoginPage() {
                     name="email"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel className="sr-only">Email</FormLabel>
                         <FormControl>
-                        <Input type="email" placeholder="seu.email@empresa.com" {...field} className="h-11 bg-card/90 border-border/50"/>
+                        <Input type="email" placeholder="seu.email@empresa.com" {...field} className="h-11 bg-background/70 border-border/50"/>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -144,9 +144,9 @@ export default function LoginPage() {
                     name="password"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Senha</FormLabel>
+                        <FormLabel className="sr-only">Senha</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} className="h-11 bg-card/90 border-border/50"/>
+                        <Input type="password" placeholder="••••••••" {...field} className="h-11 bg-background/70 border-border/50"/>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
