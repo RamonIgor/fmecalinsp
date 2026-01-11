@@ -17,9 +17,15 @@ import {
   Loader2,
   CalendarPlus,
   FileText,
+  PanelLeft,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,7 +74,7 @@ function UserNav() {
     return (
          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative flex items-center gap-2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+            <Button variant="ghost" className="relative flex items-center gap-2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 w-9 md:h-auto md:w-auto">
                 <Avatar className="h-9 w-9">
                 <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/100/100`} alt="Gerente" />
                 <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
@@ -146,7 +152,39 @@ export default function DashboardLayout({
         </aside>
 
         <div className="flex flex-col w-full sm:pl-64">
-            <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-card px-4 sm:px-6">
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-card px-4 sm:justify-end sm:px-6">
+                 <Sheet>
+                    <SheetTrigger asChild>
+                        <Button size="icon" variant="outline" className="sm:hidden">
+                        <PanelLeft className="h-5 w-5" />
+                        <span className="sr-only">Toggle Menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="sm:max-w-xs bg-secondary border-r-0 text-secondary-foreground">
+                        <nav className="grid gap-6 text-lg font-medium">
+                        <div className="flex h-16 items-center gap-2 px-0 border-b border-sidebar-border">
+                            <Logo className="h-8 w-8 text-primary" />
+                            <span className="font-headline text-2xl font-bold">CraneCheck</span>
+                        </div>
+                         {navItems.map((item) => {
+                            const isActive = pathname.startsWith(item.href);
+                            return (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    className={cn(
+                                        "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                                        isActive && "text-foreground"
+                                    )}
+                                >
+                                    <item.icon className="h-5 w-5" />
+                                    {item.label}
+                                </Link>
+                            );
+                         })}
+                        </nav>
+                    </SheetContent>
+                </Sheet>
                 <UserNav />
             </header>
             <main className="flex-1 p-4 sm:p-6 bg-gray-100 dark:bg-background">
