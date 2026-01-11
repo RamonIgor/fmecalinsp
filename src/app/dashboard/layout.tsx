@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
@@ -161,6 +162,7 @@ export default function DashboardLayout({
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="sm:max-w-xs bg-secondary border-r-0 text-secondary-foreground">
+                        <SheetTitle className="sr-only">Menu</SheetTitle>
                         <nav className="grid gap-6 text-lg font-medium">
                         <div className="flex h-16 items-center gap-2 px-0 border-b border-sidebar-border">
                             <Logo className="h-8 w-8 text-primary" />
