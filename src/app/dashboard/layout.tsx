@@ -39,7 +39,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Logo from "@/components/logo";
 import { useAuth, useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +110,8 @@ export default function DashboardLayout({
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -154,7 +156,7 @@ export default function DashboardLayout({
 
         <div className="flex flex-col w-full sm:pl-64">
             <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-card px-4 sm:justify-end sm:px-6">
-                 <Sheet>
+                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
                         <Button size="icon" variant="outline" className="sm:hidden">
                         <PanelLeft className="h-5 w-5" />
@@ -174,9 +176,10 @@ export default function DashboardLayout({
                                 <Link
                                     key={item.label}
                                     href={item.href}
+                                    onClick={() => setIsSheetOpen(false)}
                                     className={cn(
-                                        "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
-                                        isActive && "text-foreground"
+                                        "flex items-center gap-4 px-2.5 rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                                        isActive && "bg-sidebar-accent text-foreground"
                                     )}
                                 >
                                     <item.icon className="h-5 w-5" />
