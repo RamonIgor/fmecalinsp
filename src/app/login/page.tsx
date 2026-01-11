@@ -13,6 +13,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/logo";
@@ -93,45 +100,31 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full lg:grid lg:grid-cols-2 bg-background">
-      <div className="relative hidden h-full flex-col p-10 text-white lg:flex">
-        {bgImage && (
-            <Image
-                src={bgImage.imageUrl}
-                alt={bgImage.description}
-                fill
-                quality={80}
-                className="object-cover grayscale"
-                data-ai-hint={bgImage.imageHint}
-            />
-        )}
-        <div className="absolute inset-0 bg-zinc-900/60" />
+    <main className="relative flex min-h-screen w-full flex-col items-center justify-center p-4">
+      {bgImage && (
+        <Image
+          src={bgImage.imageUrl}
+          alt={bgImage.description}
+          fill
+          quality={80}
+          className="object-cover"
+          data-ai-hint={bgImage.imageHint}
+        />
+      )}
+      <div className="absolute inset-0 bg-zinc-900/70" />
 
-        <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
-            <Logo className="h-8 w-8" />
-            <span className="font-semibold text-2xl">CraneCheck</span>
-        </div>
-        <div className="relative z-20 mt-auto">
-            <blockquote className="space-y-2">
-            <p className="text-lg">
-                “Qualidade significa fazer o certo quando ninguém está olhando.”
-            </p>
-            <footer className="text-sm">- Henry Ford</footer>
-            </blockquote>
-        </div>
-      </div>
-      <div className="flex items-center justify-center p-6">
-        <div className="w-full max-w-sm space-y-6">
-            <div className="text-center lg:text-left">
-                <div className="mx-auto mb-4 lg:hidden flex items-center justify-center gap-2">
-                    <Logo className="h-10 w-10" />
-                    <span className="font-semibold text-3xl">CraneCheck</span>
-                </div>
-                <h1 className="text-3xl font-bold">Bem-vindo de volta</h1>
-                <p className="text-muted-foreground">Acesse sua conta para continuar</p>
+      <div className="relative z-20 w-full max-w-md">
+        <Card className="bg-card/80 backdrop-blur-sm">
+          <CardHeader className="text-left">
+             <div className="mb-4 flex items-center gap-2">
+                <Logo className="h-10 w-10 text-primary" />
+                <span className="font-semibold text-3xl">CraneCheck</span>
             </div>
-            
-            <Form {...form}>
+            <CardTitle className="text-3xl font-bold">Bem-vindo de volta</CardTitle>
+            <CardDescription>Acesse sua conta para continuar</CardDescription>
+          </CardHeader>
+          <CardContent>
+             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                     control={form.control}
@@ -140,7 +133,7 @@ export default function LoginPage() {
                     <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                        <Input type="email" placeholder="seu.email@empresa.com" {...field} className="h-11 bg-card border-border"/>
+                        <Input type="email" placeholder="seu.email@empresa.com" {...field} className="h-11 bg-card/50 border-border/50"/>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -153,20 +146,30 @@ export default function LoginPage() {
                     <FormItem>
                         <FormLabel>Senha</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} className="h-11 bg-card border-border"/>
+                        <Input type="password" placeholder="••••••••" {...field} className="h-11 bg-card/50 border-border/50"/>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full h-11 font-bold text-base" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11 font-bold text-base mt-6" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Entrar
                 </Button>
                 </form>
             </Form>
-        </div>
+          </CardContent>
+        </Card>
       </div>
+
+       <div className="absolute bottom-6 left-6 z-20 hidden md:block text-white">
+            <blockquote className="space-y-2">
+            <p className="text-lg">
+                “Qualidade significa fazer o certo quando ninguém está olhando.”
+            </p>
+            <footer className="text-sm">- Henry Ford</footer>
+            </blockquote>
+        </div>
     </main>
   );
 }
