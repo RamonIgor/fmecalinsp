@@ -178,8 +178,8 @@ export default function DashboardLayout({
                                     href={item.href}
                                     onClick={() => setIsSheetOpen(false)}
                                     className={cn(
-                                        "flex items-center gap-4 px-2.5 rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-                                        isActive && "bg-sidebar-accent text-foreground"
+                                        "flex items-center gap-4 rounded-md px-4 py-2 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                                        isActive && "bg-sidebar-accent text-sidebar-accent-foreground border-l-4 border-primary"
                                     )}
                                 >
                                     <item.icon className="h-5 w-5" />
