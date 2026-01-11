@@ -136,7 +136,7 @@ export default function DashboardLayout({
             </div>
             <nav className="flex flex-col gap-2 p-4">
                 {navItems.map((item) => {
-                    const isActive = pathname.startsWith(item.href);
+                    const isActive = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);
                     return (
                         <Link
                             key={item.label}
@@ -171,7 +171,7 @@ export default function DashboardLayout({
                             <span className="font-headline text-2xl font-bold">CraneCheck</span>
                         </div>
                          {navItems.map((item) => {
-                            const isActive = pathname.startsWith(item.href);
+                            const isActive = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);
                             return (
                                 <Link
                                     key={item.label}
