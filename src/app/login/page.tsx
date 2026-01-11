@@ -117,10 +117,10 @@ export default function LoginPage() {
         <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader className="text-left">
              <div className="mb-4 flex items-center gap-2">
-                <Logo className="h-10 w-10 text-primary" />
-                <span className="font-semibold text-3xl">CraneCheck</span>
+                <Logo className="h-8 w-8 text-primary" />
+                <span className="font-semibold text-2xl">CraneCheck</span>
             </div>
-            <CardTitle className="text-3xl font-bold">Bem-vindo de volta</CardTitle>
+            <CardTitle className="text-2xl font-bold">Bem-vindo de volta</CardTitle>
             <CardDescription>Acesse sua conta para continuar</CardDescription>
           </CardHeader>
           <CardContent>
@@ -133,7 +133,7 @@ export default function LoginPage() {
                     <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                        <Input type="email" placeholder="seu.email@empresa.com" {...field} className="h-11 bg-card/50 border-border/50"/>
+                        <Input type="email" placeholder="seu.email@empresa.com" {...field} className="h-11 bg-card/90 border-border/50"/>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -146,7 +146,7 @@ export default function LoginPage() {
                     <FormItem>
                         <FormLabel>Senha</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} className="h-11 bg-card/50 border-border/50"/>
+                        <Input type="password" placeholder="••••••••" {...field} className="h-11 bg-card/90 border-border/50"/>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
