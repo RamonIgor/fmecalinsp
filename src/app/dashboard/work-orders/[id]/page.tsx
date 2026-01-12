@@ -6,13 +6,14 @@ import {
   useMemoFirebase,
   useCollection,
 } from "@/firebase";
-import { doc, collection } from "firebase/firestore";
+import { doc, collection, query, where, limit } from "firebase/firestore";
 import React from "react";
 import {
   type WorkOrder,
   type Equipment,
   type Client,
   type User,
+  type Inspection,
 } from "@/lib/data";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { WorkOrderActions } from "../components/work-order-actions";
+import { InspectionResultDisplay } from "./components/inspection-result-display";
 
 function getStatusVariant(status: WorkOrder["status"]) {
   switch (status) {
@@ -81,7 +83,14 @@ export default function WorkOrderDetailPage({
   );
   const { data: inspector, isLoading: isLoadingInspector } = useDoc<User>(inspectorRef);
 
-  const isLoading = isLoadingWorkOrder || isLoadingEquipment || isLoadingClient || isLoadingInspector;
+  const inspectionQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, "inspections"), where("workOrderId", "==", workOrderId), limit(1)) : null),
+    [firestore, workOrderId]
+  );
+  const { data: inspections, isLoading: isLoadingInspection } = useCollection<Inspection>(inspectionQuery);
+  const inspection = inspections?.[0];
+
+  const isLoading = isLoadingWorkOrder || isLoadingEquipment || isLoadingClient || isLoadingInspector || isLoadingInspection;
 
   if (isLoading) {
     return (
@@ -119,7 +128,7 @@ export default function WorkOrderDetailPage({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold">
-              OS: {workOrder.id}
+              OS: {workOrder.id.substring(0, 8).toUpperCase()}
             </CardTitle>
             <Badge variant={getStatusVariant(workOrder.status)}>
               {workOrder.status}
@@ -139,10 +148,21 @@ export default function WorkOrderDetailPage({
       {workOrder.notes && (
         <Card>
             <CardHeader>
-                <CardTitle>Observações</CardTitle>
+                <CardTitle>Observações da OS</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground">{workOrder.notes}</p>
+            </CardContent>
+        </Card>
+      )}
+
+      {inspection && <InspectionResultDisplay inspection={inspection} />}
+      
+      {workOrder.status === 'Pendente' && !inspection && (
+        <Card className="text-center p-8">
+            <CardContent>
+                <p className="text-muted-foreground">Esta ordem de serviço ainda está pendente.</p>
+                <p className="text-muted-foreground">Os resultados da inspeção aparecerão aqui assim que forem enviados pelo inspetor.</p>
             </CardContent>
         </Card>
       )}
