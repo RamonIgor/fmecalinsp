@@ -82,7 +82,7 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
   const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsQuery);
 
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const dataToSave = {
       ...values,
       scheduledDate: new Date(values.scheduledDate).toISOString(),
@@ -97,17 +97,18 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
       });
     } else {
       const workOrdersCollection = collection(firestore, "workOrders");
-      const newDocRefPromise = addDocumentNonBlocking(workOrdersCollection, {
+      
+      const newDocRef = await addDocumentNonBlocking(workOrdersCollection, {
         ...dataToSave,
         createdAt: new Date().toISOString(),
         status: 'Pendente',
       });
-      newDocRefPromise.then(docRef => {
-        if(docRef) {
-          const displayId = `OS-${docRef.id.substring(0,8).toUpperCase()}`
-          updateDocumentNonBlocking(docRef, { displayId: displayId });
-        }
-      })
+      
+      if (newDocRef) {
+        const displayId = `OS-${newDocRef.id.substring(0, 6).toUpperCase()}`;
+        updateDocumentNonBlocking(newDocRef, { displayId: displayId });
+      }
+
       toast({
         title: "Ordem de Serviço Agendada",
         description: "A nova inspeção foi agendada com sucesso.",
