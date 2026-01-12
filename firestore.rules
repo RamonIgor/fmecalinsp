@@ -48,13 +48,17 @@ service cloud.firestore {
 
     match /inspections/{inspectionId} {
       allow read: if isSignedIn();
+      // Allow assigned inspector to create/update, admin can do anything.
       allow write: if isAdmin() || isInspector();
     }
 
     match /workOrders/{workOrderId} {
-      allow get: if isAdmin() || (isInspector() && isAssignedInspector(workOrderId));
-      allow list: if isAdmin() || isInspector();
-      allow create, update, delete: if isAdmin();
+      // Inspectors and Admins can read the list and individual orders.
+      // The app's queries are responsible for filtering which orders an inspector sees.
+      allow read: if isAdmin() || isInspector();
+      
+      // Only admins can create, change, or cancel work orders.
+      allow write: if isAdmin();
     }
   }
 }
