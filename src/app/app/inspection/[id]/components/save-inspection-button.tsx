@@ -5,11 +5,13 @@ import { useOnlineStatus } from "@/lib/hooks/use-online-status";
 import { useToast } from "@/hooks/use-toast";
 import { Send, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function SaveInspectionButton() {
     const isOnline = useOnlineStatus();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     const handleSave = () => {
         setLoading(true);
@@ -30,7 +32,8 @@ export function SaveInspectionButton() {
                 });
             }
             setLoading(false);
-            // In a real app, you would redirect or clear the form
+            // Redirect to the inspector's home page
+            router.push('/app');
         }, 1500);
     }
 
