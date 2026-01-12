@@ -75,15 +75,23 @@ export function InspectorForm({ inspector, closeDialog }: InspectorFormProps) {
     } else {
       // Create logic
       try {
-        await createUser({ 
+        const newUser = await createUser({ 
           email: values.email, 
           password: values.password, 
           role: values.role,
           displayName: values.name
         });
 
+        if (!newUser || !newUser.uid) {
+            throw new Error("A criação do usuário não retornou um UID.");
+        }
+
         const inspectorsCollection = collection(firestore, "inspectors");
-        addDocumentNonBlocking(inspectorsCollection, {name: values.name, phone: values.phone});
+        addDocumentNonBlocking(inspectorsCollection, {
+            name: values.name, 
+            phone: values.phone,
+            userId: newUser.uid, // Link the inspector profile to the auth user
+        });
         
         toast({
           title: `Usuário Criado`,
