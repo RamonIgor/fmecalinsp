@@ -76,7 +76,7 @@ export function RecentActivity() {
                 </p>
               </div>
               <div className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(wo.createdAt), { addSuffix: true, locale: ptBR })}
+                {wo.createdAt ? formatDistanceToNow(new Date(wo.createdAt), { addSuffix: true, locale: ptBR }) : ''}
               </div>
             </div>
           ))}
