@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -98,7 +97,7 @@ export default function InspectorAppPage() {
                 const client = getClient(wo.clientId);
                 return (
                   <li key={wo.id}>
-                    <Link href={`/app/inspection/${equipment?.id}`} className="block p-4 rounded-md hover:bg-muted">
+                    <Link href={`/app/inspection/${wo.id}`} className="block p-4 rounded-md hover:bg-muted">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="font-semibold">{equipment?.name}</p>

@@ -4,7 +4,11 @@ import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser } from 'lucide-react';
 
-export function SignaturePad() {
+interface SignaturePadProps {
+  onSignatureEnd: (signature: string | null) => void;
+}
+
+export function SignaturePad({ onSignatureEnd }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -19,14 +23,13 @@ export function SignaturePad() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
-      // Set canvas size based on its container
       const { width, height } = canvas.getBoundingClientRect();
       canvas.width = width;
       canvas.height = height;
 
       const ctx = getCanvasContext();
       if(ctx) {
-          ctx.strokeStyle = '#D3D3D3'; // Using a light gray for dark mode compatibility
+          ctx.strokeStyle = '#D3D3D3'; 
           ctx.lineWidth = 3;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
@@ -75,6 +78,12 @@ export function SignaturePad() {
     if (!ctx) return;
     ctx.closePath();
     setIsDrawing(false);
+    
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const dataUrl = canvas.toDataURL('image/png');
+      onSignatureEnd(dataUrl);
+    }
   };
 
   const clearCanvas = () => {
@@ -82,6 +91,7 @@ export function SignaturePad() {
     const canvas = canvasRef.current;
     if (ctx && canvas) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      onSignatureEnd(null);
     }
   };
 

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card';
 import {
   Accordion,
-AccordionContent,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
@@ -19,10 +19,10 @@ import { Button } from '@/components/ui/button';
 import { Camera, FileSignature, Loader2 } from 'lucide-react';
 import { SignaturePad } from './components/signature-pad';
 import { SaveInspectionButton } from './components/save-inspection-button';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import type { Equipment, Checklist, ChecklistQuestion } from '@/lib/data';
-import React from 'react';
+import type { Equipment, Checklist, ChecklistQuestion, InspectionItem, WorkOrder } from '@/lib/data';
+import React, { useState } from 'react';
 
 // Mock checklist data until it's moved to Firestore
 const MOCK_CHECKLIST_ID = 'cl-nr11';
@@ -44,18 +44,41 @@ const MOCK_CHECKLISTS: Checklist[] = [
 
 export default function InspectionPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
-  const { id } = React.use(params);
-  
+  const { user } = useUser();
+  const workOrderId = React.use(params).id;
+
+  // State to hold all form data
+  const [inspectionItems, setInspectionItems] = useState<Record<string, InspectionItem>>({});
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+
+  const workOrderRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'workOrders', workOrderId) : null),
+    [firestore, workOrderId]
+  );
+  const { data: workOrder, isLoading: isLoadingWorkOrder } = useDoc<WorkOrder>(workOrderRef);
+
+  const equipmentId = workOrder?.equipmentId;
   const equipmentRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'equipment', id) : null),
-    [firestore, id]
+    () => (firestore && equipmentId ? doc(firestore, 'equipment', equipmentId) : null),
+    [firestore, equipmentId]
   );
   const { data: equipment, isLoading: isLoadingEquipment } = useDoc<Equipment>(equipmentRef);
   
-  // Using mock data for checklist for now
   const checklist = MOCK_CHECKLISTS.find(c => c.id === MOCK_CHECKLIST_ID);
 
-  if (isLoadingEquipment) {
+  const handleItemChange = (questionId: string, questionText: string, field: 'answer' | 'observation', value: string) => {
+    setInspectionItems(prev => ({
+      ...prev,
+      [questionId]: {
+        ...prev[questionId],
+        questionId,
+        questionText,
+        [field]: value,
+      } as InspectionItem,
+    }));
+  };
+
+  if (isLoadingWorkOrder || isLoadingEquipment) {
     return (
       <div className="flex h-64 w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -63,8 +86,8 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (!equipment || !checklist) {
-    return <div>Equipamento ou Checklist não encontrado.</div>;
+  if (!workOrder || !equipment || !checklist) {
+    return <div>Ordem de Serviço, Equipamento ou Checklist não encontrado.</div>;
   }
 
   const groupedQuestions = checklist.questions.reduce(
@@ -74,6 +97,17 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     },
     {} as Record<string, ChecklistQuestion[]>
   );
+  
+  const finalInspectionData = {
+    workOrderId: workOrderId,
+    equipmentId: equipment.id,
+    inspectorId: user?.uid ?? '',
+    inspectorName: user?.displayName ?? 'N/A',
+    date: new Date().toISOString(),
+    status: 'Finalizado',
+    items: Object.values(inspectionItems).filter(item => item.answer), // Only include answered questions
+    signatureUrl: signatureDataUrl,
+  };
 
   return (
     <div className="space-y-6">
@@ -100,7 +134,11 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
                 {questions.map((question) => (
                   <div key={question.id} className="p-4 rounded-lg border">
                     <p className="font-semibold mb-4">{question.text}</p>
-                    <RadioGroup className="flex space-x-4 mb-4">
+                    <RadioGroup 
+                      className="flex space-x-4 mb-4"
+                      onValueChange={(value) => handleItemChange(question.id, question.text, 'answer', value)}
+                      value={inspectionItems[question.id]?.answer}
+                    >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem
                           value="Conforme"
@@ -122,7 +160,11 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
                         <Label htmlFor={`${question.id}-na`}>NA</Label>
                       </div>
                     </RadioGroup>
-                    <Textarea placeholder="Observações..." />
+                    <Textarea 
+                      placeholder="Observações..." 
+                      onChange={(e) => handleItemChange(question.id, question.text, 'observation', e.target.value)}
+                      value={inspectionItems[question.id]?.observation || ''}
+                    />
                     <Button variant="outline" className="mt-4 w-full">
                       <Camera className="mr-2 h-4 w-4" /> Anexar Foto
                     </Button>
@@ -141,11 +183,11 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <SignaturePad />
+          <SignaturePad onSignatureEnd={setSignatureDataUrl} />
         </CardContent>
       </Card>
 
-      <SaveInspectionButton />
+      <SaveInspectionButton inspectionData={finalInspectionData} />
     </div>
   );
 }

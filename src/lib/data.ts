@@ -61,13 +61,14 @@ export type InspectionItem = {
 
 export type Inspection = {
   id:string;
+  workOrderId: string;
   equipmentId: string;
   inspectorId: string;
   inspectorName: string;
   date: string;
   status: 'Pendente' | 'Sincronizado' | 'Finalizado';
   items: InspectionItem[];
-  signatureUrl?: string;
+  signatureUrl?: string | null;
 };
 
 export type WorkOrder = {
