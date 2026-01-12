@@ -110,7 +110,7 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
         });
         
         // 2. Create the displayId using the new document's ID
-        const displayId = `OS-${newDocRef.id.substring(0, 6).toUpperCase()}`;
+        const displayId = `${newDocRef.id.substring(0, 8).toUpperCase()}`;
 
         // 3. Update the document with the new displayId
         await updateDoc(newDocRef, { displayId: displayId });
