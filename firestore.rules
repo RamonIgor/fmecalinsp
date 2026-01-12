@@ -53,12 +53,13 @@ service cloud.firestore {
     }
 
     match /workOrders/{workOrderId} {
-      // Inspectors and Admins can read the list and individual orders.
-      // The app's queries are responsible for filtering which orders an inspector sees.
       allow read: if isAdmin() || isInspector();
       
-      // Only admins can create, change, or cancel work orders.
-      allow write: if isAdmin();
+      // Admins can create and delete work orders.
+      allow create, delete: if isAdmin();
+      
+      // An assigned inspector can update a work order (e.g., to 'Concluida'), as can an admin.
+      allow update: if isAdmin() || isAssignedInspector(workOrderId);
     }
   }
 }
