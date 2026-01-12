@@ -23,12 +23,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Client, Equipment, User, WorkOrder } from "@/lib/data";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where, doc } from "firebase/firestore";
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
+import { collection, query, where, doc, addDoc, updateDoc } from "firebase/firestore";
+import { updateDocumentNonBlocking } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { format, parseISO } from "date-fns";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Cliente é obrigatório."),
@@ -83,6 +84,8 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    form.clearErrors();
+
     const dataToSave = {
       ...values,
       scheduledDate: new Date(values.scheduledDate).toISOString(),
@@ -96,23 +99,36 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
         description: "As alterações foram salvas com sucesso.",
       });
     } else {
-      const workOrdersCollection = collection(firestore, "workOrders");
-      
-      const newDocRef = await addDocumentNonBlocking(workOrdersCollection, {
-        ...dataToSave,
-        createdAt: new Date().toISOString(),
-        status: 'Pendente',
-      });
-      
-      if (newDocRef) {
+       try {
+        const workOrdersCollection = collection(firestore, "workOrders");
+        
+        // 1. Create the document to get its ID
+        const newDocRef = await addDoc(workOrdersCollection, {
+          ...dataToSave,
+          createdAt: new Date().toISOString(),
+          status: 'Pendente',
+        });
+        
+        // 2. Create the displayId using the new document's ID
         const displayId = `OS-${newDocRef.id.substring(0, 6).toUpperCase()}`;
-        updateDocumentNonBlocking(newDocRef, { displayId: displayId });
-      }
 
-      toast({
-        title: "Ordem de Serviço Agendada",
-        description: "A nova inspeção foi agendada com sucesso.",
-      });
+        // 3. Update the document with the new displayId
+        await updateDoc(newDocRef, { displayId: displayId });
+
+        toast({
+          title: "Ordem de Serviço Agendada",
+          description: `A nova inspeção ${displayId} foi agendada com sucesso.`,
+        });
+
+      } catch (error) {
+        console.error("Error creating work order: ", error);
+        toast({
+            title: "Erro ao Agendar",
+            description: "Não foi possível criar a ordem de serviço. Tente novamente.",
+            variant: "destructive",
+        });
+        return; // Stop execution on error
+      }
     }
     closeDialog();
   }
@@ -260,9 +276,11 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
           <Button type="button" variant="outline" onClick={closeDialog}>
             Cancelar
           </Button>
-          <Button type="submit">{isEditMode ? "Salvar Alterações" : "Agendar Inspeção"}</Button>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isEditMode ? "Salvar Alterações" : "Agendar Inspeção"}
+          </Button>
         </div>
       </form>
     </Form>
   );
-}
