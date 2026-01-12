@@ -97,11 +97,17 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
       });
     } else {
       const workOrdersCollection = collection(firestore, "workOrders");
-      addDocumentNonBlocking(workOrdersCollection, {
+      const newDocRefPromise = addDocumentNonBlocking(workOrdersCollection, {
         ...dataToSave,
         createdAt: new Date().toISOString(),
         status: 'Pendente',
       });
+      newDocRefPromise.then(docRef => {
+        if(docRef) {
+          const displayId = `OS-${docRef.id.substring(0,8).toUpperCase()}`
+          updateDocumentNonBlocking(docRef, { displayId: displayId });
+        }
+      })
       toast({
         title: "Ordem de Serviço Agendada",
         description: "A nova inspeção foi agendada com sucesso.",

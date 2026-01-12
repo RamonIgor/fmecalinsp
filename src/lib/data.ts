@@ -73,6 +73,7 @@ export type Inspection = {
 
 export type WorkOrder = {
   id: string;
+  displayId?: string;
   clientId: string;
   equipmentId: string;
   inspectorId: string;

@@ -71,11 +71,15 @@ export default function WorkOrdersPage() {
       const clientName = getClientName(wo.clientId).toLowerCase();
       const equipmentName = getEquipmentName(wo.equipmentId).toLowerCase();
       const inspectorName = getInspectorName(wo.inspectorId).toLowerCase();
+      const displayId = wo.displayId?.toLowerCase() || '';
       const search = searchTerm.toLowerCase();
 
       const statusMatch = statusFilter === ALL_STATUSES || wo.status === statusFilter;
       const searchMatch =
-        clientName.includes(search) || equipmentName.includes(search) || inspectorName.includes(search);
+        clientName.includes(search) ||
+        equipmentName.includes(search) ||
+        inspectorName.includes(search) ||
+        displayId.includes(search);
 
       return statusMatch && searchMatch;
     });
@@ -95,7 +99,7 @@ export default function WorkOrdersPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por cliente, equipamento..."
+                placeholder="Buscar por OS, cliente, equipamento..."
                 className="pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -119,6 +123,7 @@ export default function WorkOrdersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>OS</TableHead>
                     <TableHead>Equipamento</TableHead>
                     <TableHead className="hidden lg:table-cell">Cliente</TableHead>
                     <TableHead className="hidden md:table-cell">Inspetor</TableHead>
@@ -130,6 +135,9 @@ export default function WorkOrdersPage() {
                   {isLoading &&
                     [...Array(5)].map((_, i) => (
                       <TableRow key={i}>
+                        <TableCell>
+                          <Skeleton className="h-5 w-20" />
+                        </TableCell>
                         <TableCell>
                           <Skeleton className="h-5 w-32" />
                         </TableCell>
@@ -154,6 +162,7 @@ export default function WorkOrdersPage() {
                         className="cursor-pointer" 
                         onClick={() => router.push(`/dashboard/work-orders/${wo.id}`)}
                       >
+                        <TableCell className="font-medium">{wo.displayId || 'N/A'}</TableCell>
                         <TableCell className="font-medium">{getEquipmentName(wo.equipmentId)}</TableCell>
                         <TableCell className="hidden lg:table-cell text-muted-foreground">
                           {getClientName(wo.clientId)}
@@ -171,7 +180,7 @@ export default function WorkOrdersPage() {
                     ))}
                   {!isLoading && filteredWorkOrders.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center">
+                      <TableCell colSpan={6} className="h-24 text-center">
                         Nenhuma ordem de serviço encontrada para os filtros aplicados.
                       </TableCell>
                     </TableRow>

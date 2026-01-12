@@ -128,7 +128,7 @@ export default function WorkOrderDetailPage({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold">
-              OS: {workOrder.id.substring(0, 8).toUpperCase()}
+              OS: {workOrder.displayId || workOrder.id.substring(0, 8).toUpperCase()}
             </CardTitle>
             <Badge variant={getStatusVariant(workOrder.status)}>
               {workOrder.status}

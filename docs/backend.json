@@ -93,6 +93,7 @@
       "type": "object",
       "description": "Represents a scheduled inspection task.",
       "properties": {
+        "displayId": { "type": "string", "description": "Short, human-readable ID for display purposes." },
         "clientId": { "type": "string", "description": "ID of the client." },
         "equipmentId": { "type": "string", "description": "ID of the equipment to be inspected." },
         "inspectorId": { "type": "string", "description": "ID of the assigned inspector (user UID)." },
