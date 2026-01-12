@@ -11,7 +11,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, Trash2, XCircle } from "lucide-react";
+import { MoreHorizontal, Trash2, XCircle, FilePenLine } from "lucide-react";
 import { useState } from "react";
 import type { WorkOrder } from "@/lib/data";
 import { useFirestore } from "@/firebase/provider";
@@ -59,12 +59,12 @@ export function WorkOrderActions({ workOrder }: { workOrder: WorkOrder }) {
     router.push("/dashboard/work-orders");
   }
 
-  const canCancel = workOrder.status === 'Pendente' || workOrder.status === 'Em Andamento';
+  const isEditable = workOrder.status !== 'Concluída' && workOrder.status !== 'Cancelada';
 
   return (
     <>
       <div className="flex gap-2">
-        <EditWorkOrderButton workOrder={workOrder} />
+        <EditWorkOrderButton workOrder={workOrder} disabled={!isEditable} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -75,7 +75,7 @@ export function WorkOrderActions({ workOrder }: { workOrder: WorkOrder }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem 
-                disabled={!canCancel}
+                disabled={!isEditable}
                 onSelect={() => setIsCancelAlertOpen(true)}
             >
               <XCircle className="mr-2 h-4 w-4" />

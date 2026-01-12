@@ -14,7 +14,7 @@ import { WorkOrderForm } from "./work-order-form";
 import { useState, useEffect } from "react";
 import type { WorkOrder } from "@/lib/data";
 
-export function EditWorkOrderButton({ workOrder }: { workOrder: WorkOrder}) {
+export function EditWorkOrderButton({ workOrder, disabled }: { workOrder: WorkOrder, disabled?: boolean}) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -34,7 +34,7 @@ export function EditWorkOrderButton({ workOrder }: { workOrder: WorkOrder}) {
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="gap-1">
+        <Button size="sm" variant="outline" className="gap-1" disabled={disabled}>
           <FilePenLine className="h-4 w-4" />
           Editar
         </Button>
