@@ -19,6 +19,7 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useRouter } from 'next/navigation';
 
 function getStatusVariant(status: WorkOrder['status']) {
   switch (status) {
@@ -39,6 +40,7 @@ const ALL_STATUSES = 'Todos';
 
 export default function WorkOrdersPage() {
   const firestore = useFirestore();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
 
@@ -93,7 +95,7 @@ export default function WorkOrdersPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por equipamento, cliente..."
+                placeholder="Buscar por cliente, equipamento..."
                 className="pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -105,8 +107,7 @@ export default function WorkOrdersPage() {
       </CardHeader>
 
       <Card>
-        <CardContent>
-          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+        <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <TabsList className="m-4">
               {TABS.map((tab) => (
                 <TabsTrigger key={tab} value={tab}>
@@ -148,7 +149,11 @@ export default function WorkOrdersPage() {
                     ))}
                   {!isLoading &&
                     filteredWorkOrders.map((wo) => (
-                      <TableRow key={wo.id}>
+                      <TableRow 
+                        key={wo.id} 
+                        className="cursor-pointer" 
+                        onClick={() => router.push(`/dashboard/work-orders/${wo.id}`)}
+                      >
                         <TableCell className="font-medium">{getEquipmentName(wo.equipmentId)}</TableCell>
                         <TableCell className="hidden lg:table-cell text-muted-foreground">
                           {getClientName(wo.clientId)}
@@ -175,7 +180,6 @@ export default function WorkOrdersPage() {
               </Table>
             </TabsContent>
           </Tabs>
-        </CardContent>
       </Card>
     </div>
   );

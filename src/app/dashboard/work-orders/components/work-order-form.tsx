@@ -21,14 +21,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import type { Client, Equipment, User } from "@/lib/data";
+import type { Client, Equipment, User, WorkOrder } from "@/lib/data";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
-import { addDocumentNonBlocking } from "@/firebase";
+import { collection, query, where, doc } from "firebase/firestore";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Cliente é obrigatório."),
@@ -37,26 +37,37 @@ const formSchema = z.object({
   // Use string for input, then transform to Date
   scheduledDate: z.string({ required_error: "Data de agendamento é obrigatória."})
     .refine((val) => !isNaN(Date.parse(val)), { message: "Data inválida."}),
+  status: z.enum(["Pendente", "Em Andamento", "Concluída", "Cancelada"]).optional(),
   notes: z.string().optional(),
 });
 
 type WorkOrderFormProps = {
+  workOrder?: WorkOrder;
   closeDialog: () => void;
 };
 
-export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
+export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-
+  const isEditMode = !!workOrder;
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      notes: "",
-      // Set default to today in YYYY-MM-DD format
-      scheduledDate: format(new Date(), "yyyy-MM-dd"),
+      clientId: workOrder?.clientId || "",
+      equipmentId: workOrder?.equipmentId || "",
+      inspectorId: workOrder?.inspectorId || "",
+      notes: workOrder?.notes || "",
+      status: workOrder?.status || "Pendente",
+      // Handle date formatting for edit and create
+      scheduledDate: workOrder?.scheduledDate 
+        ? format(parseISO(workOrder.scheduledDate), "yyyy-MM-dd") 
+        : format(new Date(), "yyyy-MM-dd"),
     },
   });
+
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(workOrder?.clientId || null);
+
 
   const clientsCollection = useMemoFirebase(() => collection(firestore, "clients"), [firestore]);
   const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
@@ -72,20 +83,30 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const workOrdersCollection = collection(firestore, "workOrders");
     const dataToSave = {
       ...values,
-      // Convert string back to ISO string for Firestore
       scheduledDate: new Date(values.scheduledDate).toISOString(),
-      createdAt: new Date().toISOString(),
-      status: 'Pendente',
     };
-    addDocumentNonBlocking(workOrdersCollection, dataToSave);
-    
-    toast({
-      title: "Ordem de Serviço Agendada",
-      description: "A nova inspeção foi agendada com sucesso.",
-    });
+
+    if (isEditMode) {
+      const workOrderDoc = doc(firestore, "workOrders", workOrder.id);
+      updateDocumentNonBlocking(workOrderDoc, dataToSave);
+      toast({
+        title: "Ordem de Serviço Atualizada",
+        description: "As alterações foram salvas com sucesso.",
+      });
+    } else {
+      const workOrdersCollection = collection(firestore, "workOrders");
+      addDocumentNonBlocking(workOrdersCollection, {
+        ...dataToSave,
+        createdAt: new Date().toISOString(),
+        status: 'Pendente',
+      });
+      toast({
+        title: "Ordem de Serviço Agendada",
+        description: "A nova inspeção foi agendada com sucesso.",
+      });
+    }
     closeDialog();
   }
 
@@ -184,6 +205,31 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
                 </FormItem>
               )}
             />
+            {isEditMode && (
+                <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione um status" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="Pendente">Pendente</SelectItem>
+                                <SelectItem value="Em Andamento">Em Andamento</SelectItem>
+                                <SelectItem value="Concluída">Concluída</SelectItem>
+                                <SelectItem value="Cancelada">Cancelada</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
              <FormField
               control={form.control}
               name="notes"
@@ -207,7 +253,7 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
           <Button type="button" variant="outline" onClick={closeDialog}>
             Cancelar
           </Button>
-          <Button type="submit">Agendar Inspeção</Button>
+          <Button type="submit">{isEditMode ? "Salvar Alterações" : "Agendar Inspeção"}</Button>
         </div>
       </form>
     </Form>
