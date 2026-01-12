@@ -87,27 +87,6 @@
       },
       "required": ["name"]
     },
-    "Inspector": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Inspector",
-      "type": "object",
-      "description": "Represents an inspector's profile, linked to a user account.",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "Name of the inspector."
-        },
-        "phone": {
-          "type": "string",
-          "description": "Phone number of the inspector."
-        },
-        "userId": {
-          "type": "string",
-          "description": "The ID of the corresponding user in the 'users' collection."
-        }
-      },
-      "required": ["name", "phone", "userId"]
-    },
     "WorkOrder": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "WorkOrder",
@@ -166,15 +145,6 @@
             { "name": "equipmentId", "description": "ID of the parent equipment." },
             { "name": "componentId", "description": "Unique identifier for the component." }
           ]
-        }
-      },
-      {
-        "path": "/inspectors/{inspectorId}",
-        "definition": {
-          "entityName": "Inspector",
-          "schema": { "$ref": "#/backend/entities/Inspector" },
-          "description": "Stores inspector profiles.",
-          "params": [{ "name": "inspectorId", "description": "Unique identifier for the inspector profile." }]
         }
       },
       {
