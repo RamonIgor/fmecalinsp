@@ -16,11 +16,11 @@ import { Badge } from "@/components/ui/badge";
 const AnswerIcon = ({ answer }: { answer: string }) => {
   switch (answer) {
     case "Conforme":
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      return <CheckCircle2 className="h-5 w-5 text-white fill-green-500" />;
     case "Não Conforme":
-      return <XCircle className="h-5 w-5 text-red-500" />;
+      return <XCircle className="h-5 w-5 text-white" />;
     case "NA":
-      return <CircleSlash className="h-5 w-5 text-gray-500" />;
+      return <CircleSlash className="h-5 w-5 text-white" />;
     default:
       return null;
   }
