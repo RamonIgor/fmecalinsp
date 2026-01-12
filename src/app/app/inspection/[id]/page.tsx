@@ -22,6 +22,7 @@ import { SaveInspectionButton } from './components/save-inspection-button';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Equipment, Checklist, ChecklistQuestion } from '@/lib/data';
+import React from 'react';
 
 // Mock checklist data until it's moved to Firestore
 const MOCK_CHECKLIST_ID = 'cl-nr11';
@@ -43,7 +44,7 @@ const MOCK_CHECKLISTS: Checklist[] = [
 
 export default function InspectionPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
-  const { id } = params;
+  const { id } = React.use(params);
   
   const equipmentRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'equipment', id) : null),
