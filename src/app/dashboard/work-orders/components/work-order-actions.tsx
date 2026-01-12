@@ -56,7 +56,9 @@ export function WorkOrderActions({ workOrder }: { workOrder: WorkOrder }) {
         variant: "destructive"
     });
     setIsDeleteAlertOpen(false);
+    // Use router.refresh() to re-fetch data on the current route
     router.push("/dashboard/work-orders");
+    router.refresh();
   }
 
   const isEditable = workOrder.status !== 'Concluída' && workOrder.status !== 'Cancelada';
