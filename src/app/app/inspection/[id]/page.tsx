@@ -43,10 +43,11 @@ const MOCK_CHECKLISTS: Checklist[] = [
 
 export default function InspectionPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
+  const { id } = params;
   
   const equipmentRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'equipment', params.id) : null),
-    [firestore, params.id]
+    () => (firestore ? doc(firestore, 'equipment', id) : null),
+    [firestore, id]
   );
   const { data: equipment, isLoading: isLoadingEquipment } = useDoc<Equipment>(equipmentRef);
   
