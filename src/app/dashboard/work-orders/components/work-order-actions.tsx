@@ -42,7 +42,7 @@ export function WorkOrderActions({ workOrder }: { workOrder: WorkOrder }) {
     updateDocumentNonBlocking(workOrderDoc, { status: "Cancelada" });
     toast({
         title: "Ordem de Serviço Cancelada",
-        description: `A OS "${workOrder.id}" foi cancelada.`,
+        description: `A OS "${workOrder.displayId}" foi cancelada.`,
     });
     setIsCancelAlertOpen(false);
   }
@@ -52,7 +52,7 @@ export function WorkOrderActions({ workOrder }: { workOrder: WorkOrder }) {
     deleteDocumentNonBlocking(workOrderDoc);
     toast({
         title: "Ordem de Serviço Excluída",
-        description: `A OS "${workOrder.id}" foi excluída permanentemente.`,
+        description: `A OS "${workOrder.displayId}" foi excluída permanentemente.`,
         variant: "destructive"
     });
     setIsDeleteAlertOpen(false);
