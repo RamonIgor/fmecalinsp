@@ -105,76 +105,78 @@ export default function WorkOrdersPage() {
       </CardHeader>
 
       <Card>
-        <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-          <TabsList className="m-4">
-            {TABS.map((tab) => (
-              <TabsTrigger key={tab} value={tab}>
-                {tab}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <TabsContent value={statusFilter} className="m-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Equipamento</TableHead>
-                  <TableHead className="hidden lg:table-cell">Cliente</TableHead>
-                  <TableHead className="hidden md:table-cell">Inspetor</TableHead>
-                  <TableHead className="hidden sm:table-cell">Data Agendada</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading &&
-                  [...Array(5)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-5 w-32" />
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <Skeleton className="h-5 w-24" />
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Skeleton className="h-5 w-28" />
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <Skeleton className="h-5 w-20" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-6 w-24 rounded-full" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                {!isLoading &&
-                  filteredWorkOrders.map((wo) => (
-                    <TableRow key={wo.id}>
-                      <TableCell className="font-medium">{getEquipmentName(wo.equipmentId)}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-muted-foreground">
-                        {getClientName(wo.clientId)}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
-                        {getInspectorName(wo.inspectorId)}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-muted-foreground">
-                        {new Date(wo.scheduledDate).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusVariant(wo.status)}>{wo.status}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                {!isLoading && filteredWorkOrders.length === 0 && (
+        <CardContent>
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <TabsList className="m-4">
+              {TABS.map((tab) => (
+                <TabsTrigger key={tab} value={tab}>
+                  {tab}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value={statusFilter} className="m-0">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      Nenhuma ordem de serviço encontrada para os filtros aplicados.
-                    </TableCell>
+                    <TableHead>Equipamento</TableHead>
+                    <TableHead className="hidden lg:table-cell">Cliente</TableHead>
+                    <TableHead className="hidden md:table-cell">Inspetor</TableHead>
+                    <TableHead className="hidden sm:table-cell">Data Agendada</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
+                </TableHeader>
+                <TableBody>
+                  {isLoading &&
+                    [...Array(5)].map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Skeleton className="h-5 w-32" />
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          <Skeleton className="h-5 w-24" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Skeleton className="h-5 w-28" />
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Skeleton className="h-5 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-24 rounded-full" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  {!isLoading &&
+                    filteredWorkOrders.map((wo) => (
+                      <TableRow key={wo.id}>
+                        <TableCell className="font-medium">{getEquipmentName(wo.equipmentId)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-muted-foreground">
+                          {getClientName(wo.clientId)}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-muted-foreground">
+                          {getInspectorName(wo.inspectorId)}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-muted-foreground">
+                          {new Date(wo.scheduledDate).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusVariant(wo.status)}>{wo.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  {!isLoading && filteredWorkOrders.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center">
+                        Nenhuma ordem de serviço encontrada para os filtros aplicados.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
