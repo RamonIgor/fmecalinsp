@@ -19,8 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Client, Equipment, User } from "@/lib/data";
@@ -28,17 +26,17 @@ import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Cliente é obrigatório."),
   equipmentId: z.string().min(1, "Equipamento é obrigatório."),
   inspectorId: z.string().min(1, "Inspetor é obrigatório."),
-  scheduledDate: z.date({ required_error: "Data de agendamento é obrigatória." }),
+  // Use string for input, then transform to Date
+  scheduledDate: z.string({ required_error: "Data de agendamento é obrigatória."})
+    .refine((val) => !isNaN(Date.parse(val)), { message: "Data inválida."}),
   notes: z.string().optional(),
 });
 
@@ -54,7 +52,9 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      notes: ""
+      notes: "",
+      // Set default to today in YYYY-MM-DD format
+      scheduledDate: format(new Date(), "yyyy-MM-dd"),
     },
   });
 
@@ -75,7 +75,8 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
     const workOrdersCollection = collection(firestore, "workOrders");
     const dataToSave = {
       ...values,
-      scheduledDate: values.scheduledDate.toISOString(),
+      // Convert string back to ISO string for Firestore
+      scheduledDate: new Date(values.scheduledDate).toISOString(),
       status: 'Pendente',
     };
     addDocumentNonBlocking(workOrdersCollection, dataToSave);
@@ -175,38 +176,9 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Data de Agendamento</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP", { locale: ptBR })
-                          ) : (
-                            <span>Escolha uma data</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date(new Date().setHours(0,0,0,0))
-                        }
-                        initialFocus
-                        locale={ptBR}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                   <FormControl>
+                      <Input type="date" {...field} className="w-[240px]" />
+                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
