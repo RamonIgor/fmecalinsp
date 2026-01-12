@@ -76,6 +76,7 @@ export type WorkOrder = {
   equipmentId: string;
   inspectorId: string;
   scheduledDate: string;
+  createdAt: string; // Add this line
   status: 'Pendente' | 'Em Andamento' | 'Concluída' | 'Cancelada';
   notes?: string;
 }

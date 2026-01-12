@@ -2,39 +2,50 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { HardHat } from "lucide-react";
+import { CalendarPlus } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, limit, orderBy, query } from "firebase/firestore";
-import type { Inspection, Equipment } from "@/lib/data";
+import type { WorkOrder, Equipment, User } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export function RecentActivity() {
   const firestore = useFirestore();
   
-  const inspectionsQuery = useMemoFirebase(
-    () => query(collection(firestore, "inspections"), orderBy("date", "desc"), limit(5)),
+  const workOrdersQuery = useMemoFirebase(
+    () => query(collection(firestore, "workOrders"), orderBy("createdAt", "desc"), limit(5)),
     [firestore]
   );
-  const { data: inspections, isLoading: isLoadingInspections } = useCollection<Inspection>(inspectionsQuery);
+  const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 
   const equipmentsCollection = useMemoFirebase(
     () => collection(firestore, "equipment"),
     [firestore]
   );
-  const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
+  const { data: equipments, isLoading: isLoadingEquip } = useCollection<Equipment>(equipmentsCollection);
+  
+  const usersCollection = useMemoFirebase(
+    () => collection(firestore, "users"),
+    [firestore]
+  );
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersCollection);
 
   const getEquipmentName = (equipmentId: string) => {
-    if (!equipments) return 'Carregando...';
-    return equipments.find(e => e.id === equipmentId)?.name || 'Desconhecido';
+    return equipments?.find(e => e.id === equipmentId)?.name || 'Carregando...';
+  };
+  
+  const getInspectorName = (inspectorId: string) => {
+    return users?.find(u => u.id === inspectorId)?.displayName || 'N/A';
   };
 
-  const isLoading = isLoadingInspections || isLoadingEquipments;
+  const isLoading = isLoadingWos || isLoadingEquip || isLoadingUsers;
 
   return (
     <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
       <CardHeader>
         <CardTitle>Atividade Recente</CardTitle>
-        <CardDescription>Últimas inspeções finalizadas.</CardDescription>
+        <CardDescription>Últimas ordens de serviço criadas.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -51,25 +62,25 @@ export function RecentActivity() {
               ))}
             </>
           )}
-          {!isLoading && inspections?.map((inspection) => (
-            <div key={inspection.id} className="flex items-center gap-4">
+          {!isLoading && workOrders?.map((wo) => (
+            <div key={wo.id} className="flex items-center gap-4">
               <div className="p-2 bg-muted rounded-full">
-                <HardHat className="h-5 w-5 text-primary" />
+                <CalendarPlus className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium leading-none">
-                  {getEquipmentName(inspection.equipmentId)}
+                  {getEquipmentName(wo.equipmentId)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Inspetor: {inspection.inspectorName}
+                  Inspetor: {getInspectorName(wo.inspectorId)}
                 </p>
               </div>
               <div className="text-sm text-muted-foreground">
-                {new Date(inspection.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                {formatDistanceToNow(new Date(wo.createdAt), { addSuffix: true, locale: ptBR })}
               </div>
             </div>
           ))}
-          {!isLoading && inspections?.length === 0 && (
+          {!isLoading && workOrders?.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">Nenhuma atividade recente.</p>
           )}
         </div>

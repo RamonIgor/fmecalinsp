@@ -77,6 +77,7 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
       ...values,
       // Convert string back to ISO string for Firestore
       scheduledDate: new Date(values.scheduledDate).toISOString(),
+      createdAt: new Date().toISOString(),
       status: 'Pendente',
     };
     addDocumentNonBlocking(workOrdersCollection, dataToSave);
@@ -177,7 +178,7 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
                 <FormItem className="flex flex-col">
                   <FormLabel>Data de Agendamento</FormLabel>
                    <FormControl>
-                      <Input type="date" {...field} className="w-[240px]" />
+                      <Input type="date" {...field} />
                    </FormControl>
                   <FormMessage />
                 </FormItem>
