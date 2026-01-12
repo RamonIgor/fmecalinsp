@@ -66,7 +66,7 @@ export function WorkOrderForm({ closeDialog }: WorkOrderFormProps) {
 
   const equipmentsQuery = useMemoFirebase(() => 
     selectedClientId ? query(collection(firestore, "equipment"), where("clientId", "==", selectedClientId)) : null, 
-    [selectedClientId]
+    [firestore, selectedClientId]
   );
   const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsQuery);
 
