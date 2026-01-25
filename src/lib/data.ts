@@ -8,6 +8,7 @@ export type User = {
   displayName: string;
   email: string;
   role: 'admin' | 'inspector';
+  photoURL?: string;
 }
 
 export type EquipmentComponent = {

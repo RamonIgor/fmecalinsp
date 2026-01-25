@@ -19,6 +19,11 @@
         "displayName": {
           "type": "string",
           "description": "The user's display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the user's profile picture. Can be a data URI."
         }
       },
       "required": ["email", "role", "displayName"]

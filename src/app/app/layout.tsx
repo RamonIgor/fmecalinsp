@@ -54,15 +54,17 @@ export default function AppLayout({
       <header className="sticky top-0 z-10 flex items-center justify-between h-20 px-4 bg-background dark:bg-background border-b border-border/20">
         <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={`https://picsum.photos/seed/${user.uid}/100/100`} alt="Inspetor" />
+                <AvatarImage src={user.photoURL ?? `https://picsum.photos/seed/${user.uid}/100/100`} alt={user.displayName || "Inspetor"} />
                 <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
         </div>
         <div className="flex items-center gap-2">
             <ConnectionStatus />
-             <Button variant="ghost" size="icon" onClick={() => { /* TODO: Navigate to settings */ }}>
-                <Settings className="h-6 w-6 text-muted-foreground"/>
-             </Button>
+             <Link href="/app/settings" passHref>
+                <Button variant="ghost" size="icon">
+                    <Settings className="h-6 w-6 text-muted-foreground"/>
+                </Button>
+             </Link>
         </div>
       </header>
       

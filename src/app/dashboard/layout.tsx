@@ -77,7 +77,7 @@ function UserNav() {
             <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative flex items-center gap-2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 w-9 md:h-auto md:w-auto">
                 <Avatar className="h-9 w-9">
-                <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/100/100`} alt="Gerente" />
+                <AvatarImage src={user?.photoURL ?? `https://picsum.photos/seed/${user?.uid}/100/100`} alt={user?.displayName || "Gerente"} />
                 <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <span className="hidden md:block">{user?.displayName}</span>
@@ -90,7 +90,9 @@ function UserNav() {
                 <p className="text-xs text-muted-foreground font-normal">{user?.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Configurações</DropdownMenuItem>
+            <Link href="/dashboard/settings" passHref>
+              <DropdownMenuItem>Configurações</DropdownMenuItem>
+            </Link>
             <DropdownMenuItem>Suporte</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
