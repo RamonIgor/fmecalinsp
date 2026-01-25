@@ -2,12 +2,12 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Wrench, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { Wrench, CheckCircle, AlertTriangle, XCircle, CalendarCheck } from "lucide-react";
 import { InspectionStatusChart } from "./components/inspection-status-chart";
 import { RecentActivity } from "./components/recent-activity";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
-import type { Equipment } from "@/lib/data";
+import type { Equipment, Inspection } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
@@ -16,12 +16,26 @@ export default function DashboardPage() {
     () => collection(firestore, "equipment"),
     [firestore]
   );
-  const { data: equipments, isLoading } = useCollection<Equipment>(equipmentsCollection);
+  const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
 
-  const totalEquipments = equipments?.length ?? 0;
+  const inspectionsCollection = useMemoFirebase(
+    () => collection(firestore, "inspections"),
+    [firestore]
+  );
+  const { data: inspections, isLoading: isLoadingInspections } = useCollection<Inspection>(inspectionsCollection);
+
+  const isLoading = isLoadingEquipments || isLoadingInspections;
+
   const operational = equipments?.filter(e => e.status === 'Operacional').length ?? 0;
   const requiresAttention = equipments?.filter(e => e.status === 'Requer Atenção').length ?? 0;
   const outOfService = equipments?.filter(e => e.status === 'Fora de Serviço').length ?? 0;
+
+  const completedThisMonth = inspections?.filter(i => {
+    const inspectionDate = new Date(i.date);
+    const today = new Date();
+    return inspectionDate.getMonth() === today.getMonth() &&
+           inspectionDate.getFullYear() === today.getFullYear();
+  }).length ?? 0;
 
   const StatCard = ({ title, value, icon: Icon, description, color, isLoading }: {
     title: string;
@@ -51,18 +65,18 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total de Equipamentos"
-          value={totalEquipments}
-          icon={Wrench}
-          description={`Total de pontes rolantes registradas`}
-          color="text-muted-foreground"
+          title="Inspeções no Mês"
+          value={completedThisMonth}
+          icon={CalendarCheck}
+          description={`Total de inspeções concluídas este mês`}
+          color="text-primary"
           isLoading={isLoading}
         />
         <StatCard
           title="Operacional"
           value={operational}
           icon={CheckCircle}
-          description="Nenhum problema relatado"
+          description="Equipamentos sem problemas"
           color="text-green-500"
           isLoading={isLoading}
         />
@@ -70,7 +84,7 @@ export default function DashboardPage() {
           title="Requer Atenção"
           value={requiresAttention}
           icon={AlertTriangle}
-          description="Problemas menores encontrados"
+          description="Equipamentos com alertas"
           color="text-yellow-500"
           isLoading={isLoading}
         />
@@ -78,7 +92,7 @@ export default function DashboardPage() {
           title="Fora de Serviço"
           value={outOfService}
           icon={XCircle}
-          description="Falhas críticas detectadas"
+          description="Equipamentos com falhas críticas"
           color="text-red-500"
           isLoading={isLoading}
         />
