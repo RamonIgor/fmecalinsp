@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -129,6 +130,12 @@ export function ProfileForm() {
         title: 'Perfil Atualizado',
         description: 'Suas informações foram salvas com sucesso.',
       });
+      
+      // A small delay allows the user to see the success message before reload.
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -138,8 +145,6 @@ export function ProfileForm() {
       });
     } finally {
       setIsSaving(false);
-      // Manually trigger a reload to reflect changes everywhere, since onAuthStateChanged might not be fast enough
-      window.location.reload();
     }
   }
 

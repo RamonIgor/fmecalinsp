@@ -82,7 +82,7 @@ export default function UsersPage() {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">
                     <Avatar>
-                      <AvatarImage src={`https://picsum.photos/seed/${user.id}/100/100`} alt={user.displayName} />
+                      <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.id}/100/100`} alt={user.displayName} />
                       <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <span>{user.displayName}</span>
