@@ -2,9 +2,11 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
+import { Firestore, doc } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { useDoc } from './firestore/use-doc';
+import type { User as UserData } from '@/lib/data';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -43,8 +45,8 @@ export interface FirebaseServicesAndUser {
 }
 
 // Return type for useUser() - specific to user auth state
-export interface UserHookResult { // Renamed from UserAuthHookResult for consistency if desired, or keep as UserAuthHookResult
-  user: User | null;
+export interface UserHookResult {
+  user: (User & Partial<UserData>) | null;
   isUserLoading: boolean;
   userError: Error | null;
 }
@@ -167,10 +169,43 @@ export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | 
 
 /**
  * Hook specifically for accessing the authenticated user's state.
- * This provides the User object, loading status, and any auth errors.
+ * This provides a merged user object from Firebase Auth and Firestore,
+ * loading status, and any auth errors.
  * @returns {UserHookResult} Object with user, isUserLoading, userError.
  */
-export const useUser = (): UserHookResult => { // Renamed from useAuthUser
-  const { user, isUserLoading, userError } = useFirebase(); // Leverages the main hook
-  return { user, isUserLoading, userError };
+export const useUser = (): UserHookResult => {
+  const { user: authUser, isUserLoading: isAuthLoading, userError: authError } = useFirebase();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(
+    () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
+    [firestore, authUser]
+  );
+  const { data: userProfile, isLoading: isProfileLoading, error: profileError } = useDoc<UserData>(userDocRef);
+
+  const user = useMemo(() => {
+    if (!authUser) {
+      return null;
+    }
+    // When profile from firestore is loaded, merge it with auth user.
+    // The spread order `...authUser, ...userProfile` is important:
+    // It takes base data from auth (like uid, email) and overwrites it
+    // with definitive data from Firestore (displayName, photoURL, role).
+    if (userProfile) {
+      return {
+        ...authUser,
+        ...userProfile,
+      };
+    }
+    // While the firestore profile is loading, return the plain auth user.
+    // The UI will show potentially stale data for a moment, then update.
+    return authUser;
+  }, [authUser, userProfile]);
+
+  return {
+    user: user as (User & Partial<UserData>) | null,
+    // We are loading if auth is loading, OR if we have an auth user but are still fetching their profile.
+    isUserLoading: isAuthLoading || (!!authUser && isProfileLoading),
+    userError: authError || profileError,
+  };
 };

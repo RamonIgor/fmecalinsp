@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -17,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { updateProfile } from 'firebase/auth';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Loader2, UserCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -113,13 +111,7 @@ export function ProfileForm() {
         photoURL = await processImage(avatarFile);
       }
 
-      // Update Firebase Auth profile
-      await updateProfile(auth.currentUser, {
-        displayName: values.displayName,
-        photoURL: photoURL,
-      });
-
-      // Update Firestore user document
+      // Update Firestore user document ONLY
       const userDocRef = doc(firestore, 'users', user.uid);
       updateDocumentNonBlocking(userDocRef, {
         displayName: values.displayName,
@@ -128,13 +120,8 @@ export function ProfileForm() {
 
       toast({
         title: 'Perfil Atualizado',
-        description: 'Suas informações foram salvas com sucesso.',
+        description: 'Suas informações serão atualizadas em instantes.',
       });
-      
-      // A small delay allows the user to see the success message before reload.
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
 
     } catch (error) {
       console.error('Error updating profile:', error);
