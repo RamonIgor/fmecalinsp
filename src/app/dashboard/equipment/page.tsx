@@ -10,6 +10,7 @@ import { useFirestore, useMemoFirebase, useCollection } from "@/firebase";
 import { collection } from "firebase/firestore";
 import Logo from "@/components/logo";
 import { Input } from "@/components/ui/input";
+import { useState, useMemo } from "react";
 
 function getStatusInfo(status: Equipment['status']): { variant: "default" | "secondary" | "destructive" | "outline", text: string } {
   switch (status) {
@@ -26,11 +27,25 @@ function getStatusInfo(status: Equipment['status']): { variant: "default" | "sec
 
 export default function EquipmentPage() {
   const firestore = useFirestore();
+  const [searchTerm, setSearchTerm] = useState('');
+
   const equipmentsCollection = useMemoFirebase(
     () => collection(firestore, "equipment"),
     [firestore]
   );
   const { data: equipments, isLoading } = useCollection<Equipment>(equipmentsCollection);
+
+  const filteredEquipments = useMemo(() => {
+    if (!equipments) return [];
+    return equipments.filter((equipment) => {
+      const search = searchTerm.toLowerCase();
+      const nameMatch = equipment.name.toLowerCase().includes(search);
+      const tagMatch = equipment.tag.toLowerCase().includes(search);
+      const sectorMatch = equipment.sector.toLowerCase().includes(search);
+
+      return nameMatch || tagMatch || sectorMatch;
+    });
+  }, [equipments, searchTerm]);
 
   return (
     <div className="space-y-6">
@@ -45,7 +60,12 @@ export default function EquipmentPage() {
             <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Buscar equipamento..." className="pl-9"/>
+                    <Input 
+                      placeholder="Buscar por nome, tag ou setor..." 
+                      className="pl-9"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
                 {/* TODO: Implement filter dropdowns */}
                 <AddEquipmentButton />
@@ -62,7 +82,7 @@ export default function EquipmentPage() {
         )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {equipments?.map((equipment) => {
+        {filteredEquipments?.map((equipment) => {
             const statusInfo = getStatusInfo(equipment.status);
             return (
               <Card key={equipment.id} className="flex flex-col justify-between hover:shadow-md transition-shadow">
@@ -89,11 +109,15 @@ export default function EquipmentPage() {
             )
         })}
       </div>
-       {!isLoading && equipments?.length === 0 && (
+       {!isLoading && filteredEquipments?.length === 0 && (
             <div className="text-center text-muted-foreground py-20 rounded-lg border-2 border-dashed">
                 <HardDrive className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-4 font-semibold">Nenhum equipamento cadastrado.</p>
-                <p className="text-sm">Clique em "+ Adicionar Equipamento" para começar.</p>
+                <p className="mt-4 font-semibold">Nenhum equipamento encontrado.</p>
+                {searchTerm ? (
+                   <p className="text-sm">Tente ajustar sua busca.</p>
+                ) : (
+                   <p className="text-sm">Clique em "+ Adicionar Equipamento" para começar.</p>
+                )}
             </div>
         )}
     </div>
