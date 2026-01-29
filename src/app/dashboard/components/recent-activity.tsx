@@ -1,10 +1,9 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CalendarPlus } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, limit, orderBy, query } from "firebase/firestore";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { collection, limit, orderBy, query, where } from "firebase/firestore";
 import type { WorkOrder, Equipment, User as UserData } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
@@ -12,10 +11,30 @@ import { ptBR } from "date-fns/locale";
 
 export function RecentActivity() {
   const firestore = useFirestore();
+  const { user } = useUser(); // Adiciona o hook useUser para pegar o usuário atual
   
   const workOrdersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, "workOrders"), orderBy("createdAt", "desc"), limit(5)) : null),
-    [firestore]
+    () => {
+      if (!firestore || !user) return null;
+      
+      // Se o usuário for admin, mostra todas as workOrders
+      if (user.role === 'admin') {
+        return query(
+          collection(firestore, "workOrders"), 
+          orderBy("createdAt", "desc"), 
+          limit(5)
+        );
+      }
+      
+      // Se for inspector, mostra apenas as dele
+      return query(
+        collection(firestore, "workOrders"),
+        where('inspectorId', '==', user.uid),
+        orderBy("createdAt", "desc"),
+        limit(5)
+      );
+    },
+    [firestore, user] // Adiciona user como dependência
   );
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 
