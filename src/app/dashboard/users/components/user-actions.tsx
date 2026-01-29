@@ -48,7 +48,7 @@ export function UserActions({ user }: { user: UserData }) {
   }
 
   return (
-    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+    <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -68,20 +68,23 @@ export function UserActions({ user }: { user: UserData }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Editar Usuário</DialogTitle>
-          <DialogDescription>
-            Atualize os detalhes para {user.displayName}.
-          </DialogDescription>
-        </DialogHeader>
-        {isClient && (
-          <UserForm
-            user={user}
-            closeDialog={() => setIsEditDialogOpen(false)}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+            <DialogDescription>
+              Atualize os detalhes para {user.displayName}.
+            </DialogDescription>
+          </DialogHeader>
+          {isClient && (
+            <UserForm
+              user={user}
+              closeDialog={() => setIsEditDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
