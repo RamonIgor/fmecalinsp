@@ -11,20 +11,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, Trash2, XCircle, FilePenLine } from "lucide-react";
+import { Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import type { WorkOrder } from "@/lib/data";
 import { useFirestore } from "@/firebase/provider";
 import { doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { EditWorkOrderButton } from "./edit-work-order-button";
 import { useRouter } from "next/navigation";
 
@@ -61,38 +54,21 @@ export function WorkOrderActions({ workOrder }: { workOrder: WorkOrder }) {
     router.refresh();
   }
 
-  const isEditable = workOrder.status !== 'Concluída' && workOrder.status !== 'Cancelada';
+  const isActionable = workOrder.status !== 'Concluída' && workOrder.status !== 'Cancelada';
 
   return (
     <>
-      <div className="flex gap-2">
-        <EditWorkOrderButton workOrder={workOrder} disabled={!isEditable} />
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-9 w-9 p-0">
-              <span className="sr-only">Abrir menu</span>
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem 
-                disabled={!isEditable}
-                onSelect={() => setIsCancelAlertOpen(true)}
-            >
-              <XCircle className="mr-2 h-4 w-4" />
-              Cancelar OS
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-500 focus:text-red-500"
-              onSelect={() => setIsDeleteAlertOpen(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Excluir OS
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex items-center gap-2">
+        <EditWorkOrderButton workOrder={workOrder} disabled={!isActionable} />
+        
+        <Button variant="outline" size="sm" disabled={!isActionable} onClick={() => setIsCancelAlertOpen(true)}>
+            <XCircle className="mr-2 h-4 w-4" />
+            Cancelar
+        </Button>
+        <Button variant="destructive" size="sm" onClick={() => setIsDeleteAlertOpen(true)}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Excluir
+        </Button>
       </div>
 
 

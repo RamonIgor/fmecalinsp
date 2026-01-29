@@ -18,13 +18,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { UserForm } from "./user-form";
 import { useState } from "react";
 import type { User as UserData } from "@/lib/data";
@@ -55,25 +49,16 @@ export function UserActions({ user }: { user: UserData }) {
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Abrir menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
-            Editar
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            className="text-red-500 focus:text-red-500"
-            onSelect={() => setIsDeleteDialogOpen(true)}
-          >
-              Excluir
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)}>
+          <Edit className="h-4 w-4" />
+          <span className="sr-only">Editar</span>
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => setIsDeleteDialogOpen(true)} className="text-red-500 hover:text-red-600">
+          <Trash2 className="h-4 w-4" />
+          <span className="sr-only">Excluir</span>
+        </Button>
+      </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>

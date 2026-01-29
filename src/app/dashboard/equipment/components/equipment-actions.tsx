@@ -18,13 +18,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { EquipmentForm } from "./equipment-form";
 import { useState, useEffect } from "react";
 import type { Equipment, EquipmentComponent } from "@/lib/data";
@@ -67,59 +61,50 @@ export function EquipmentActions({ equipment }: { equipment: Equipment }) {
 
   return (
     <>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-            </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
-                Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-                className="text-red-500 focus:text-red-500"
-                onSelect={() => setIsDeleteDialogOpen(true)}
-            >
-                Excluir
-            </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+          <Edit className="mr-2 h-4 w-4" />
+          Editar
+        </Button>
+        <Button variant="destructive" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Excluir
+        </Button>
+      </div>
 
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Editar Equipamento</DialogTitle>
-                    <DialogDescription>
-                    Atualize os detalhes para {equipment.name}.
-                    </DialogDescription>
-                </DialogHeader>
-                <EquipmentForm
-                    equipment={equipmentWithComponents}
-                    closeDialog={() => setIsEditDialogOpen(false)}
-                />
-            </DialogContent>
-        </Dialog>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Editar Equipamento</DialogTitle>
+                <DialogDescription>
+                Atualize os detalhes para {equipment.name}.
+                </DialogDescription>
+            </DialogHeader>
+            <EquipmentForm
+                equipment={equipmentWithComponents}
+                closeDialog={() => setIsEditDialogOpen(false)}
+            />
+        </DialogContent>
+      </Dialog>
 
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Tem certeza que deseja excluir?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                    Esta ação não pode ser desfeita e excluirá permanentemente o equipamento "{equipment.name}".
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction 
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={handleDelete}>
-                        Excluir
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Tem certeza que deseja excluir?</AlertDialogTitle>
+                <AlertDialogDescription>
+                Esta ação não pode ser desfeita e excluirá permanentemente o equipamento "{equipment.name}".
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                    className="bg-destructive hover:bg-destructive/90"
+                    onClick={handleDelete}>
+                    Excluir
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
