@@ -3,42 +3,35 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore } from '@/firebase/provider';
+import { useUser } from '@/firebase/provider';
 import { Loader2 } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const router = useRouter();
 
   useEffect(() => {
-    if (isUserLoading || !firestore) {
-      return; // Wait until user and firestore are loaded
+    // Wait until the user's auth and profile state is fully resolved.
+    if (isUserLoading) {
+      return;
     }
 
-    if (user) {
-      const userDocRef = doc(firestore, "users", user.uid);
-      getDoc(userDocRef).then(docSnap => {
-        if (docSnap.exists()) {
-          const role = docSnap.data().role;
-          if (role === 'admin') {
-            router.replace('/dashboard');
-          } else if (role === 'inspector') {
-            router.replace('/app');
-          } else {
-            // Fallback for users without a role
-            router.replace('/login'); 
-          }
-        } else {
-          // User exists in Auth but not in Firestore users collection
-          router.replace('/login');
-        }
-      });
+    if (user && user.role) {
+      // The useUser hook provides the role, so we can redirect immediately.
+      if (user.role === 'admin') {
+        router.replace('/dashboard');
+      } else if (user.role === 'inspector') {
+        router.replace('/app');
+      } else {
+        // Fallback for users with an unknown role
+        router.replace('/login'); 
+      }
     } else {
+      // If there's no user, or the user profile/role hasn't loaded yet,
+      // send them to the login page.
       router.replace('/login');
     }
-  }, [user, isUserLoading, router, firestore]);
+  }, [user, isUserLoading, router]);
 
   return (
     <main className="relative min-h-screen w-full flex items-center justify-center p-4">

@@ -70,45 +70,32 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(
         auth,
         values.email,
         values.password
       );
-      const user = userCredential.user;
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        const role = userData.role;
-
-        toast({
-          title: 'Login bem-sucedido!',
-          description: 'Redirecionando...',
-        });
-
-        if (role === 'admin') {
-          router.push('/dashboard');
-        } else if (role === 'inspector') {
-          router.push('/app');
-        } else {
-          router.push('/login');
-        }
-      } else {
-        throw new Error('Perfil de usuário não encontrado.');
-      }
+  
+      // After successful sign-in, the onAuthStateChanged listener will fire.
+      // Our central redirection logic at the root page ('/') will handle
+      // routing the user to the correct dashboard based on their role.
+      toast({
+        title: 'Login bem-sucedido!',
+        description: 'Redirecionando...',
+      });
+  
+      // Push to the root page to trigger the central redirector.
+      router.push('/');
+  
     } catch (error: any) {
       console.error(error);
       let description = 'Ocorreu um erro. Tente novamente.';
       if (
         error.code === 'auth/user-not-found' ||
         error.code === 'auth/wrong-password' ||
-        error.code === 'auth/invalid-credential' ||
-        error.message === 'Perfil de usuário não encontrado.'
+        error.code === 'auth/invalid-credential'
       ) {
-        description = 'Email, senha ou perfil inválidos.';
+        description = 'Email ou senha inválidos.';
       }
       toast({
         variant: 'destructive',
