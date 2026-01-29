@@ -53,7 +53,8 @@ service cloud.firestore {
     }
 
     match /workOrders/{workOrderId} {
-      allow read: if isAdmin() || isInspector();
+      // Admins can read all. Non-admins can only read if they are the assigned inspector.
+      allow read: if isAdmin() || (request.auth.uid == resource.data.inspectorId);
       
       // Admins can create and delete work orders.
       allow create, delete: if isAdmin();
