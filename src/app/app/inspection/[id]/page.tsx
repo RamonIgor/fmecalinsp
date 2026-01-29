@@ -16,13 +16,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Camera, FileSignature, Loader2 } from 'lucide-react';
+import { Camera, FileSignature, Loader2, Trash2 } from 'lucide-react';
 import { SignaturePad } from './components/signature-pad';
 import { SaveInspectionButton } from './components/save-inspection-button';
 import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Equipment, Checklist, ChecklistQuestion, InspectionItem, WorkOrder } from '@/lib/data';
 import React, { useState } from 'react';
+import { CameraCaptureDialog } from './components/camera-capture-dialog';
+import Image from 'next/image';
 
 // Mock checklist data until it's moved to Firestore
 const MOCK_CHECKLIST_ID = 'cl-nr11';
@@ -50,6 +52,8 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
   // State to hold all form data
   const [inspectionItems, setInspectionItems] = useState<Record<string, InspectionItem>>({});
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
   const workOrderRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'workOrders', workOrderId) : null),
@@ -76,6 +80,37 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
         [field]: value,
       } as InspectionItem,
     }));
+  };
+  
+  const handleAttachPhotoClick = (questionId: string) => {
+    setActiveQuestionId(questionId);
+    setIsCameraOpen(true);
+  };
+
+  const handlePhotoCaptured = (dataUrl: string) => {
+    if (activeQuestionId) {
+        const questionText = checklist?.questions.find(q => q.id === activeQuestionId)?.text || '';
+        setInspectionItems(prev => ({
+            ...prev,
+            [activeQuestionId]: {
+                ...prev[activeQuestionId],
+                questionId: activeQuestionId,
+                questionText: questionText,
+                photoUrl: dataUrl
+            } as InspectionItem
+        }));
+    }
+    setActiveQuestionId(null);
+  };
+  
+  const handleRemovePhoto = (questionId: string) => {
+    setInspectionItems(prev => {
+        const newItems = { ...prev };
+        if (newItems[questionId]) {
+            delete newItems[questionId].photoUrl;
+        }
+        return newItems;
+    });
   };
 
   if (isLoadingWorkOrder || isLoadingEquipment) {
@@ -131,45 +166,69 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
                 {category}
               </AccordionTrigger>
               <AccordionContent className="p-4 space-y-6">
-                {questions.map((question) => (
-                  <div key={question.id} className="p-4 rounded-lg border">
-                    <p className="font-semibold mb-4">{question.text}</p>
-                    <RadioGroup 
-                      className="flex space-x-4 mb-4"
-                      onValueChange={(value) => handleItemChange(question.id, question.text, 'answer', value)}
-                      value={inspectionItems[question.id]?.answer}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem
-                          value="Conforme"
-                          id={`${question.id}-conforme`}
-                        />
-                        <Label htmlFor={`${question.id}-conforme`}>Conforme</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem
-                          value="Não Conforme"
-                          id={`${question.id}-nao-conforme`}
-                        />
-                        <Label htmlFor={`${question.id}-nao-conforme`}>
-                          Não Conforme
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="NA" id={`${question.id}-na`} />
-                        <Label htmlFor={`${question.id}-na`}>NA</Label>
-                      </div>
-                    </RadioGroup>
-                    <Textarea 
-                      placeholder="Observações..." 
-                      onChange={(e) => handleItemChange(question.id, question.text, 'observation', e.target.value)}
-                      value={inspectionItems[question.id]?.observation || ''}
-                    />
-                    <Button variant="outline" className="mt-4 w-full">
-                      <Camera className="mr-2 h-4 w-4" /> Anexar Foto
-                    </Button>
-                  </div>
-                ))}
+                {questions.map((question) => {
+                  const photoUrl = inspectionItems[question.id]?.photoUrl;
+                  return (
+                    <div key={question.id} className="p-4 rounded-lg border">
+                      <p className="font-semibold mb-4">{question.text}</p>
+                      <RadioGroup 
+                        className="flex space-x-4 mb-4"
+                        onValueChange={(value) => handleItemChange(question.id, question.text, 'answer', value)}
+                        value={inspectionItems[question.id]?.answer}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="Conforme"
+                            id={`${question.id}-conforme`}
+                          />
+                          <Label htmlFor={`${question.id}-conforme`}>Conforme</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="Não Conforme"
+                            id={`${question.id}-nao-conforme`}
+                          />
+                          <Label htmlFor={`${question.id}-nao-conforme`}>
+                            Não Conforme
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="NA" id={`${question.id}-na`} />
+                          <Label htmlFor={`${question.id}-na`}>NA</Label>
+                        </div>
+                      </RadioGroup>
+                      <Textarea 
+                        placeholder="Observações..." 
+                        onChange={(e) => handleItemChange(question.id, question.text, 'observation', e.target.value)}
+                        value={inspectionItems[question.id]?.observation || ''}
+                      />
+                       {photoUrl ? (
+                          <div className="mt-4">
+                              <div className="relative aspect-video w-full max-w-xs rounded-md overflow-hidden border">
+                                  <Image src={photoUrl} alt="Foto da inspeção" fill className="object-cover" />
+                              </div>
+                              <Button 
+                                  variant="destructive" 
+                                  size="sm" 
+                                  className="mt-2"
+                                  onClick={() => handleRemovePhoto(question.id)}
+                              >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Remover Foto
+                              </Button>
+                          </div>
+                      ) : (
+                          <Button 
+                              variant="outline" 
+                              className="mt-4 w-full"
+                              onClick={() => handleAttachPhotoClick(question.id)}
+                          >
+                              <Camera className="mr-2 h-4 w-4" /> Anexar Foto
+                          </Button>
+                      )}
+                    </div>
+                  )
+                })}
               </AccordionContent>
             </AccordionItem>
           </Card>
@@ -188,6 +247,12 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
       </Card>
 
       <SaveInspectionButton inspectionData={finalInspectionData} />
+
+      <CameraCaptureDialog 
+        open={isCameraOpen}
+        onOpenChange={setIsCameraOpen}
+        onPhotoCapture={handlePhotoCaptured}
+      />
     </div>
   );
 }
