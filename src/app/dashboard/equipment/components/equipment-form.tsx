@@ -30,6 +30,34 @@ import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc, writeBatch } from "firebase/firestore";
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 
+const DEFAULT_COMPONENTS = [
+    { name: 'Estrutura: Viga Principal' },
+    { name: 'Estrutura: Cabeceiras' },
+    { name: 'Estrutura: Guarda Corpo e Passadiço' },
+    { name: 'Estrutura: Carro Guincho' },
+    { name: 'Caminho de Rolamento: Translação da Ponte' },
+    { name: 'Caminho de Rolamento: Translação do Carro Guincho' },
+    { name: 'Mecânico - Elevação: Tambor' },
+    { name: 'Mecânico - Elevação: Redutor Principal' },
+    { name: 'Mecânico - Elevação: Freio' },
+    { name: 'Mecânico - Elevação: Gancho/Moitão' },
+    { name: 'Mecânico - Elevação: Cabo de Aço' },
+    { name: 'Mecânico - Translação do Carro: Redutor' },
+    { name: 'Mecânico - Translação do Carro: Freio' },
+    { name: 'Mecânico - Translação do Carro: Rodas' },
+    { name: 'Mecânico - Translação do Carro: Batedores' },
+    { name: 'Mecânico - Translação da Ponte: Redutor' },
+    { name: 'Mecânico - Translação da Ponte: Freio' },
+    { name: 'Mecânico - Translação da Ponte: Rodas' },
+    { name: 'Mecânico - Translação da Ponte: Batedores' },
+    { name: 'Motor: Elevação Principal' },
+    { name: 'Motor: Translação do Carro' },
+    { name: 'Motor: Translação da Ponte' },
+    { name: 'Elétrico: Painéis e Cabos' },
+    { name: 'Elétrico: Alimentação da Ponte' },
+    { name: 'Elétrico: Alimentação do Carro' },
+];
+
 const componentSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "Nome do componente é obrigatório"),
@@ -64,7 +92,7 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
       sector: equipment?.sector || "",
       status: equipment?.status || "Operacional",
       clientId: equipment?.clientId || "",
-      components: equipment?.components || [],
+      components: equipment?.components?.length ? equipment.components : DEFAULT_COMPONENTS,
     },
   });
 
