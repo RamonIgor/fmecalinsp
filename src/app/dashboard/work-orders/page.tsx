@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { WorkOrder, Equipment, Client, User as UserData } from '@/lib/data';
 import { AddWorkOrderButton } from './components/add-work-order-button';
@@ -44,11 +44,10 @@ export default function WorkOrdersPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
-  const { user } = useUser();
 
   const workOrdersQuery = useMemoFirebase(
-    () => (firestore && user?.role === 'admin' ? query(collection(firestore, 'workOrders'), orderBy('scheduledDate', 'desc')) : null),
-    [firestore, user?.role]
+    () => (firestore ? query(collection(firestore, 'workOrders'), orderBy('scheduledDate', 'desc')) : null),
+    [firestore]
   );
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 

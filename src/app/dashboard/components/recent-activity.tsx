@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CalendarPlus } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, limit, orderBy, query } from "firebase/firestore";
 import type { WorkOrder, Equipment, User as UserData } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,11 +12,10 @@ import { ptBR } from "date-fns/locale";
 
 export function RecentActivity() {
   const firestore = useFirestore();
-  const { user } = useUser();
   
   const workOrdersQuery = useMemoFirebase(
-    () => user?.role === 'admin' ? query(collection(firestore, "workOrders"), orderBy("createdAt", "desc"), limit(5)) : null,
-    [firestore, user?.role]
+    () => (firestore ? query(collection(firestore, "workOrders"), orderBy("createdAt", "desc"), limit(5)) : null),
+    [firestore]
   );
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 
