@@ -116,12 +116,21 @@ export default function DashboardLayout({
 
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.replace("/login");
+    if (!isUserLoading) {
+      if (!user) {
+        // No user, send to login
+        router.replace("/login");
+      } else if (user.role !== 'admin') {
+        // User is not an admin, not allowed in dashboard.
+        // Redirect to inspector PWA.
+        router.replace('/app');
+      }
     }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !user) {
+  // While loading or if user is not an admin, show a loader.
+  // The useEffect above will handle the redirection.
+  if (isUserLoading || !user || user.role !== 'admin') {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
