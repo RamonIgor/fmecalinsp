@@ -171,7 +171,7 @@ export default function WorkOrdersPage() {
                           {getInspectorName(wo.inspectorId)}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-muted-foreground">
-                          {new Date(wo.scheduledDate).toLocaleDateString()}
+                          {new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
                         </TableCell>
                         <TableCell>
                           <Badge variant={getStatusVariant(wo.status)}>{wo.status}</Badge>

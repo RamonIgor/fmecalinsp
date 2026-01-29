@@ -28,7 +28,7 @@ import { updateDocumentNonBlocking } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -62,7 +62,7 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
       status: workOrder?.status || "Pendente",
       // Handle date formatting for edit and create
       scheduledDate: workOrder?.scheduledDate 
-        ? format(parseISO(workOrder.scheduledDate), "yyyy-MM-dd") 
+        ? workOrder.scheduledDate.substring(0, 10) 
         : format(new Date(), "yyyy-MM-dd"),
     },
   });
@@ -88,7 +88,8 @@ export function WorkOrderForm({ workOrder, closeDialog }: WorkOrderFormProps) {
 
     const dataToSave = {
       ...values,
-      scheduledDate: new Date(values.scheduledDate).toISOString(),
+      // Save date as noon UTC to avoid timezone issues
+      scheduledDate: new Date(values.scheduledDate + "T12:00:00Z").toISOString(),
     };
 
     if (isEditMode) {

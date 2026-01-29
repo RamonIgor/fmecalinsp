@@ -14,7 +14,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import type { WorkOrder, Equipment, Client } from '@/lib/data';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
@@ -31,7 +31,7 @@ export default function InspectorAppPage() {
   const [greeting, setGreeting] = useState('Olá');
 
   const workOrdersQuery = useMemoFirebase(
-    () => (user ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente')) : null),
+    () => (user ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente'), orderBy('scheduledDate', 'asc')) : null),
     [firestore, user]
   );
   const { data: workOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
@@ -64,7 +64,7 @@ export default function InspectorAppPage() {
         <h1 className="text-2xl font-bold text-foreground">
           {greeting}, {user?.displayName?.split(' ')[0] || 'Inspetor'}! 👋
         </h1>
-        <p className="text-md text-muted-foreground">Suas tarefas pendentes de hoje.</p>
+        <p className="text-md text-muted-foreground">Suas tarefas pendentes.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -108,7 +108,7 @@ export default function InspectorAppPage() {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                             <Badge variant="secondary">{wo.status}</Badge>
                             <span>•</span>
-                            <span>Data: {new Date(wo.scheduledDate).toLocaleDateString('pt-BR')}</span>
+                            <span>Data: {new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
                         </div>
                     </Link>
                   </li>

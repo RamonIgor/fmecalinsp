@@ -141,7 +141,7 @@ export default function WorkOrderDetailPage({
           <DetailItem label="Setor" value={equipment?.sector} />
           <DetailItem label="Cliente" value={client?.name} />
           <DetailItem label="Inspetor Responsável" value={inspector?.displayName} />
-          <DetailItem label="Data Agendada" value={new Date(workOrder.scheduledDate).toLocaleDateString()} />
+          <DetailItem label="Data Agendada" value={new Date(workOrder.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} />
         </CardContent>
       </Card>
       
