@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -20,11 +19,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/logo";
 import { useAuth, useFirestore } from "@/firebase/provider";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -43,6 +51,9 @@ export default function LoginPage() {
   const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
   const bgImage = PlaceHolderImages.find(img => img.id === 'landing-background');
 
 
@@ -99,7 +110,37 @@ export default function LoginPage() {
     }
   }
 
+  const handlePasswordReset = async () => {
+    if (!resetEmail) {
+        toast({
+            variant: "destructive",
+            title: "Email Necessário",
+            description: "Por favor, insira seu email para recuperar a senha.",
+        });
+        return;
+    }
+    setIsResetting(true);
+    try {
+        await sendPasswordResetEmail(auth, resetEmail);
+        toast({
+            title: "Link Enviado",
+            description: "Verifique seu email para o link de recuperação de senha.",
+        });
+        setIsResetOpen(false);
+        setResetEmail("");
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Falha ao Enviar",
+            description: "Não foi possível enviar o email de recuperação. Verifique o email e tente novamente.",
+        });
+    } finally {
+        setIsResetting(false);
+    }
+  };
+
   return (
+    <>
     <main className="relative flex min-h-screen w-full flex-col items-center justify-center p-4">
       {bgImage && (
         <Image
@@ -152,12 +193,17 @@ export default function LoginPage() {
                     </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full h-11 font-bold text-base mt-6" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11 font-bold text-base" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Entrar
                 </Button>
                 </form>
             </Form>
+            <div className="mt-4 text-center text-sm">
+                <Button variant="link" type="button" onClick={() => setIsResetOpen(true)} className="text-white/80 hover:text-white px-0">
+                    Esqueceu sua senha?
+                </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -171,5 +217,37 @@ export default function LoginPage() {
             </blockquote>
         </div>
     </main>
+    <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Recuperar Senha</DialogTitle>
+                <DialogDescription>
+                    Insira seu email para receber um link para redefinir sua senha.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid w-full items-center gap-2">
+                    <Label htmlFor="reset-email">
+                        Email
+                    </Label>
+                    <Input
+                        id="reset-email"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        type="email"
+                        placeholder="seu.email@empresa.com"
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsResetOpen(false)}>Cancelar</Button>
+                <Button type="button" onClick={handlePasswordReset} disabled={isResetting}>
+                    {isResetting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Enviar Link
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
