@@ -3,19 +3,20 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CalendarPlus } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, limit, orderBy, query } from "firebase/firestore";
-import type { WorkOrder, Equipment, User } from "@/lib/data";
+import type { WorkOrder, Equipment, User as UserData } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export function RecentActivity() {
   const firestore = useFirestore();
+  const { user } = useUser();
   
   const workOrdersQuery = useMemoFirebase(
-    () => query(collection(firestore, "workOrders"), orderBy("createdAt", "desc"), limit(5)),
-    [firestore]
+    () => user?.role === 'admin' ? query(collection(firestore, "workOrders"), orderBy("createdAt", "desc"), limit(5)) : null,
+    [firestore, user?.role]
   );
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 
@@ -29,7 +30,7 @@ export function RecentActivity() {
     () => collection(firestore, "users"),
     [firestore]
   );
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersCollection);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<UserData>(usersCollection);
 
   const getEquipmentName = (equipmentId: string) => {
     return equipments?.find(e => e.id === equipmentId)?.name || 'Carregando...';

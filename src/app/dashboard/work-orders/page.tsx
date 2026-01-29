@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -10,9 +11,9 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import type { WorkOrder, Equipment, Client, User } from '@/lib/data';
+import type { WorkOrder, Equipment, Client, User as UserData } from '@/lib/data';
 import { AddWorkOrderButton } from './components/add-work-order-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
@@ -43,10 +44,11 @@ export default function WorkOrdersPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
+  const { user } = useUser();
 
   const workOrdersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'workOrders'), orderBy('scheduledDate', 'desc')) : null),
-    [firestore]
+    () => (firestore && user?.role === 'admin' ? query(collection(firestore, 'workOrders'), orderBy('scheduledDate', 'desc')) : null),
+    [firestore, user?.role]
   );
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 
@@ -57,7 +59,7 @@ export default function WorkOrdersPage() {
   const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
 
   const usersCollection = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersCollection);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<UserData>(usersCollection);
 
   const getClientName = (id: string) => clients?.find((c) => c.id === id)?.name || 'N/A';
   const getEquipmentName = (id: string) => equipments?.find((e) => e.id === id)?.name || 'N/A';
