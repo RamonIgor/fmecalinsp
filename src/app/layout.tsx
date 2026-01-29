@@ -1,4 +1,4 @@
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -14,8 +14,11 @@ export const metadata: Metadata = {
   icons: {
     apple: "/icons/icon-192x192.png",
   },
-  themeColor: "#1e293b",
 };
+
+export const viewport: Viewport = {
+  themeColor: "#1e293b",
+}
 
 export default function RootLayout({
   children,
