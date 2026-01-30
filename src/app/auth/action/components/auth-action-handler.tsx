@@ -69,7 +69,7 @@ export function AuthActionHandler() {
       });
   }, [oobCode, auth, toast]);
 
-  const handlePasswordReset = async (values: z.infer<typeof formSchema>>) => {
+  const handlePasswordReset = async (values: z.infer<typeof formSchema>) => {
     if (!oobCode) return;
     setIsSubmitting(true);
     try {
