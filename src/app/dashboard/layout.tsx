@@ -93,7 +93,6 @@ function UserNav() {
             <Link href="/dashboard/settings" passHref>
               <DropdownMenuItem>Configurações</DropdownMenuItem>
             </Link>
-            <DropdownMenuItem>Suporte</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
