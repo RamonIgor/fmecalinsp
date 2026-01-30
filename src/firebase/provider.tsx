@@ -183,29 +183,26 @@ export const useUser = (): UserHookResult => {
   );
   const { data: userProfile, isLoading: isProfileLoading, error: profileError } = useDoc<UserData>(userDocRef);
 
-  const user = useMemo(() => {
+  const finalIsLoading = isAuthLoading || (!!authUser && isProfileLoading);
+
+  const mergedUser = useMemo(() => {
+    if (finalIsLoading) {
+      return null;
+    }
     if (!authUser) {
       return null;
     }
-    // When profile from firestore is loaded, merge it with auth user.
-    // The spread order `...authUser, ...userProfile` is important:
-    // It takes base data from auth (like uid, email) and overwrites it
-    // with definitive data from Firestore (displayName, photoURL, role).
-    if (userProfile) {
-      return {
-        ...authUser,
-        ...userProfile,
-      };
-    }
-    // While the firestore profile is loading, return the plain auth user.
-    // The UI will show potentially stale data for a moment, then update.
-    return authUser;
-  }, [authUser, userProfile]);
+    // By the time finalIsLoading is false, we have an authUser and the profile lookup is complete.
+    // Merge the auth user with the firestore profile (which could be null if not found).
+    return {
+      ...authUser,
+      ...(userProfile || {}),
+    };
+  }, [authUser, userProfile, finalIsLoading]);
 
   return {
-    user: user as (User & Partial<UserData>) | null,
-    // We are loading if auth is loading, OR if we have an auth user but are still fetching their profile.
-    isUserLoading: isAuthLoading || (!!authUser && isProfileLoading),
+    user: mergedUser as (User & Partial<UserData>) | null,
+    isUserLoading: finalIsLoading,
     userError: authError || profileError,
   };
 };
