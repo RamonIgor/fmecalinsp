@@ -11,30 +11,30 @@ import { ptBR } from "date-fns/locale";
 
 export function RecentActivity() {
   const firestore = useFirestore();
-  const { user } = useUser(); // Adiciona o hook useUser para pegar o usuário atual
+  const { user } = useUser();
   
   const workOrdersQuery = useMemoFirebase(
     () => {
       if (!firestore || !user) return null;
       
-      // Se o usuário for admin, mostra todas as workOrders
+      const workOrdersRef = collection(firestore, "workOrders");
+
       if (user.role === 'admin') {
         return query(
-          collection(firestore, "workOrders"), 
-          orderBy("createdAt", "desc"), 
+          workOrdersRef, 
+          orderBy("scheduledDate", "desc"), 
           limit(5)
         );
       }
       
-      // Se for inspector, mostra apenas as dele
       return query(
-        collection(firestore, "workOrders"),
+        workOrdersRef,
         where('inspectorId', '==', user.uid),
-        orderBy("createdAt", "desc"),
+        orderBy("scheduledDate", "desc"),
         limit(5)
       );
     },
-    [firestore, user] // Adiciona user como dependência
+    [firestore, user]
   );
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 
@@ -64,7 +64,7 @@ export function RecentActivity() {
     <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
       <CardHeader>
         <CardTitle>Atividade Recente</CardTitle>
-        <CardDescription>Últimas ordens de serviço criadas.</CardDescription>
+        <CardDescription>Últimas ordens de serviço agendadas.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -95,7 +95,7 @@ export function RecentActivity() {
                 </p>
               </div>
               <div className="text-sm text-muted-foreground">
-                {wo.createdAt ? formatDistanceToNow(new Date(wo.createdAt), { addSuffix: true, locale: ptBR }) : ''}
+                {wo.scheduledDate ? formatDistanceToNow(new Date(wo.scheduledDate), { addSuffix: true, locale: ptBR }) : 'Data N/A'}
               </div>
             </div>
           ))}

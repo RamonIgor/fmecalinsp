@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { WorkOrder, Equipment, Client, User as UserData } from '@/lib/data';
 import { AddWorkOrderButton } from './components/add-work-order-button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,7 +21,7 @@ import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
 
-function getStatusVariant(status: WorkOrder['status']) {
+function getStatusVariant(status?: WorkOrder['status']) {
   switch (status) {
     case 'Pendente':
       return 'secondary';
@@ -41,30 +41,15 @@ const ALL_STATUSES = 'Todos';
 export default function WorkOrdersPage() {
   const firestore = useFirestore();
   const router = useRouter();
-  const { user } = useUser(); // ✅ ADICIONADO: Busca o usuário
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
 
-  // ✅ CORRIGIDO: Agora espera o usuário carregar antes de fazer a query
   const workOrdersQuery = useMemoFirebase(
     () => {
-      if (!firestore || !user) return null; // Espera firestore E usuário
-      
-      const workOrdersRef = collection(firestore, 'workOrders');
-      
-      // Se o usuário for inspetor, filtra apenas as ordens atribuídas a ele
-      if (user.role === 'inspetor') {
-        return query(
-          workOrdersRef,
-          where('inspectorId', '==', user.uid),
-          orderBy('scheduledDate', 'desc')
-        );
-      }
-      
-      // Se for admin ou outro role, mostra todas
-      return query(workOrdersRef, orderBy('scheduledDate', 'desc'));
+      if (!firestore) return null;
+      return query(collection(firestore, 'workOrders'), orderBy('scheduledDate', 'desc'));
     },
-    [firestore, user?.uid, user?.role] // ✅ CORRIGIDO: Adiciona user nas dependências
+    [firestore]
   );
   
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
@@ -190,7 +175,7 @@ export default function WorkOrdersPage() {
                           {getInspectorName(wo.inspectorId)}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-muted-foreground">
-                          {new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                          {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}
                         </TableCell>
                         <TableCell>
                           <Badge variant={getStatusVariant(wo.status)}>{wo.status}</Badge>

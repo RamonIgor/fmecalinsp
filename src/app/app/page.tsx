@@ -52,7 +52,7 @@ export default function InspectorAppPage() {
   const isLoading = isLoadingWorkOrders || isLoadingEquipments || isLoadingClients;
 
   const stats = [
-    { title: 'Inspeções Hoje', value: workOrders?.length ?? 0, icon: ListChecks, color: 'text-primary', borderColor: 'border-primary/50' },
+    { title: 'Inspeções Pendentes', value: workOrders?.length ?? 0, icon: ListChecks, color: 'text-primary', borderColor: 'border-primary/50' },
     { title: 'Pendentes', value: workOrders?.filter(wo => wo.status === 'Pendente').length ?? 0, icon: Clock, color: 'text-amber-500', borderColor: 'border-amber-500/50' },
     { title: 'Alertas Ativos', value: '0', icon: TriangleAlert, color: 'text-destructive', borderColor: 'border-destructive/50' },
     { title: 'Concluídas (Mês)', value: '0', icon: CheckCircle, color: 'text-status-green', borderColor: 'border-status-green/50' },
@@ -108,7 +108,7 @@ export default function InspectorAppPage() {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                             <Badge variant="secondary">{wo.status}</Badge>
                             <span>•</span>
-                            <span>Data: {new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
+                            <span>Data: {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}</span>
                         </div>
                     </Link>
                   </li>

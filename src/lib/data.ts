@@ -78,8 +78,8 @@ export type WorkOrder = {
   clientId: string;
   equipmentId: string;
   inspectorId: string;
-  scheduledDate: string;
-  createdAt: string; // Add this line
+  scheduledDate?: string;
+  createdAt?: string;
   status: 'Pendente' | 'Em Andamento' | 'Concluída' | 'Cancelada';
   notes?: string;
 }

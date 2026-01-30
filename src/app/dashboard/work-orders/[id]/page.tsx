@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import { WorkOrderActions } from "../components/work-order-actions";
 import { InspectionResultDisplay } from "./components/inspection-result-display";
 
-function getStatusVariant(status: WorkOrder["status"]) {
+function getStatusVariant(status?: WorkOrder["status"]) {
   switch (status) {
     case "Pendente":
       return "secondary";
@@ -141,7 +141,7 @@ export default function WorkOrderDetailPage({
           <DetailItem label="Setor" value={equipment?.sector} />
           <DetailItem label="Cliente" value={client?.name} />
           <DetailItem label="Inspetor Responsável" value={inspector?.displayName} />
-          <DetailItem label="Data Agendada" value={new Date(workOrder.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} />
+          <DetailItem label="Data Agendada" value={workOrder.scheduledDate ? new Date(workOrder.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'} />
         </CardContent>
       </Card>
       
