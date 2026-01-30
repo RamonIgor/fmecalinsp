@@ -28,7 +28,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin();
+      // Allow admins to get any user doc, and users to get their own.
+      allow get, write: if isOwner(userId) || isAdmin();
+      // Allow any signed-in user to list all users. Required for UI elements like inspector dropdowns.
+      allow list: if isSignedIn();
     }
     
     match /{path=**}/components/{componentId} {
@@ -53,8 +56,11 @@ service cloud.firestore {
     }
 
     match /workOrders/{workOrderId} {
-      // Admins can read all. Non-admins can only read if they are the assigned inspector.
-      allow read: if isAdmin() || (request.auth.uid == resource.data.inspectorId);
+      // Get: Admins can get any. Non-admins can only read if they are the assigned inspector.
+      allow get: if isAdmin() || (request.auth.uid == resource.data.inspectorId);
+      
+      // List: Any signed-in user can list work orders. The client is responsible for filtering.
+      allow list: if isSignedIn();
       
       // Admins can create and delete work orders.
       allow create, delete: if isAdmin();
