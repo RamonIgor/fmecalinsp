@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -11,8 +10,8 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { collection, query, orderBy, where } from 'firebase/firestore';
 import type { WorkOrder, Equipment, Client, User as UserData } from '@/lib/data';
 import { AddWorkOrderButton } from './components/add-work-order-button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,13 +41,32 @@ const ALL_STATUSES = 'Todos';
 export default function WorkOrdersPage() {
   const firestore = useFirestore();
   const router = useRouter();
+  const { user } = useUser(); // ✅ ADICIONADO: Busca o usuário
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
 
+  // ✅ CORRIGIDO: Agora espera o usuário carregar antes de fazer a query
   const workOrdersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'workOrders'), orderBy('scheduledDate', 'desc')) : null),
-    [firestore]
+    () => {
+      if (!firestore || !user) return null; // Espera firestore E usuário
+      
+      const workOrdersRef = collection(firestore, 'workOrders');
+      
+      // Se o usuário for inspetor, filtra apenas as ordens atribuídas a ele
+      if (user.role === 'inspetor') {
+        return query(
+          workOrdersRef,
+          where('inspectorId', '==', user.uid),
+          orderBy('scheduledDate', 'desc')
+        );
+      }
+      
+      // Se for admin ou outro role, mostra todas
+      return query(workOrdersRef, orderBy('scheduledDate', 'desc'));
+    },
+    [firestore, user?.uid, user?.role] // ✅ CORRIGIDO: Adiciona user nas dependências
   );
+  
   const { data: workOrders, isLoading: isLoadingWos } = useCollection<WorkOrder>(workOrdersQuery);
 
   const equipmentsCollection = useMemoFirebase(() => collection(firestore, 'equipment'), [firestore]);
