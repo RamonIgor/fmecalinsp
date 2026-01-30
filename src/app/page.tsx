@@ -16,19 +16,13 @@ export default function Home() {
       return;
     }
 
-    if (user && user.role) {
-      // The useUser hook provides the role, so we can redirect immediately.
-      if (user.role === 'admin') {
-        router.replace('/dashboard');
-      } else if (user.role === 'inspector') {
-        router.replace('/app');
-      } else {
-        // Fallback for users with an unknown role
-        router.replace('/login'); 
-      }
+    // Once loading is complete, we can make a definitive decision.
+    if (user?.role === 'admin') {
+      router.replace('/dashboard');
+    } else if (user?.role === 'inspector') {
+      router.replace('/app');
     } else {
-      // If there's no user, or the user profile/role hasn't loaded yet,
-      // send them to the login page.
+      // Fallback for no user, or user with no role (invalid state).
       router.replace('/login');
     }
   }, [user, isUserLoading, router]);
