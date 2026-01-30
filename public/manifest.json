@@ -1,27 +1,23 @@
 {
-  "name": "CraneCheck",
-  "short_name": "CraneCheck",
-  "description": "Uma aplicação full-stack para inspeção técnica de pontes rolantes, com um PWA offline-first para inspetores e um painel de administração web para gerentes.",
+  "name": "F.Mecal Insp.",
+  "short_name": "F.Mecal Insp.",
+  "description": "Plataforma de Inspeção Técnica da F.Mecal",
   "icons": [
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
-  "theme_color": "#2A303C",
-  "background_color": "#1D232A",
+  "theme_color": "#1e293b",
+  "background_color": "#ffffff",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait"

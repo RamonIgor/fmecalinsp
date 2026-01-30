@@ -8,8 +8,8 @@ import { FirebaseClientProvider } from '@/firebase';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'F.Mecal Insp. - Inspeções Simplificadas',
-  description: 'Uma aplicação full-stack para inspeção técnica de pontes rolantes, com um PWA offline-first para inspetores e um painel de administração web para gerentes.',
+  title: 'F.Mecal Insp.',
+  description: 'Plataforma de Inspeção Técnica para pontes rolantes.',
   manifest: "/manifest.json",
   icons: {
     apple: "/icons/icon-192x192.png",
