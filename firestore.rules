@@ -28,8 +28,9 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get, write: if isOwner(userId) || isAdmin();
+      allow get: if isOwner(userId) || isAdmin();
       allow list: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
     }
     
     match /{path=**}/components/{componentId} {
@@ -53,7 +54,7 @@ service cloud.firestore {
     }
 
     match /workOrders/{workOrderId} {
-      allow get: if isAdmin() || (request.auth.uid == resource.data.inspectorId);
+      allow get: if isAdmin() || isAssignedInspector(workOrderId);
       allow list: if isSignedIn();
       allow create, delete: if isAdmin();
       allow update: if isAdmin() || isAssignedInspector(workOrderId);
