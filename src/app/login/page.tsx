@@ -70,22 +70,38 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(
+      const userCredential = await signInWithEmailAndPassword(
         auth,
         values.email,
         values.password
       );
-  
-      // After successful sign-in, the onAuthStateChanged listener will fire.
-      // Our central redirection logic at the root page ('/') will handle
-      // routing the user to the correct dashboard based on their role.
-      toast({
-        title: 'Login bem-sucedido!',
-        description: 'Redirecionando...',
-      });
-  
-      // Push to the root page to trigger the central redirector.
-      router.push('/');
+      
+      const user = userCredential.user;
+      if (user) {
+        // Fetch user profile from Firestore to get the role
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          toast({
+            title: 'Login bem-sucedido!',
+            description: 'Redirecionando...',
+          });
+
+          // Redirect based on role
+          if (userData.role === 'admin') {
+            router.push('/dashboard');
+          } else {
+            router.push('/app');
+          }
+        } else {
+          // Handle case where user exists in Auth but not in Firestore
+          throw new Error('Perfil de usuário não encontrado.');
+        }
+      } else {
+        throw new Error('Falha na autenticação do usuário.');
+      }
   
     } catch (error: any) {
       console.error(error);
