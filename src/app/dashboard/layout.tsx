@@ -115,21 +115,10 @@ export default function DashboardLayout({
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
 
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (!user) {
-        // No user, send to login
-        router.replace("/login");
-      } else if (user.role !== 'admin') {
-        // User is not an admin, not allowed in dashboard.
-        // Redirect to inspector PWA.
-        router.replace('/app');
-      }
-    }
-  }, [user, isUserLoading, router]);
-
-  // While loading or if user is not an admin, show a loader.
-  // The useEffect above will handle the redirection.
+  // The root page ('/') is now responsible for all role-based redirection.
+  // This layout's only job is to protect its content.
+  // If the user is loading or is not an admin, we show a loader.
+  // This prevents any content from rendering for unauthorized users and fixes the redirect race condition.
   if (isUserLoading || !user || user.role !== 'admin') {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
