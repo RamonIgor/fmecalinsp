@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description: 'Plataforma de Inspeção Técnica para pontes rolantes.',
   manifest: "/manifest.json",
   icons: {
+    icon: '/icons/icon-512x512.png',
     apple: "/icons/icon-192x192.png",
   },
 };

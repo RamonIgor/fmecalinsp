@@ -1,7 +1,11 @@
 {
   "name": "F.Mecal Insp.",
   "short_name": "F.Mecal Insp.",
-  "description": "Plataforma de Inspeção Técnica da F.Mecal",
+  "description": "Plataforma de Inspeção Técnica para pontes rolantes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -15,10 +19,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "theme_color": "#1e293b",
-  "background_color": "#ffffff",
-  "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }
