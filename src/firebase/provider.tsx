@@ -183,26 +183,32 @@ export const useUser = (): UserHookResult => {
   );
   const { data: userProfile, isLoading: isProfileLoading, error: profileError } = useDoc<UserData>(userDocRef);
 
-  const finalIsLoading = isAuthLoading || (!!authUser && isProfileLoading);
+  // We are loading if the initial auth check is running.
+  if (isAuthLoading) {
+    return { user: null, isUserLoading: true, userError: null };
+  }
 
-  const mergedUser = useMemo(() => {
-    if (finalIsLoading) {
-      return null;
-    }
-    if (!authUser) {
-      return null;
-    }
-    // By the time finalIsLoading is false, we have an authUser and the profile lookup is complete.
-    // Merge the auth user with the firestore profile (which could be null if not found).
-    return {
+  // If auth is done, but there's no user, we're not loading anymore.
+  if (!authUser) {
+    return { user: null, isUserLoading: false, userError: authError };
+  }
+  
+  // If we have an authUser, we are still loading until we get their profile from Firestore.
+  if (isProfileLoading) {
+      // We can return the authUser in a loading state, but crucially isUserLoading is true.
+      return { user: authUser as (User & Partial<UserData>), isUserLoading: true, userError: null };
+  }
+
+  // Now, auth is done, we have an authUser, and the profile loading is also done.
+  // We can safely merge them.
+  const mergedUser = {
       ...authUser,
-      ...(userProfile || {}),
-    };
-  }, [authUser, userProfile, finalIsLoading]);
+      ...(userProfile || {}), // If profile doesn't exist, role will be undefined, which is handled by security layouts.
+  };
 
   return {
-    user: mergedUser as (User & Partial<UserData>) | null,
-    isUserLoading: finalIsLoading,
+    user: mergedUser as (User & Partial<UserData>),
+    isUserLoading: false, // We are definitively done loading.
     userError: authError || profileError,
   };
 };
