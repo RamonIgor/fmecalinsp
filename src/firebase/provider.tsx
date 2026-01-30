@@ -183,32 +183,21 @@ export const useUser = (): UserHookResult => {
   );
   const { data: userProfile, isLoading: isProfileLoading, error: profileError } = useDoc<UserData>(userDocRef);
 
-  // We are loading if the initial auth check is running.
-  if (isAuthLoading) {
-    return { user: null, isUserLoading: true, userError: null };
-  }
-
-  // If auth is done, but there's no user, we're not loading anymore.
-  if (!authUser) {
-    return { user: null, isUserLoading: false, userError: authError };
-  }
-  
-  // If we have an authUser, we are still loading until we get their profile from Firestore.
-  if (isProfileLoading) {
-      // We can return the authUser in a loading state, but crucially isUserLoading is true.
-      return { user: authUser as (User & Partial<UserData>), isUserLoading: true, userError: null };
-  }
-
-  // Now, auth is done, we have an authUser, and the profile loading is also done.
-  // We can safely merge them.
-  const mergedUser = {
+  const mergedUser = useMemo(() => {
+    if (!authUser) return null;
+    
+    // Create a new object only when authUser or userProfile changes.
+    // This stabilizes the user object reference, preventing infinite render loops.
+    return {
       ...authUser,
-      ...(userProfile || {}), // If profile doesn't exist, role will be undefined, which is handled by security layouts.
-  };
+      ...(userProfile || {}),
+    };
+  }, [authUser, userProfile]);
 
   return {
     user: mergedUser as (User & Partial<UserData>),
-    isUserLoading: false, // We are definitively done loading.
+    // Overall loading is true if auth is loading, or if we have an authenticated user but are still fetching their profile.
+    isUserLoading: isAuthLoading || (authUser != null && isProfileLoading),
     userError: authError || profileError,
   };
 };
