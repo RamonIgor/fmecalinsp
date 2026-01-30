@@ -33,7 +33,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
   const workOrderId = React.use(params).id;
 
   // State to hold all form data
-  const [inspectionItems, setInspectionItems] = useState<Record<string, InspectionItem>>({});
+  const [inspectionItems, setInspectionItems] = useState<Record<string, Partial<InspectionItem>>>({});
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [activeComponentId, setActiveComponentId] = useState<string | null>(null);
@@ -66,7 +66,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
         questionId: componentId,
         questionText: componentName,
         [field]: value,
-      } as InspectionItem,
+      },
     }));
   };
   
@@ -78,26 +78,39 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
   const handlePhotoCaptured = (dataUrl: string) => {
     if (activeComponentId) {
         const componentName = components?.find(c => c.id === activeComponentId)?.name || '';
-        setInspectionItems(prev => ({
-            ...prev,
-            [activeComponentId]: {
-                ...prev[activeComponentId],
-                questionId: activeComponentId,
-                questionText: componentName,
-                photoUrl: dataUrl
-            } as InspectionItem
-        }));
+        setInspectionItems(prev => {
+            const currentItem = prev[activeComponentId] || {};
+            const currentPhotos = currentItem.photoUrls || [];
+            
+            return {
+                ...prev,
+                [activeComponentId]: {
+                    ...currentItem,
+                    questionId: activeComponentId,
+                    questionText: componentName,
+                    photoUrls: [...currentPhotos, dataUrl]
+                }
+            };
+        });
     }
     setActiveComponentId(null);
   };
   
-  const handleRemovePhoto = (componentId: string) => {
+  const handleRemovePhoto = (componentId: string, photoIndex: number) => {
     setInspectionItems(prev => {
-        const newItems = { ...prev };
-        if (newItems[componentId]) {
-            delete newItems[componentId].photoUrl;
+        const itemToUpdate = prev[componentId];
+        if (itemToUpdate && itemToUpdate.photoUrls) {
+            const newPhotos = [...itemToUpdate.photoUrls];
+            newPhotos.splice(photoIndex, 1);
+            return {
+                ...prev,
+                [componentId]: {
+                    ...itemToUpdate,
+                    photoUrls: newPhotos,
+                }
+            };
         }
-        return newItems;
+        return prev;
     });
   };
 
@@ -132,7 +145,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     inspectorName: user?.displayName ?? 'N/A',
     date: new Date().toISOString(),
     status: 'Finalizado',
-    items: Object.values(inspectionItems).filter(item => item.answer), // Only include answered items
+    items: Object.values(inspectionItems).filter(item => item.answer) as InspectionItem[], // Only include answered items
     signatureUrl: signatureDataUrl,
   };
 
@@ -159,7 +172,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
               </AccordionTrigger>
               <AccordionContent className="p-4 space-y-6">
                 {componentList.map((component) => {
-                  const photoUrl = inspectionItems[component.id]?.photoUrl;
+                  const photoUrls = inspectionItems[component.id]?.photoUrls || [];
                   const displayName = component.name.includes(':') ? component.name.split(':')[1].trim() : component.name;
 
                   return (
@@ -196,30 +209,34 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
                         onChange={(e) => handleItemChange(component.id, component.name, 'observation', e.target.value)}
                         value={inspectionItems[component.id]?.observation || ''}
                       />
-                       {photoUrl ? (
-                          <div className="mt-4">
-                              <div className="relative aspect-video w-full max-w-xs rounded-md overflow-hidden border">
-                                  <Image src={photoUrl} alt="Foto da inspeção" fill className="object-cover" />
+                       <div className="mt-4 space-y-4">
+                        {photoUrls.length > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {photoUrls.map((url, index) => (
+                              <div key={index} className="relative group aspect-video rounded-md overflow-hidden border">
+                                <Image src={url} alt={`Foto da inspeção ${index + 1}`} fill className="object-cover" />
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                  onClick={() => handleRemovePhoto(component.id, index)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Remover foto</span>
+                                </Button>
                               </div>
-                              <Button 
-                                  variant="destructive" 
-                                  size="sm" 
-                                  className="mt-2"
-                                  onClick={() => handleRemovePhoto(component.id)}
-                              >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Remover Foto
-                              </Button>
+                            ))}
                           </div>
-                      ) : (
-                          <Button 
-                              variant="outline" 
-                              className="mt-4 w-full"
-                              onClick={() => handleAttachPhotoClick(component.id)}
-                          >
-                              <Camera className="mr-2 h-4 w-4" /> Anexar Foto
-                          </Button>
-                      )}
+                        )}
+                        <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => handleAttachPhotoClick(component.id)}
+                        >
+                            <Camera className="mr-2 h-4 w-4" /> 
+                            {photoUrls.length > 0 ? 'Anexar Mais Fotos' : 'Anexar Foto'}
+                        </Button>
+                      </div>
                     </div>
                   )
                 })}

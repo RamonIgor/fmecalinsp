@@ -57,7 +57,7 @@ export type InspectionItem = {
   questionText: string;
   answer: 'Conforme' | 'Não Conforme' | 'NA';
   observation: string;
-  photoUrl?: string;
+  photoUrls?: string[];
 };
 
 export type Inspection = {

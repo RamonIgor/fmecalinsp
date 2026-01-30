@@ -54,11 +54,15 @@ export function InspectionResultDisplay({ inspection }: { inspection: Inspection
                         <strong>Obs:</strong> {item.observation}
                     </p>
                 )}
-                 {item.photoUrl && (
+                 {item.photoUrls && item.photoUrls.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Camera size={16}/> Fotografia Anexada</p>
-                    <div className="relative aspect-video w-full max-w-sm rounded-md overflow-hidden">
-                       <Image src={item.photoUrl} alt={`Foto para o item "${item.questionText}"`} fill className="object-cover"/>
+                    <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Camera size={16}/> Fotografia(s) Anexada(s)</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                       {item.photoUrls.map((url, index) => (
+                         <div key={index} className="relative aspect-video w-full rounded-md overflow-hidden border">
+                           <Image src={url} alt={`Foto ${index + 1} para o item "${item.questionText}"`} fill className="object-cover"/>
+                         </div>
+                       ))}
                     </div>
                   </div>
                 )}

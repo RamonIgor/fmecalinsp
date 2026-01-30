@@ -17,7 +17,7 @@ export function ReportGenerator({ inspection }: { inspection: Inspection }) {
       const inspectionData = JSON.stringify(inspection, null, 2);
       // In a real app, photos would be data URIs from storage.
       const photos = inspection.items
-        .map(item => item.photoUrl)
+        .flatMap(item => item.photoUrls || [])
         .filter((url): url is string => !!url);
 
       const result = await generatePdfReport({ inspectionData, photos });
