@@ -114,10 +114,10 @@ export default function DashboardLayout({
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
 
-  // The root page ('/') is now responsible for all role-based redirection.
   // This layout's only job is to protect its content.
   // If the user is loading or is not an admin, we show a loader.
   // This prevents any content from rendering for unauthorized users and fixes the redirect race condition.
+  // The root page ('/') is now responsible for all role-based redirection.
   if (isUserLoading || !user || user.role !== 'admin') {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -131,7 +131,7 @@ export default function DashboardLayout({
         <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-secondary sm:flex">
             <div className="flex h-16 items-center gap-2 px-6 border-b border-sidebar-border">
                 <Logo className="h-8 w-8 text-primary" />
-                <span className="font-headline text-2xl font-bold text-white">CraneCheck</span>
+                <span className="font-headline text-2xl font-bold text-white">F.Mecal Insp.</span>
             </div>
             <nav className="flex flex-col gap-2 p-4">
                 {navItems.map((item) => {
@@ -167,7 +167,7 @@ export default function DashboardLayout({
                         <nav className="grid gap-6 text-lg font-medium">
                         <div className="flex h-16 items-center gap-2 px-0 border-b border-sidebar-border">
                             <Logo className="h-8 w-8 text-primary" />
-                            <span className="font-headline text-2xl font-bold">CraneCheck</span>
+                            <span className="font-headline text-2xl font-bold">F.Mecal Insp.</span>
                         </div>
                          {navItems.map((item) => {
                             const isActive = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);

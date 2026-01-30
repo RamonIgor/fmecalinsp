@@ -158,7 +158,7 @@ export default function LoginPage() {
             <CardHeader className="items-center text-center">
               <div className="mb-4 flex flex-col items-center gap-2">
                 <Logo className="h-12 w-12 text-primary" />
-                <span className="font-bold text-3xl">CraneCheck</span>
+                <span className="font-bold text-3xl">F.Mecal Insp.</span>
               </div>
               <CardTitle className="text-2xl font-bold">
                 Bem-vindo de volta

@@ -1,6 +1,6 @@
-# CraneCheck - Plataforma de Inspeção Técnica
+# F.Mecal Insp. - Plataforma de Inspeção Técnica
 
-**CraneCheck** é uma aplicação web full-stack, moderna e robusta, projetada para digitalizar e otimizar o processo de inspeção técnica de pontes rolantes e equipamentos industriais similares. A plataforma oferece duas experiências distintas, personalizadas para os perfis de **Administrador** e **Inspetor**.
+**F.Mecal Insp.** é uma aplicação web full-stack, moderna e robusta, projetada para digitalizar e otimizar o processo de inspeção técnica de pontes rolantes e equipamentos industriais similares. A plataforma oferece duas experiências distintas, personalizadas para os perfis de **Administrador** e **Inspetor**.
 
 - **Painel do Administrador (Web):** Uma interface de gerenciamento centralizada para cadastrar clientes, equipamentos, usuários e, crucialmente, agendar e monitorar ordens de serviço.
 - **Aplicativo do Inspetor (PWA Offline-First):** Um Progressive Web App (PWA) otimizado para dispositivos móveis que permite aos inspetores realizar inspeções em campo, mesmo sem conexão com a internet.
