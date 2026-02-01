@@ -24,6 +24,23 @@ function getGreeting() {
   return 'Boa noite';
 }
 
+const getDateStatus = (scheduledDate: string): { text: string; variant: 'destructive' | 'default' | 'secondary' } => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const woDateLocal = new Date(scheduledDate);
+    woDateLocal.setHours(0, 0, 0, 0);
+    
+    if (woDateLocal < today) {
+        return { text: 'Atrasada', variant: 'destructive' };
+    }
+    if (woDateLocal.getTime() === today.getTime()) {
+        return { text: 'Hoje', variant: 'default' };
+    }
+    return { text: 'Próxima', variant: 'secondary' };
+};
+
+
 export default function InspectorAppPage() {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -66,7 +83,7 @@ export default function InspectorAppPage() {
     }
 
     const today = new Date();
-    const todayDateString = today.toISOString().split('T')[0];
+    today.setHours(0, 0, 0, 0);
 
     let forTodayCount = 0;
     let overdueCount = 0;
@@ -74,10 +91,12 @@ export default function InspectorAppPage() {
 
     for (const wo of pendingWorkOrders) {
       if (wo.scheduledDate) {
-        const woDateString = wo.scheduledDate.split('T')[0];
-        if (woDateString < todayDateString) {
+        const woDateLocal = new Date(wo.scheduledDate);
+        woDateLocal.setHours(0, 0, 0, 0);
+        
+        if (woDateLocal < today) {
           overdueCount++;
-        } else if (woDateString === todayDateString) {
+        } else if (woDateLocal.getTime() === today.getTime()) {
           forTodayCount++;
         } else {
           upcomingCount++;
@@ -144,6 +163,7 @@ export default function InspectorAppPage() {
               {sortedWorkOrders?.map((wo) => {
                 const equipment = getEquipment(wo.equipmentId);
                 const client = getClient(wo.clientId);
+                const dateStatus = wo.scheduledDate ? getDateStatus(wo.scheduledDate) : null;
                 return (
                   <li key={wo.id}>
                     <Link href={`/app/inspection/${wo.id}`} className="block p-4 rounded-md hover:bg-muted">
@@ -155,8 +175,7 @@ export default function InspectorAppPage() {
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-                            <Badge variant="secondary">{wo.status}</Badge>
-                            <span>•</span>
+                            {dateStatus && <Badge variant={dateStatus.variant}>{dateStatus.text}</Badge>}
                             <span>Data: {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}</span>
                         </div>
                     </Link>
