@@ -44,6 +44,14 @@ Otimizado para uso em campo, com capacidade total de funcionamento offline.
 - **✍️ Assinatura Digital:** Ao final da inspeção, o inspetor pode assinar digitalmente na tela do dispositivo.
 - **🔄 Sincronização Automática:** Todas as informações coletadas offline são salvas localmente no dispositivo. Assim que a conexão com a internet é restabelecida, os dados são sincronizados automaticamente com o servidor.
 
+### ✨ Em Breve: Portal do Cliente (Acesso de Leitura)
+
+Transforme a relação com seus clientes, oferecendo transparência e valor agregado.
+
+- **📈 Acesso em Tempo Real:** Seus clientes poderão fazer login em um portal seguro para visualizar o status de saúde de todos os seus equipamentos em tempo real.
+- **📂 Repositório Central de Relatórios:** Acesso instantâneo a todos os relatórios de inspeção, históricos e documentação, a qualquer hora e em qualquer lugar.
+- **🤝 Parceria Estratégica:** A F.Mecal deixará de ser apenas uma prestadora de serviços para se tornar uma parceira na gestão de ativos e riscos, justificando o valor e fidelizando o cliente a longo prazo.
+
 ---
 
 ## 🛠️ Pilha de Tecnologia
@@ -60,7 +68,7 @@ Otimizado para uso em campo, com capacidade total de funcionamento offline.
 - **PWA (Progressive Web App):**
   - Funcionalidades offline, cache de recursos e instalação em dispositivos móveis.
 - **IA Generativa:**
-  - **Motor:** [Google Gemini](https://deepmind.google/technologies/gemini/)
+  - **Motor:** [Google Gemini](https://deepmind.google.com/technologies/gemini/)
   - **Orquestração:** [Genkit (Firebase)](https://firebase.google.com/docs/genkit) para a geração de relatórios em PDF.
 
 ---
