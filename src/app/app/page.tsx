@@ -16,6 +16,7 @@ import type { WorkOrder, Equipment, Client, Inspection } from '@/lib/data';
 import { collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { PrepareOfflineButton } from './components/prepare-offline-button';
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -148,6 +149,8 @@ export default function InspectorAppPage() {
           </Card>
         ))}
       </div>
+      
+      <PrepareOfflineButton workOrders={sortedWorkOrders} />
 
       <div>
         <h2 className="text-lg font-semibold mb-3">Minhas Ordens de Serviço Pendentes</h2>
