@@ -5,6 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import { DownloadCloud, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { WorkOrder } from "@/lib/data";
+import { useFirestore } from "@/firebase/provider";
+import { cacheDataForOffline } from "@/lib/offline";
 
 interface PrepareOfflineButtonProps {
     workOrders: WorkOrder[] | null;
@@ -12,6 +14,7 @@ interface PrepareOfflineButtonProps {
 
 export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) {
     const { toast } = useToast();
+    const firestore = useFirestore();
     const [loading, setLoading] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
 
@@ -51,18 +54,22 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
         setLoading(true);
 
         try {
-            const promises = pendingWorkOrders.map(wo => fetch(`/app/inspection/${wo.id}`));
-            await Promise.all(promises);
+            // Cache all firestore data related to the pending work orders
+            await cacheDataForOffline(firestore, pendingWorkOrders);
+
+            // Also pre-fetch pages for the PWA cache
+            const pagePromises = pendingWorkOrders.map(wo => fetch(`/app/inspection/${wo.id}`));
+            await Promise.all(pagePromises);
 
             toast({
                 title: "Pronto para trabalhar offline!",
-                description: `${pendingWorkOrders.length} ordem(ns) de serviço foram salvas no dispositivo.`,
+                description: `${pendingWorkOrders.length} ordem(ns) de serviço e seus dados foram salvos no dispositivo.`,
             });
         } catch (error) {
             console.error("Error preparing offline data: ", error);
             toast({
                 title: "Erro ao preparar para modo offline",
-                description: "Não foi possível baixar as páginas. Verifique sua conexão e tente novamente.",
+                description: "Não foi possível baixar os dados. Verifique sua conexão e tente novamente.",
                 variant: "destructive"
             });
         } finally {
@@ -73,13 +80,13 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
     const pendingCount = workOrders?.filter(wo => wo.status === 'Pendente').length ?? 0;
 
     return (
-        <Button onClick={handlePrepareOffline} disabled={loading || pendingCount === 0} size="lg" className="w-full h-14 text-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg">
+        <Button onClick={handlePrepareOffline} disabled={loading || pendingCount === 0 || !isOnline} size="lg" className="w-full h-14 text-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg">
              {loading ? (
                 <Loader2 className="mr-2 h-6 w-6 animate-spin" />
             ) : (
                 <DownloadCloud className="mr-2 h-6 w-6" />
             )}
-            {loading ? 'Baixando...' : `Preparar ${pendingCount} OS para Trabalho Offline`}
+            {loading ? 'Baixando dados...' : `Baixar ${pendingCount} OS para Trabalho Offline`}
         </Button>
     );
 }

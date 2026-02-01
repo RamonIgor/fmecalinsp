@@ -1,26 +1,80 @@
 'use client';
 
 import Dexie, { type Table } from 'dexie';
-import { type Inspection } from './data';
-import { type Firestore, collection, doc, writeBatch } from 'firebase/firestore';
+import { type Inspection, type WorkOrder, type Equipment, type Client, type EquipmentComponent } from './data';
+import { type Firestore, collection, doc, writeBatch, getDoc, getDocs } from 'firebase/firestore';
 
 // We store the inspection data, but omit properties that are generated upon sync.
 export type OfflineInspection = Omit<Inspection, 'id' | 'status'> & {
   localId?: number; // Dexie's auto-incrementing primary key
 };
 
+// Add equipmentId to the component type for local storage
+export type OfflineComponent = EquipmentComponent & { equipmentId: string };
+
 export class OfflineDB extends Dexie {
-  pendingInspections!: Table<OfflineInspection, number>; 
+  pendingInspections!: Table<OfflineInspection, number>;
+  workOrders!: Table<WorkOrder, string>;
+  equipment!: Table<Equipment, string>;
+  clients!: Table<Client, string>;
+  components!: Table<OfflineComponent, string>;
+
 
   constructor() {
     super('FmecalOfflineDB');
-    this.version(1).stores({
-      pendingInspections: '++localId,workOrderId',
+    this.version(2).stores({
+      pendingInspections: '++localId, workOrderId',
+      workOrders: 'id, inspectorId, status', // Use firestore ID as primary key
+      equipment: 'id, clientId',
+      clients: 'id',
+      components: 'id, equipmentId',
     });
   }
 }
 
 export const offlineDB = new OfflineDB();
+
+
+/**
+ * Fetches all data related to the given work orders and caches it in IndexedDB.
+ * @param firestore The Firestore instance.
+ * @param workOrders The list of work orders to cache.
+ */
+export async function cacheDataForOffline(firestore: Firestore, workOrders: WorkOrder[]) {
+    if (!workOrders || workOrders.length === 0) return;
+
+    const equipmentIds = [...new Set(workOrders.map(wo => wo.equipmentId))];
+    const clientIds = [...new Set(workOrders.map(wo => wo.clientId))];
+
+    const equipmentPromises = equipmentIds.map(id => getDoc(doc(firestore, 'equipment', id)));
+    const clientPromises = clientIds.map(id => getDoc(doc(firestore, 'clients', id)));
+    
+    const equipmentSnapshots = await Promise.all(equipmentPromises);
+    const clientSnapshots = await Promise.all(clientPromises);
+
+    const equipments = equipmentSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Equipment)).filter(e => e.name);
+    const clients = clientSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Client)).filter(c => c.name);
+
+    let components: OfflineComponent[] = [];
+    for (const equip of equipments) {
+        const componentsCollection = collection(firestore, 'equipment', equip.id, 'components');
+        const componentsSnapshot = await getDocs(componentsCollection);
+        const equipComponents = componentsSnapshot.docs.map(d => ({
+            ...(d.data() as EquipmentComponent),
+            id: d.id,
+            equipmentId: equip.id, // Add the equipmentId for offline querying
+        }));
+        components = components.concat(equipComponents);
+    }
+    
+    await offlineDB.transaction('rw', offlineDB.workOrders, offlineDB.equipment, offlineDB.clients, offlineDB.components, async () => {
+        await offlineDB.workOrders.bulkPut(workOrders);
+        await offlineDB.equipment.bulkPut(equipments);
+        await offlineDB.clients.bulkPut(clients);
+        await offlineDB.components.bulkPut(components);
+    });
+}
+
 
 /**
  * Attempts to sync all pending inspections from IndexedDB to Firestore.

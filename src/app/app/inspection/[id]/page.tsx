@@ -23,16 +23,19 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, doc } from 'firebase/firestore';
-import type { Equipment, EquipmentComponent, InspectionItem } from '@/lib/data';
-import React, { useState } from 'react';
+import type { Equipment, EquipmentComponent, InspectionItem, WorkOrder } from '@/lib/data';
+import React, { useState, useEffect } from 'react';
 import { CameraCaptureDialog } from './components/camera-capture-dialog';
 import Image from 'next/image';
-
+import { useOnlineStatus } from '@/lib/hooks/use-online-status';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { offlineDB, type OfflineComponent } from '@/lib/offline';
 
 export default function InspectionPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
   const { user } = useUser();
   const workOrderId = React.use(params).id;
+  const isOnline = useOnlineStatus();
 
   // State to hold all form data
   const [inspectionItems, setInspectionItems] = useState<Record<string, Partial<InspectionItem>>>({});
@@ -40,25 +43,41 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [activeComponentId, setActiveComponentId] = useState<string | null>(null);
 
+  // --- ONLINE DATA SOURCES ---
   const workOrderRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'workOrders', workOrderId) : null),
-    [firestore, workOrderId]
+    () => (firestore && isOnline ? doc(firestore, 'workOrders', workOrderId) : null),
+    [firestore, workOrderId, isOnline]
   );
-  const { data: workOrder, isLoading: isLoadingWorkOrder } = useDoc<WorkOrder>(workOrderRef);
+  const { data: onlineWorkOrder } = useDoc<WorkOrder>(workOrderRef);
 
-  const equipmentId = workOrder?.equipmentId;
+  const equipmentId = onlineWorkOrder?.equipmentId;
+  
   const equipmentRef = useMemoFirebase(
-    () => (firestore && equipmentId ? doc(firestore, 'equipment', equipmentId) : null),
-    [firestore, equipmentId]
+    () => (firestore && equipmentId && isOnline ? doc(firestore, 'equipment', equipmentId) : null),
+    [firestore, equipmentId, isOnline]
   );
-  const { data: equipment, isLoading: isLoadingEquipment } = useDoc<Equipment>(equipmentRef);
+  const { data: onlineEquipment } = useDoc<Equipment>(equipmentRef);
 
   const componentsRef = useMemoFirebase(
-    () => (firestore && equipmentId ? collection(firestore, 'equipment', equipmentId, 'components') : null),
-    [firestore, equipmentId]
+    () => (firestore && equipmentId && isOnline ? collection(firestore, 'equipment', equipmentId, 'components') : null),
+    [firestore, equipmentId, isOnline]
   );
-  const { data: components, isLoading: isLoadingComponents } = useCollection<EquipmentComponent>(componentsRef);
+  const { data: onlineComponents } = useCollection<EquipmentComponent>(componentsRef);
+
+  // --- OFFLINE DATA SOURCES ---
+  const offlineWorkOrder = useLiveQuery(() => offlineDB.workOrders.get(workOrderId), [workOrderId]);
+  const offlineEquipmentId = offlineWorkOrder?.equipmentId;
+  const offlineEquipment = useLiveQuery(() => offlineEquipmentId ? offlineDB.equipment.get(offlineEquipmentId) : undefined, [offlineEquipmentId]);
+  const offlineComponents = useLiveQuery(() => offlineEquipmentId ? offlineDB.components.where('equipmentId').equals(offlineEquipmentId).toArray() : [], [offlineEquipmentId]);
   
+  // --- DECIDE WHICH DATA TO USE ---
+  const workOrder = isOnline ? onlineWorkOrder : offlineWorkOrder;
+  const equipment = isOnline ? onlineEquipment : offlineEquipment;
+  const components = isOnline ? onlineComponents : offlineComponents;
+
+  const isLoading = (isOnline && (!onlineWorkOrder || !onlineEquipment || !onlineComponents)) ||
+                    (!isOnline && (offlineWorkOrder === undefined || offlineEquipment === undefined || offlineComponents === undefined));
+
 
   const handleItemChange = (componentId: string, componentName: string, field: 'answer' | 'observation', value: string) => {
     setInspectionItems(prev => ({
@@ -116,8 +135,6 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     });
   };
 
-  const isLoading = isLoadingWorkOrder || isLoadingEquipment || isLoadingComponents;
-
   if (isLoading) {
     return (
       <div className="flex h-64 w-full items-center justify-center">
@@ -127,7 +144,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
   }
 
   if (!workOrder || !equipment || !components) {
-    return <div>Ordem de Serviço, Equipamento ou Componentes não encontrados.</div>;
+    return <div className="text-center p-8 bg-card rounded-lg">Ordem de Serviço, Equipamento ou Componentes não encontrados. Verifique sua conexão ou se os dados foram baixados para uso offline.</div>;
   }
 
   const groupedComponents = components.reduce(
@@ -137,7 +154,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
       (acc[cleanCategory] = acc[cleanCategory] || []).push(component);
       return acc;
     },
-    {} as Record<string, EquipmentComponent[]>
+    {} as Record<string, (EquipmentComponent | OfflineComponent)[]>
   );
   
   const finalInspectionData = {

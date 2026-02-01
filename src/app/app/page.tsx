@@ -9,7 +9,7 @@ import {
   ChevronRight,
   CalendarCheck,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { WorkOrder, Equipment, Client, Inspection } from '@/lib/data';
@@ -17,6 +17,9 @@ import { collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { PrepareOfflineButton } from './components/prepare-offline-button';
+import { useOnlineStatus } from '@/lib/hooks/use-online-status';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { offlineDB } from '@/lib/offline';
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -30,12 +33,13 @@ const getDateStatus = (scheduledDate: string): { text: string; variant: 'destruc
     today.setHours(0, 0, 0, 0);
 
     const woDateLocal = new Date(scheduledDate);
-    woDateLocal.setHours(0, 0, 0, 0);
-    
-    if (woDateLocal < today) {
+    // Adjust for timezone differences by only comparing date parts
+    const woDateUTC = new Date(woDateLocal.getUTCFullYear(), woDateLocal.getUTCMonth(), woDateLocal.getUTCDate());
+
+    if (woDateUTC < today) {
         return { text: 'Atrasada', variant: 'destructive' };
     }
-    if (woDateLocal.getTime() === today.getTime()) {
+    if (woDateUTC.getTime() === today.getTime()) {
         return { text: 'Hoje', variant: 'default' };
     }
     return { text: 'Próxima', variant: 'secondary' };
@@ -45,18 +49,53 @@ const getDateStatus = (scheduledDate: string): { text: string; variant: 'destruc
 export default function InspectorAppPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const isOnline = useOnlineStatus();
 
+  // --- ONLINE DATA SOURCES ---
   const workOrdersQuery = useMemoFirebase(
-    () => (user ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente')) : null),
-    [firestore, user]
+    () => (user && isOnline ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente')) : null),
+    [firestore, user, isOnline]
   );
-  const { data: pendingWorkOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
+  const { data: onlineWorkOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
   
   const inspectionsQuery = useMemoFirebase(
-    () => (user ? query(collection(firestore, 'inspections'), where('inspectorId', '==', user.uid)) : null),
-    [firestore, user]
+    () => (user && isOnline ? query(collection(firestore, 'inspections'), where('inspectorId', '==', user.uid)) : null),
+    [firestore, user, isOnline]
   );
-  const { data: inspections, isLoading: isLoadingInspections } = useCollection<Inspection>(inspectionsQuery);
+  const { data: onlineInspections, isLoading: isLoadingInspections } = useCollection<Inspection>(inspectionsQuery);
+
+  const equipmentsCollection = useMemoFirebase(() => (isOnline ? collection(firestore, 'equipment') : null), [firestore, isOnline]);
+  const { data: onlineEquipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
+
+  const clientsCollection = useMemoFirebase(() => (isOnline ? collection(firestore, 'clients') : null), [firestore, isOnline]);
+  const { data: onlineClients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
+  
+  // --- OFFLINE DATA SOURCES (DEXIE) ---
+  const offlineWorkOrders = useLiveQuery(() => user ? offlineDB.workOrders.where({ inspectorId: user.uid, status: 'Pendente' }).toArray() : [], [user]);
+  const offlineEquipments = useLiveQuery(() => offlineDB.equipment.toArray(), []);
+  const offlineClients = useLiveQuery(() => offlineDB.clients.toArray(), []);
+  const offlineInspections = useLiveQuery(() => user ? offlineDB.pendingInspections.where('inspectorId').equals(user.uid).toArray() : [], [user]);
+
+  // --- SYNC ONLINE DATA TO OFFLINE CACHE ---
+  useEffect(() => {
+    // This effect keeps the offline cache fresh when the user is online.
+    if (isOnline) {
+      if (onlineWorkOrders) offlineDB.workOrders.bulkPut(onlineWorkOrders).catch(console.error);
+      if (onlineEquipments) offlineDB.equipment.bulkPut(onlineEquipments).catch(console.error);
+      if (onlineClients) offlineDB.clients.bulkPut(onlineClients).catch(console.error);
+    }
+  }, [isOnline, onlineWorkOrders, onlineEquipments, onlineClients]);
+
+
+  // --- MERGE & DECIDE DATA SOURCE ---
+  const pendingWorkOrders = isOnline ? onlineWorkOrders : offlineWorkOrders;
+  const inspections = isOnline ? onlineInspections : []; // Completed inspections are not available offline for stats
+  const equipments = isOnline ? onlineEquipments : offlineEquipments;
+  const clients = isOnline ? onlineClients : offlineClients;
+  
+  const isLoading = isOnline 
+    ? (isLoadingWorkOrders || isLoadingEquipments || isLoadingClients || isLoadingInspections)
+    : (offlineWorkOrders === undefined || offlineEquipments === undefined || offlineClients === undefined);
 
   const sortedWorkOrders = useMemo(() => {
     if (!pendingWorkOrders) return null;
@@ -67,19 +106,11 @@ export default function InspectorAppPage() {
   }, [pendingWorkOrders]);
 
 
-  const equipmentsCollection = useMemoFirebase(() => collection(firestore, 'equipment'), [firestore]);
-  const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
-
-  const clientsCollection = useMemoFirebase(() => collection(firestore, 'clients'), [firestore]);
-  const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
-
   const getEquipment = (id: string) => equipments?.find(e => e.id === id);
   const getClient = (id: string) => clients?.find(c => c.id === id);
-
-  const isLoading = isLoadingWorkOrders || isLoadingEquipments || isLoadingClients || isLoadingInspections;
   
   const { forToday, overdue, upcoming, completedThisMonth } = useMemo(() => {
-    if (!pendingWorkOrders || !inspections) {
+    if (!pendingWorkOrders) {
       return { forToday: 0, overdue: 0, upcoming: 0, completedThisMonth: 0 };
     }
 
@@ -93,11 +124,11 @@ export default function InspectorAppPage() {
     for (const wo of pendingWorkOrders) {
       if (wo.scheduledDate) {
         const woDateLocal = new Date(wo.scheduledDate);
-        woDateLocal.setHours(0, 0, 0, 0);
+        const woDateUTC = new Date(woDateLocal.getUTCFullYear(), woDateLocal.getUTCMonth(), woDateLocal.getUTCDate());
         
-        if (woDateLocal < today) {
+        if (woDateUTC < today) {
           overdueCount++;
-        } else if (woDateLocal.getTime() === today.getTime()) {
+        } else if (woDateUTC.getTime() === today.getTime()) {
           forTodayCount++;
         } else {
           upcomingCount++;
@@ -105,7 +136,7 @@ export default function InspectorAppPage() {
       }
     }
 
-    const completedThisMonthCount = inspections.filter(i => {
+    const completedThisMonthCount = (inspections || []).filter(i => {
         const inspectionDate = new Date(i.date);
         return inspectionDate.getMonth() === today.getMonth() &&
                inspectionDate.getFullYear() === today.getFullYear();
@@ -172,8 +203,8 @@ export default function InspectorAppPage() {
                     <Link href={`/app/inspection/${wo.id}`} className="block p-4 rounded-md hover:bg-muted">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-semibold">{equipment?.name}</p>
-                                <p className="text-sm text-muted-foreground">{client?.name} - {equipment?.sector}</p>
+                                <p className="font-semibold">{equipment?.name || 'Carregando...'}</p>
+                                <p className="text-sm text-muted-foreground">{client?.name || '...'} - {equipment?.sector || '...'}</p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </div>
