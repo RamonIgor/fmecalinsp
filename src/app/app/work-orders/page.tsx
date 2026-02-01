@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 function getStatusVariant(status?: WorkOrder['status']) {
   switch (status) {
@@ -65,7 +66,7 @@ function WorkOrderList({ workOrders, equipments, clients, isLoading }: { workOrd
         <ul className="divide-y divide-border">
           {workOrders?.map((wo) => {
             const equipment = getEquipment(wo.equipmentId);
-            const client = equipment && equipment.clientId ? getClient(equipment.clientId) : null;
+            const client = getClient(wo.clientId);
             const isClickable = wo.status === 'Pendente';
             return (
               <li key={wo.id}>
