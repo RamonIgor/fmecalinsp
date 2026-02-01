@@ -11,11 +11,6 @@ export const metadata: Metadata = {
   title: 'F.Mecal Insp.',
   description: 'Plataforma de Inspeção Técnica para pontes rolantes.',
   manifest: "/manifest.json",
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/icons/icon-192x192.png',
-  },
 };
 
 export const viewport: Viewport = {
@@ -29,6 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className={cn('min-h-screen font-body antialiased', inter.variable)}>
         <FirebaseClientProvider>
           {children}
