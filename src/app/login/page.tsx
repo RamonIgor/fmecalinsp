@@ -41,7 +41,7 @@ import {
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -62,6 +62,7 @@ export default function LoginPage() {
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isResetting, setIsResetting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const bgImage = PlaceHolderImages.find((img) => img.id === 'landing-background');
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -225,14 +226,30 @@ export default function LoginPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="sr-only">Senha</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            {...field}
-                            className="h-11 bg-background/70 border-border/50"
-                          />
-                        </FormControl>
+                        <div className="relative">
+                            <FormControl>
+                            <Input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="••••••••"
+                                {...field}
+                                className="h-11 bg-background/70 border-border/50 pr-10"
+                            />
+                            </FormControl>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute inset-y-0 right-0 h-full w-10 text-white/80 hover:bg-transparent hover:text-white"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                            >
+                                {showPassword ? (
+                                <EyeOff className="h-5 w-5" />
+                                ) : (
+                                <Eye className="h-5 w-5" />
+                                )}
+                            </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
