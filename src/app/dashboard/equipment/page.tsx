@@ -1,15 +1,15 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Equipment } from "@/lib/data";
 import { EquipmentActions } from "./components/equipment-actions";
 import { AddEquipmentButton } from "./components/add-equipment-button";
-import { HardDrive, Search } from "lucide-react";
+import { HardDrive, Search, ImageIcon } from "lucide-react";
 import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import { collection } from "firebase/firestore";
-import Logo from "@/components/logo";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 
@@ -68,7 +68,6 @@ export default function EquipmentPage() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                {/* TODO: Implement filter dropdowns */}
                 <AddEquipmentButton />
             </div>
         </div>
@@ -77,35 +76,39 @@ export default function EquipmentPage() {
        {isLoading && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(3)].map((_, i) => (
-                <Card key={i} className="animate-pulse h-48 bg-muted"></Card>
+                <Card key={i} className="animate-pulse h-80 bg-muted"></Card>
             ))}
           </div>
         )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredEquipments?.map((equipment) => {
             const statusInfo = getStatusInfo(equipment.status);
             return (
-              <Card key={equipment.id} className="flex flex-col justify-between hover:shadow-md transition-shadow">
-                <CardHeader className="flex flex-row items-start justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <Logo className="h-8 w-8 text-primary" />
-                        <div>
-                            <p className="font-bold text-lg">{equipment.name}</p>
-                            <p className="text-sm text-muted-foreground">{equipment.sector}</p>
+              <Card key={equipment.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-200 ease-in-out">
+                <div className="relative w-full h-40 bg-muted">
+                    {equipment.imageUrl ? (
+                        <Image src={equipment.imageUrl} alt={equipment.name} fill className="object-cover" />
+                    ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-zinc-800">
+                            <ImageIcon className="h-12 w-12 text-gray-400" />
                         </div>
-                    </div>
-                    <Badge variant={statusInfo.variant}>{statusInfo.text}</Badge>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    <div className="text-sm text-muted-foreground space-y-1">
-                        <p><span className="font-semibold text-foreground">Última inspeção:</span> {equipment.lastInspection || 'N/A'}</p>
-                        <p><span className="font-semibold text-foreground">Próxima inspeção:</span> N/A</p>
-                    </div>
-                </CardContent>
-                <div className="flex items-center justify-end p-4 pt-0">
-                    <EquipmentActions equipment={equipment} />
+                    )}
                 </div>
+                <CardHeader>
+                    <div className="flex justify-between items-start gap-2">
+                        <CardTitle className="text-base font-bold">{equipment.name}</CardTitle>
+                        <Badge variant={statusInfo.variant} className="flex-shrink-0">{statusInfo.text}</Badge>
+                    </div>
+                    <CardDescription>{equipment.sector}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow text-sm text-muted-foreground space-y-1">
+                    <p><span className="font-semibold text-foreground">TAG:</span> {equipment.tag}</p>
+                    <p><span className="font-semibold text-foreground">Última inspeção:</span> {equipment.lastInspection || 'N/A'}</p>
+                </CardContent>
+                <CardFooter className="flex justify-end p-2 border-t bg-gray-50 dark:bg-zinc-900/50">
+                    <EquipmentActions equipment={equipment} />
+                </CardFooter>
               </Card>
             )
         })}

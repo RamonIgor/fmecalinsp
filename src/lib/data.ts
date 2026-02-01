@@ -25,6 +25,7 @@ export type Equipment = {
   status: 'Operacional' | 'Requer Atenção' | 'Fora de Serviço';
   components?: EquipmentComponent[]; // Optional because it's a subcollection
   clientId?: string; // Foreign key to clients
+  imageUrl?: string;
 };
 
 export type Inspector = {

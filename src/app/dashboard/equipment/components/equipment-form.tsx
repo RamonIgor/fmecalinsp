@@ -24,12 +24,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import type { Equipment, Client } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, ImageIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import { collection, doc, writeBatch } from "firebase/firestore";
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useState, useRef } from "react";
+import Image from "next/image";
 
 const DEFAULT_COMPONENTS = [
     { name: 'Estrutura: Viga Principal' },
@@ -81,6 +83,9 @@ type EquipmentFormProps = {
 export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const [imagePreview, setImagePreview] = useState<string | null>(equipment?.imageUrl || null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const clientsCollection = useMemoFirebase(() => collection(firestore, "clients"), [firestore]);
   const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
@@ -101,22 +106,79 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
     control: form.control,
     name: "components",
   });
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const processImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = document.createElement('img');
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = height * (MAX_WIDTH / width);
+            width = MAX_WIDTH;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            return reject(new Error('Failed to get canvas context'));
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
+        };
+        img.onerror = reject;
+        if(event.target?.result) {
+          img.src = event.target.result as string;
+        } else {
+          reject(new Error("Failed to read file"));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { components, ...equipmentData } = values;
     const equipmentCollection = collection(firestore, "equipment");
+    
+    let processedImageUrl = imagePreview;
+    if (imageFile) {
+        processedImageUrl = await processImage(imageFile);
+    }
+    
+    const dataWithImage = { ...equipmentData, imageUrl: processedImageUrl };
+
 
     if (equipment) {
       // Update logic
       const equipmentDoc = doc(equipmentCollection, equipment.id);
-      updateDocumentNonBlocking(equipmentDoc, equipmentData);
+      updateDocumentNonBlocking(equipmentDoc, dataWithImage);
       
       const batch = writeBatch(firestore);
-      const componentsCollection = collection(equipmentDoc, "components");
+      const componentsCollectionRef = collection(equipmentDoc, "components");
       
       // Handle component updates/creations
       components.forEach(comp => {
-        const compDoc = comp.id ? doc(componentsCollection, comp.id) : doc(componentsCollection);
+        const compDoc = comp.id && !comp.id.startsWith('new-') ? doc(componentsCollectionRef, comp.id) : doc(componentsCollectionRef);
         batch.set(compDoc, { name: comp.name });
       });
 
@@ -124,20 +186,20 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
       const currentComponentIds = components.map(c => c.id).filter(Boolean);
       equipment.components?.forEach(existingComp => {
         if (!currentComponentIds.includes(existingComp.id)) {
-          batch.delete(doc(componentsCollection, existingComp.id));
+          batch.delete(doc(componentsCollectionRef, existingComp.id));
         }
       });
       await batch.commit();
 
     } else {
       // Create logic
-      const newDocRefPromise = addDocumentNonBlocking(equipmentCollection, equipmentData);
+      const newDocRefPromise = addDocumentNonBlocking(equipmentCollection, dataWithImage);
       newDocRefPromise.then(newDocRef => {
         if(newDocRef) {
-          const componentsCollection = collection(newDocRef, "components");
+          const componentsCollectionRef = collection(newDocRef, "components");
           const batch = writeBatch(firestore);
           components.forEach(comp => {
-            const compDoc = doc(componentsCollection);
+            const compDoc = doc(componentsCollectionRef);
             batch.set(compDoc, { name: comp.name });
           });
           batch.commit();
@@ -157,6 +219,60 @@ export function EquipmentForm({ equipment, closeDialog }: EquipmentFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <ScrollArea className="h-[60vh]">
           <div className="space-y-4 p-6">
+            <FormItem>
+              <FormLabel>Imagem do Equipamento</FormLabel>
+              <FormControl>
+                <div className="flex items-center gap-4">
+                  <div className="w-24 h-24 rounded-md bg-muted flex items-center justify-center border overflow-hidden">
+                    {imagePreview ? (
+                      <Image
+                        src={imagePreview}
+                        alt="Preview do equipamento"
+                        width={96}
+                        height={96}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                      className="hidden"
+                      accept="image/png, image/jpeg, image/webp"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Alterar Imagem
+                    </Button>
+                    {imagePreview && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setImageFile(null);
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Remover
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </FormControl>
+              <FormDescription>
+                Opcional. A imagem será exibida no card do equipamento.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
             <FormField
               control={form.control}
               name="clientId"
