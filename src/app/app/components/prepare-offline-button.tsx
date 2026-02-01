@@ -54,28 +54,46 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
         setLoading(true);
 
         try {
-            // Step 1: Cache all firestore data.
+            // Step 1: Cache all firestore data. This part is already parallel and robust.
             await cacheDataForOffline(firestore, pendingWorkOrders);
 
-            // Step 2: Proactively cache the page routes themselves.
+            // Step 2: Proactively cache the page routes. This is more robust than cache.addAll().
             const urlsToCache = [
                 '/app', // Cache the main inspector page.
                 ...pendingWorkOrders.map(wo => `/app/inspection/${wo.id}`)
             ];
 
-            // The 'pages-cache' name must match the one in next.config.js for runtime caching.
             const cache = await caches.open('pages-cache');
-            await cache.addAll(urlsToCache);
+            let failedPages = 0;
+            
+            // This runs all cache operations in parallel and won't fail if a single page fails.
+            const cachePromises = urlsToCache.map(url => 
+                cache.add(url).catch(err => {
+                    console.warn(`Falha ao salvar a página ${url} no cache:`, err);
+                    failedPages++;
+                })
+            );
+            
+            await Promise.all(cachePromises);
 
-            toast({
-                title: "Pronto para trabalhar offline!",
-                description: `Os dados e as páginas de ${pendingWorkOrders.length} OS foram salvos no dispositivo.`,
-            });
+            if (failedPages > 0) {
+                 toast({
+                    variant: "destructive",
+                    title: `Preparação Incompleta`,
+                    description: `Os dados foram salvos, mas ${failedPages} de ${urlsToCache.length} páginas não puderam ser cacheadas. Tente novamente.`,
+                });
+            } else {
+                 toast({
+                    title: "Pronto para trabalhar offline!",
+                    description: `Os dados e as páginas de ${pendingWorkOrders.length} OS foram salvos no dispositivo.`,
+                });
+            }
+
         } catch (error) {
             console.error("Error preparing offline data: ", error);
             toast({
                 title: "Erro ao preparar para modo offline",
-                description: "Não foi possível baixar os dados e páginas. Verifique sua conexão e tente novamente.",
+                description: "Não foi possível baixar os dados. Verifique sua conexão e tente novamente.",
                 variant: "destructive"
             });
         } finally {
