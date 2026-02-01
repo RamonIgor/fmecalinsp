@@ -55,17 +55,24 @@ export async function cacheDataForOffline(firestore: Firestore, workOrders: Work
     const equipments = equipmentSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Equipment)).filter(e => e.name);
     const clients = clientSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Client)).filter(c => c.name);
 
-    let components: OfflineComponent[] = [];
-    for (const equip of equipments) {
+    // Fetch all components collections in parallel to improve performance
+    const componentPromises = equipments.map(equip => {
         const componentsCollection = collection(firestore, 'equipment', equip.id, 'components');
-        const componentsSnapshot = await getDocs(componentsCollection);
-        const equipComponents = componentsSnapshot.docs.map(d => ({
+        return getDocs(componentsCollection).then(snapshot => ({
+            equipmentId: equip.id,
+            docs: snapshot.docs,
+        }));
+    });
+
+    const componentSnapshots = await Promise.all(componentPromises);
+
+    const components = componentSnapshots.flatMap(snapshot => 
+        snapshot.docs.map(d => ({
             ...(d.data() as EquipmentComponent),
             id: d.id,
-            equipmentId: equip.id, // Add the equipmentId for offline querying
-        }));
-        components = components.concat(equipComponents);
-    }
+            equipmentId: snapshot.equipmentId,
+        }))
+    );
     
     await offlineDB.transaction('rw', offlineDB.workOrders, offlineDB.equipment, offlineDB.clients, offlineDB.components, async () => {
         await offlineDB.workOrders.bulkPut(workOrders);
