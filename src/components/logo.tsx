@@ -9,7 +9,7 @@ const Logo = ({ className }: { className?: string }) => {
         alt="F.Mecal Insp. Logo"
         width={64}
         height={64}
-        className={cn("h-8 w-8", className)}
+        className={cn("h-8 w-8 rounded-xl", className)}
       />
     </div>
   );
