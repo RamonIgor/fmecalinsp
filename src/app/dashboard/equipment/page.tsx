@@ -2,10 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Equipment } from "@/lib/data";
+import type { Equipment, Client } from "@/lib/data";
 import { EquipmentActions } from "./components/equipment-actions";
 import { AddEquipmentButton } from "./components/add-equipment-button";
-import { HardDrive, Search, ImageIcon } from "lucide-react";
+import { HardDrive, Search, ImageIcon, Factory } from "lucide-react";
 import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import { collection } from "firebase/firestore";
@@ -34,19 +34,33 @@ export default function EquipmentPage() {
     () => collection(firestore, "equipment"),
     [firestore]
   );
-  const { data: equipments, isLoading } = useCollection<Equipment>(equipmentsCollection);
+  const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
+  
+  const clientsCollection = useMemoFirebase(
+    () => collection(firestore, "clients"),
+    [firestore]
+  );
+  const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
+
+  const isLoading = isLoadingEquipments || isLoadingClients;
+  
+  const getClientName = (clientId?: string) => {
+    if (!clients || !clientId) return '';
+    return clients.find(c => c.id === clientId)?.name || '';
+  };
 
   const filteredEquipments = useMemo(() => {
     if (!equipments) return [];
     return equipments.filter((equipment) => {
       const search = searchTerm.toLowerCase();
+      const clientName = getClientName(equipment.clientId).toLowerCase();
       const nameMatch = equipment.name.toLowerCase().includes(search);
       const tagMatch = equipment.tag.toLowerCase().includes(search);
       const sectorMatch = equipment.sector.toLowerCase().includes(search);
 
-      return nameMatch || tagMatch || sectorMatch;
+      return nameMatch || tagMatch || sectorMatch || clientName.includes(search);
     });
-  }, [equipments, searchTerm]);
+  }, [equipments, clients, searchTerm]);
 
   return (
     <div className="space-y-6">
@@ -62,7 +76,7 @@ export default function EquipmentPage() {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                      placeholder="Buscar por nome, tag ou setor..." 
+                      placeholder="Buscar por nome, tag, setor ou cliente..." 
                       className="pl-9"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -84,6 +98,7 @@ export default function EquipmentPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredEquipments?.map((equipment) => {
             const statusInfo = getStatusInfo(equipment.status);
+            const clientName = getClientName(equipment.clientId);
             return (
               <Card key={equipment.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-200 ease-in-out">
                 <div className="relative w-full h-40 bg-muted">
@@ -92,6 +107,14 @@ export default function EquipmentPage() {
                     ) : (
                         <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-zinc-800">
                             <ImageIcon className="h-12 w-12 text-gray-400" />
+                        </div>
+                    )}
+                     {clientName && (
+                        <div className="absolute bottom-2 left-2">
+                            <Badge variant="secondary" className="flex items-center gap-1.5 bg-black/50 text-white backdrop-blur-sm">
+                                <Factory className="h-3 w-3" />
+                                {clientName}
+                            </Badge>
                         </div>
                     )}
                 </div>
