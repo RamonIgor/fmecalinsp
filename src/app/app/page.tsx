@@ -11,7 +11,7 @@ import {
   ChevronRight,
   CalendarCheck,
 } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useUser } from '@/firebase/provider';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -30,7 +30,6 @@ function getGreeting() {
 export default function InspectorAppPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const [greeting, setGreeting] = useState('Olá');
 
   const workOrdersQuery = useMemoFirebase(
     () => (user ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente')) : null),
@@ -53,10 +52,6 @@ export default function InspectorAppPage() {
   const clientsCollection = useMemoFirebase(() => collection(firestore, 'clients'), [firestore]);
   const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
 
-  useEffect(() => {
-    setGreeting(getGreeting());
-  }, []);
-
   const getEquipment = (id: string) => equipments?.find(e => e.id === id);
   const getClient = (id: string) => clients?.find(c => c.id === id);
 
@@ -73,7 +68,7 @@ export default function InspectorAppPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">
-          {greeting}, {user?.displayName?.split(' ')[0] || 'Inspetor'}! 👋
+          {getGreeting()}, {user?.displayName?.split(' ')[0] || 'Inspetor'}! 👋
         </h1>
         <p className="text-md text-muted-foreground">Suas tarefas pendentes.</p>
       </div>
