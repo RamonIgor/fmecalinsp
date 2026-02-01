@@ -54,18 +54,28 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
         setLoading(true);
 
         try {
-            // Cache all firestore data related to the pending work orders
+            // Step 1: Cache all firestore data.
             await cacheDataForOffline(firestore, pendingWorkOrders);
 
+            // Step 2: Proactively cache the page routes themselves.
+            const urlsToCache = [
+                '/app', // Cache the main inspector page.
+                ...pendingWorkOrders.map(wo => `/app/inspection/${wo.id}`)
+            ];
+
+            // The 'pages-cache' name must match the one in next.config.js for runtime caching.
+            const cache = await caches.open('pages-cache');
+            await cache.addAll(urlsToCache);
+
             toast({
-                title: "Dados salvos para trabalho offline!",
-                description: `Os dados de ${pendingWorkOrders.length} ordem(ns) de serviço foram salvos no dispositivo.`,
+                title: "Pronto para trabalhar offline!",
+                description: `Os dados e as páginas de ${pendingWorkOrders.length} OS foram salvos no dispositivo.`,
             });
         } catch (error) {
             console.error("Error preparing offline data: ", error);
             toast({
                 title: "Erro ao preparar para modo offline",
-                description: "Não foi possível baixar os dados. Verifique sua conexão e tente novamente.",
+                description: "Não foi possível baixar os dados e páginas. Verifique sua conexão e tente novamente.",
                 variant: "destructive"
             });
         } finally {
@@ -82,7 +92,7 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
             ) : (
                 <DownloadCloud className="mr-2 h-6 w-6" />
             )}
-            {loading ? 'Baixando dados...' : `Baixar ${pendingCount} OS para Trabalho Offline`}
+            {loading ? 'Baixando dados e páginas...' : `Baixar ${pendingCount} OS para Trabalho Offline`}
         </Button>
     );
 }
