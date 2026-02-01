@@ -43,7 +43,8 @@ export function SaveInspectionButton({ inspectionData }: SaveInspectionButtonPro
     }
 
     // An inspection is saveable if at least one item has been answered.
-    const canSave = inspectionData.items.length > 0;
+    const canSave = inspectionData.items.some(item => item.answer);
+
 
     return (
         <Button onClick={handleSave} disabled={loading || !canSave} size="lg" className="w-full h-14 text-lg">

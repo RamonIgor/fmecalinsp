@@ -4,10 +4,10 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   register: true,
   skipWaiting: true,
   runtimeCaching: [
-    // Cache pages with a Network-First strategy.
+    // Cache pages with a Stale-While-Revalidate strategy.
     {
       urlPattern: ({ request }) => request.mode === "navigate",
-      handler: "NetworkFirst",
+      handler: "StaleWhileRevalidate",
       options: {
         cacheName: "pages-cache",
         expiration: {
