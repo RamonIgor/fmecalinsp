@@ -35,6 +35,9 @@ import { useAuth, useFirestore } from '@/firebase/provider';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -42,10 +45,12 @@ import { Loader2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const formSchema = z.object({
   email: z.string().email('Por favor, insira um email válido.'),
   password: z.string().min(1, 'Senha é obrigatória.'),
+  rememberMe: z.boolean().default(true),
 });
 
 export default function LoginPage() {
@@ -64,12 +69,20 @@ export default function LoginPage() {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: true,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
+      await setPersistence(
+        auth,
+        values.rememberMe
+          ? browserLocalPersistence
+          : browserSessionPersistence
+      );
+
       const userCredential = await signInWithEmailAndPassword(
         auth,
         values.email,
@@ -220,6 +233,25 @@ export default function LoginPage() {
                           />
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="rememberMe"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            id="remember-me"
+                            className="border-white/50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                          />
+                        </FormControl>
+                        <Label htmlFor="remember-me" className="cursor-pointer text-white/80">
+                          Manter-me conectado
+                        </Label>
                       </FormItem>
                     )}
                   />
