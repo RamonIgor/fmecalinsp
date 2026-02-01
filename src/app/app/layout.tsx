@@ -7,7 +7,7 @@ import { ConnectionStatus } from "@/components/connection-status";
 import { Grid, ListChecks, Settings, LogOut, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useUser } from "@/firebase/provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";

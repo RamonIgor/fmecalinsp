@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: 'Plataforma de Inspeção Técnica para pontes rolantes.',
   manifest: "/manifest.json",
   icons: {
-    icon: '/icons/icon-512x512.png',
+    icon: '/icons/icon-192x192.png',
     apple: "/icons/icon-192x192.png",
   },
 };

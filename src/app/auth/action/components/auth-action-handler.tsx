@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase/provider';
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

@@ -16,7 +16,7 @@ import { useState } from "react";
 import type { WorkOrder } from "@/lib/data";
 import { useFirestore } from "@/firebase/provider";
 import { doc } from "firebase/firestore";
-import { deleteDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
+import { deleteDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { EditWorkOrderButton } from "./edit-work-order-button";
 import { useRouter } from "next/navigation";

@@ -13,7 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import type { Inspection, Equipment } from "@/lib/data";
 import { ReportGenerator } from "./components/report-generator";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { collection } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 

@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { WorkOrder, Equipment, Client } from '@/lib/data';
 import { Card, CardContent } from '@/components/ui/card';

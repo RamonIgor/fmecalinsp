@@ -26,9 +26,10 @@ import type { Equipment, Client } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
+import { useCollection } from "@/firebase/firestore/use-collection";
 import { collection, doc, writeBatch } from "firebase/firestore";
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 const DEFAULT_COMPONENTS = [
     { name: 'Estrutura: Viga Principal' },

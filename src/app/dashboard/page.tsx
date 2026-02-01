@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Wrench, CheckCircle, AlertTriangle, XCircle, CalendarCheck } from "lucide-react";
 import { InspectionStatusChart } from "./components/inspection-status-chart";
 import { RecentActivity } from "./components/recent-activity";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { collection } from "firebase/firestore";
 import type { Equipment, Inspection } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";

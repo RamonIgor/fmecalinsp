@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  useDoc,
-  useFirestore,
-  useMemoFirebase,
-  useCollection,
-} from "@/firebase";
+import { useDoc } from "@/firebase/firestore/use-doc";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
+import { useCollection } from "@/firebase/firestore/use-collection";
 import { doc, collection, query, where, limit } from "firebase/firestore";
 import React from "react";
 import {

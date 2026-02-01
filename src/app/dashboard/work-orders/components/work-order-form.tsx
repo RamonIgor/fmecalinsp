@@ -22,9 +22,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Client, Equipment, User, WorkOrder } from "@/lib/data";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
+import { useCollection } from "@/firebase/firestore/use-collection";
 import { collection, query, where, doc, addDoc, updateDoc } from "firebase/firestore";
-import { updateDocumentNonBlocking } from "@/firebase";
+import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";

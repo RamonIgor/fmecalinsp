@@ -12,7 +12,8 @@ import {
   CalendarCheck,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import type { WorkOrder, Equipment, Client } from '@/lib/data';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';

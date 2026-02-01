@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Send, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useFirestore } from "@/firebase";
+import { useFirestore } from "@/firebase/provider";
 import { collection, doc, writeBatch } from "firebase/firestore";
 import type { Inspection } from "@/lib/data";
 

@@ -24,7 +24,7 @@ import { useState } from "react";
 import type { Client } from "@/lib/data";
 import { useFirestore } from "@/firebase/provider";
 import { collection, doc } from "firebase/firestore";
-import { deleteDocumentNonBlocking } from "@/firebase";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 
 export function ClientActions({ client }: { client: Client }) {
