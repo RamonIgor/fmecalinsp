@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectionStatus } from "@/components/connection-status";
-import { Grid, ListChecks, Wrench, LogOut, Loader2, Settings } from "lucide-react";
+import { Grid, ListChecks, Settings, LogOut, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth, useUser } from "@/firebase";
@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
     { href: "/app", icon: Grid, label: "Início" },
-    { href: "/app/inspections", icon: ListChecks, label: "Inspeções" },
-    { href: "/app/equipment", icon: Wrench, label: "Ativos" },
+    { href: "/app/work-orders", icon: ListChecks, label: "Ordens" },
+    { href: "/app/settings", icon: Settings, label: "Ajustes" },
     { isLogout: true, icon: LogOut, label: "Sair" },
 ];
 
@@ -60,11 +60,6 @@ export default function AppLayout({
         </div>
         <div className="flex items-center gap-2">
             <ConnectionStatus />
-             <Link href="/app/settings" passHref>
-                <Button variant="ghost" size="icon">
-                    <Settings className="h-6 w-6 text-muted-foreground"/>
-                </Button>
-             </Link>
         </div>
       </header>
       
