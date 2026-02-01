@@ -75,23 +75,19 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    try {
-      await setPersistence(
-        auth,
-        values.rememberMe
-          ? browserLocalPersistence
-          : browserSessionPersistence
-      );
 
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        values.email,
-        values.password
-      );
-      
-      const user = userCredential.user;
-      if (user) {
-        // Fetch user profile from Firestore to get the role
+    const persistenceToSet = values.rememberMe
+      ? browserLocalPersistence
+      : browserSessionPersistence;
+
+    setPersistence(auth, persistenceToSet)
+      .then(() => {
+        // Persistence set, now sign in
+        return signInWithEmailAndPassword(auth, values.email, values.password);
+      })
+      .then(async (userCredential) => {
+        // Sign in successful
+        const user = userCredential.user;
         const userDocRef = doc(firestore, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -102,38 +98,43 @@ export default function LoginPage() {
             description: 'Redirecionando...',
           });
 
-          // Redirect based on role
           if (userData.role === 'admin') {
             router.push('/dashboard');
           } else {
             router.push('/app');
           }
         } else {
-          // Handle case where user exists in Auth but not in Firestore
-          throw new Error('Perfil de usuário não encontrado.');
+           // This case should ideally not happen if user creation is robust
+           await auth.signOut(); // Sign out the user from auth
+          throw new Error('Perfil de usuário não encontrado no banco de dados.');
         }
-      } else {
-        throw new Error('Falha na autenticação do usuário.');
-      }
-  
-    } catch (error: any) {
-      console.error(error);
-      let description = 'Ocorreu um erro. Tente novamente.';
-      if (
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password' ||
-        error.code === 'auth/invalid-credential'
-      ) {
-        description = 'Email ou senha inválidos.';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Falha no Login',
-        description,
+      })
+      .catch((error: any) => {
+        // Handle all errors (from persistence or sign-in)
+        console.error("Login Error:", error);
+        let title = 'Falha no Login';
+        let description = 'Ocorreu um erro. Tente novamente.';
+
+        if (error.code === 'auth/user-not-found' ||
+            error.code === 'auth/wrong-password' ||
+            error.code === 'auth/invalid-credential') {
+          description = 'Email ou senha inválidos.';
+        } else if (error.message.includes('persistence')) {
+            title = 'Falha na Configuração';
+            description = 'Não foi possível salvar sua preferência de login.';
+        } else if (error.message.includes('Perfil de usuário não encontrado')) {
+            description = 'Seu usuário foi autenticado, mas não encontramos seu perfil. Contate o suporte.';
+        }
+
+        toast({
+          variant: 'destructive',
+          title: title,
+          description,
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    } finally {
-      setIsLoading(false);
-    }
   }
 
   const handlePasswordReset = async () => {
