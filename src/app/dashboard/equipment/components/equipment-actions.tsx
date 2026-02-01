@@ -24,7 +24,7 @@ import { useState, useEffect } from "react";
 import type { Equipment, EquipmentComponent } from "@/lib/data";
 import { useFirestore } from "@/firebase/provider";
 import { collection, doc, getDocs } from "firebase/firestore";
-import { deleteDocumentNonBlocking } from "@/firebase";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 
 export function EquipmentActions({ equipment }: { equipment: Equipment }) {

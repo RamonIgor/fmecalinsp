@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { User as UserData } from "@/lib/data";
 import { useFirestore } from "@/firebase/provider";
 import { collection, doc } from "firebase/firestore";
-import { updateDocumentNonBlocking } from "@/firebase";
+import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import {
   Select,
   SelectContent,

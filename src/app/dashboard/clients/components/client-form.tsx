@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { Client } from "@/lib/data";
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { collection, doc } from "firebase/firestore";
 import { useFirestore } from "@/firebase/provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
