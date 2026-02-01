@@ -23,8 +23,8 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, doc } from 'firebase/firestore';
-import type { Equipment, EquipmentComponent, InspectionItem, WorkOrder } from '@/lib/data';
-import React, { useState, useMemo } from 'react';
+import type { Equipment, EquipmentComponent, InspectionItem } from '@/lib/data';
+import React, { useState } from 'react';
 import { CameraCaptureDialog } from './components/camera-capture-dialog';
 import Image from 'next/image';
 
@@ -146,7 +146,6 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     inspectorId: user?.uid ?? '',
     inspectorName: user?.displayName ?? 'N/A',
     date: new Date().toISOString(),
-    status: 'Finalizado',
     items: Object.values(inspectionItems).filter(item => item.answer) as InspectionItem[], // Only include answered items
     signatureUrl: signatureDataUrl,
   };

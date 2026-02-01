@@ -11,6 +11,7 @@ import { useAuth, useUser } from "@/firebase/provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { OfflineSyncManager } from "@/components/offline-sync-manager";
 
 const navItems = [
     { href: "/app", icon: Grid, label: "Início" },
@@ -92,6 +93,7 @@ export default function AppLayout({
             })}
         </nav>
       </footer>
+      <OfflineSyncManager />
     </div>
   );
 }
