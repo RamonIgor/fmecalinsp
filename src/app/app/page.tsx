@@ -10,8 +10,7 @@ import {
   CalendarCheck,
 } from 'lucide-react';
 import { useMemo } from 'react';
-import { useUser } from '@/firebase/provider';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { WorkOrder, Equipment, Client, Inspection } from '@/lib/data';
 import { collection, query, where } from 'firebase/firestore';
@@ -71,6 +70,7 @@ export default function InspectorAppPage() {
 
     let forTodayCount = 0;
     let overdueCount = 0;
+    let upcomingCount = 0;
 
     for (const wo of pendingWorkOrders) {
       if (wo.scheduledDate) {
@@ -79,11 +79,11 @@ export default function InspectorAppPage() {
           overdueCount++;
         } else if (woDateString === todayDateString) {
           forTodayCount++;
+        } else {
+          upcomingCount++;
         }
       }
     }
-    
-    const upcomingCount = pendingWorkOrders.length - forTodayCount - overdueCount;
 
     const completedThisMonthCount = inspections.filter(i => {
         const inspectionDate = new Date(i.date);
