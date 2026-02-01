@@ -220,7 +220,7 @@ export default function InspectorAppPage() {
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                             {dateStatus && <Badge variant={dateStatus.variant}>{dateStatus.text}</Badge>}
-                            <span>Data: {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}</span>
+                            <span>Data: {clientReady ? (wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A') : '...'}</span>
                         </div>
                     </Link>
                   </li>

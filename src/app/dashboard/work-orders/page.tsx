@@ -17,8 +17,8 @@ import type { WorkOrder, Equipment, Client, User as UserData } from '@/lib/data'
 import { AddWorkOrderButton } from './components/add-work-order-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { useState, useMemo } from 'react';
+import { Input } from "@/components/ui/input";
+import { useState, useMemo, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
 
@@ -44,6 +44,8 @@ export default function WorkOrdersPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
+  const [clientReady, setClientReady] = useState(false);
+  useEffect(() => { setClientReady(true); }, []);
 
   const workOrdersQuery = useMemoFirebase(
     () => {
@@ -176,7 +178,7 @@ export default function WorkOrdersPage() {
                           {getInspectorName(wo.inspectorId)}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-muted-foreground">
-                          {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}
+                          {clientReady ? (wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A') : '...'}
                         </TableCell>
                         <TableCell>
                           <Badge variant={getStatusVariant(wo.status)}>{wo.status}</Badge>

@@ -11,6 +11,7 @@ import { type Inspection } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, XCircle, CircleSlash, FileSignature, Camera } from "lucide-react";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 
 const AnswerIcon = ({ answer }: { answer: string }) => {
@@ -27,13 +28,15 @@ const AnswerIcon = ({ answer }: { answer: string }) => {
 };
 
 export function InspectionResultDisplay({ inspection }: { inspection: Inspection }) {
+  const [clientReady, setClientReady] = useState(false);
+  useEffect(() => { setClientReady(true); }, []);
   return (
     <Card>
       <CardHeader>
         <CardTitle>Resultados da Inspeção</CardTitle>
         <CardDescription>
           Relatório preenchido por {inspection.inspectorName} em{" "}
-          {new Date(inspection.date).toLocaleString("pt-BR")}.
+          {clientReady ? new Date(inspection.date).toLocaleString("pt-BR") : "..."}.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

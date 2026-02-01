@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +34,8 @@ const ALL_STATUSES = 'Todas';
 
 function WorkOrderList({ workOrders, equipments, clients, isLoading }: { workOrders: WorkOrder[] | null, equipments: Equipment[] | null, clients: Client[] | null, isLoading: boolean }) {
     const router = useRouter();
+    const [clientReady, setClientReady] = useState(false);
+    useEffect(() => { setClientReady(true); }, []);
     const getEquipment = (id: string) => equipments?.find(e => e.id === id);
     const getClient = (id: string) => clients?.find(c => c.id === id);
     
@@ -82,7 +84,7 @@ function WorkOrderList({ workOrders, equipments, clients, isLoading }: { workOrd
                     <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                         <Badge variant={getStatusVariant(wo.status)}>{wo.status}</Badge>
                         <span className="text-muted-foreground/50">•</span>
-                        <span>{wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}</span>
+                        <span>{clientReady ? (wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A') : '...'}</span>
                     </div>
                 </div>
               </li>

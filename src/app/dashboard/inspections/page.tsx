@@ -16,6 +16,7 @@ import { ReportGenerator } from "./components/report-generator";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { collection } from "firebase/firestore";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function getStatusVariant(status: Inspection['status']) {
@@ -31,6 +32,8 @@ function getStatusVariant(status: Inspection['status']) {
 
 export default function InspectionsPage() {
   const firestore = useFirestore();
+  const [clientReady, setClientReady] = useState(false);
+  useEffect(() => { setClientReady(true); }, []);
 
   const inspectionsCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, "inspections") : null),
@@ -83,7 +86,7 @@ export default function InspectionsPage() {
                 <TableRow key={inspection.id}>
                   <TableCell className="font-medium">{equipment?.name || 'N/A'} ({equipment?.tag || 'N/A'})</TableCell>
                   <TableCell className="hidden sm:table-cell">{inspection.inspectorName}</TableCell>
-                  <TableCell className="hidden md:table-cell">{new Date(inspection.date).toLocaleDateString()}</TableCell>
+                  <TableCell className="hidden md:table-cell">{clientReady ? new Date(inspection.date).toLocaleDateString('pt-BR') : '...'}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(inspection.status)}>
                       {inspection.status}

@@ -4,7 +4,7 @@ import { useDoc } from "@/firebase/firestore/use-doc";
 import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import { doc, collection, query, where, limit } from "firebase/firestore";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   type WorkOrder,
   type Equipment,
@@ -53,6 +53,8 @@ export default function WorkOrderDetailPage({
   const router = useRouter();
   const workOrderId = React.use(params).id;
 
+  const [clientReady, setClientReady] = useState(false);
+  useEffect(() => { setClientReady(true); }, []);
   const workOrderRef = useMemoFirebase(
     () => (firestore ? doc(firestore, "workOrders", workOrderId) : null),
     [firestore, workOrderId]
@@ -138,7 +140,7 @@ export default function WorkOrderDetailPage({
           <DetailItem label="Setor" value={equipment?.sector} />
           <DetailItem label="Cliente" value={client?.name} />
           <DetailItem label="Inspetor Responsável" value={inspector?.displayName} />
-          <DetailItem label="Data Agendada" value={workOrder.scheduledDate ? new Date(workOrder.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'} />
+          <DetailItem label="Data Agendada" value={clientReady ? (workOrder.scheduledDate ? new Date(workOrder.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A') : '...'} />
         </CardContent>
       </Card>
       
