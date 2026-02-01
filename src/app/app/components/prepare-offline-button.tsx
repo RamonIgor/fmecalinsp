@@ -57,13 +57,9 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
             // Cache all firestore data related to the pending work orders
             await cacheDataForOffline(firestore, pendingWorkOrders);
 
-            // Also pre-fetch pages for the PWA cache
-            const pagePromises = pendingWorkOrders.map(wo => fetch(`/app/inspection/${wo.id}`));
-            await Promise.all([fetch('/app'), ...pagePromises]);
-
             toast({
-                title: "Pronto para trabalhar offline!",
-                description: `${pendingWorkOrders.length} ordem(ns) de serviço e seus dados foram salvos no dispositivo.`,
+                title: "Dados salvos para trabalho offline!",
+                description: `Os dados de ${pendingWorkOrders.length} ordem(ns) de serviço foram salvos no dispositivo.`,
             });
         } catch (error) {
             console.error("Error preparing offline data: ", error);
