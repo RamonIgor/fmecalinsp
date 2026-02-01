@@ -3,7 +3,7 @@
 
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import type { WorkOrder, Equipment, Client } from '@/lib/data';
 import { Card, CardContent } from '@/components/ui/card';
 import { ListChecks, ChevronRight } from 'lucide-react';
@@ -100,12 +100,19 @@ export default function InspectorWorkOrdersPage() {
     const workOrdersQuery = useMemoFirebase(
         () => (user ? query(
             collection(firestore, 'workOrders'), 
-            where('inspectorId', '==', user.uid),
-            orderBy('scheduledDate', 'desc')
+            where('inspectorId', '==', user.uid)
         ) : null),
         [firestore, user]
     );
-    const { data: workOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
+    const { data: unsortedWorkOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
+    
+    const workOrders = useMemo(() => {
+        if (!unsortedWorkOrders) return null;
+        return [...unsortedWorkOrders].sort((a, b) => {
+            if (!a.scheduledDate || !b.scheduledDate) return 0;
+            return new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()
+        });
+    }, [unsortedWorkOrders]);
 
     const equipmentsCollection = useMemoFirebase(() => collection(firestore, 'equipment'), [firestore]);
     const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);

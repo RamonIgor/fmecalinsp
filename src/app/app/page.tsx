@@ -11,11 +11,12 @@ import {
   ChevronRight,
   CalendarCheck,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useState, useEffect, useMemo } from 'react';
+import { useUser } from '@/firebase/provider';
+import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { WorkOrder, Equipment, Client } from '@/lib/data';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
@@ -32,10 +33,19 @@ export default function InspectorAppPage() {
   const [greeting, setGreeting] = useState('Olá');
 
   const workOrdersQuery = useMemoFirebase(
-    () => (user ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente'), orderBy('scheduledDate', 'asc')) : null),
+    () => (user ? query(collection(firestore, 'workOrders'), where('inspectorId', '==', user.uid), where('status', '==', 'Pendente')) : null),
     [firestore, user]
   );
-  const { data: workOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
+  const { data: unsortedWorkOrders, isLoading: isLoadingWorkOrders } = useCollection<WorkOrder>(workOrdersQuery);
+
+  const workOrders = useMemo(() => {
+    if (!unsortedWorkOrders) return null;
+    return [...unsortedWorkOrders].sort((a, b) => {
+        if (!a.scheduledDate || !b.scheduledDate) return 0;
+        return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+    });
+  }, [unsortedWorkOrders]);
+
 
   const equipmentsCollection = useMemoFirebase(() => collection(firestore, 'equipment'), [firestore]);
   const { data: equipments, isLoading: isLoadingEquipments } = useCollection<Equipment>(equipmentsCollection);
