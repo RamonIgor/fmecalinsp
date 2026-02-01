@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Camera, FileSignature, Loader2, Trash2 } from 'lucide-react';
+import { Camera, FileSignature, Loader2, Trash2, CheckCheck } from 'lucide-react';
 import { SignaturePad } from './components/signature-pad';
 import { SaveInspectionButton } from './components/save-inspection-button';
 import { useDoc } from '@/firebase/firestore/use-doc';
@@ -88,6 +88,22 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
         questionText: componentName,
         [field]: value,
       },
+    }));
+  };
+
+  const handleMarkAllAsConforme = (componentsToMark: (EquipmentComponent | OfflineComponent)[]) => {
+    const updates: Record<string, Partial<InspectionItem>> = {};
+    componentsToMark.forEach(component => {
+      updates[component.id] = {
+        ...(inspectionItems[component.id] || {}),
+        questionId: component.id,
+        questionText: component.name,
+        answer: 'Conforme',
+      };
+    });
+    setInspectionItems(prev => ({
+      ...prev,
+      ...updates,
     }));
   };
   
@@ -189,6 +205,15 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
                 {category}
               </AccordionTrigger>
               <AccordionContent className="p-4 space-y-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mb-4"
+                  onClick={() => handleMarkAllAsConforme(componentList)}
+                >
+                  <CheckCheck className="mr-2 h-4 w-4" />
+                  Marcar Todos como Conforme
+                </Button>
                 {componentList.map((component) => {
                   const photoUrls = inspectionItems[component.id]?.photoUrls || [];
                   const displayName = component.name.includes(':') ? component.name.split(':')[1].trim() : component.name;
