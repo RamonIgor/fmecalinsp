@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { WorkOrder, Equipment, Client, User as UserData } from '@/lib/data';
 import { AddWorkOrderButton } from './components/add-work-order-button';

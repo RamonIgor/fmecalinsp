@@ -4,7 +4,8 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { collection } from "firebase/firestore";
 import type { Inspection } from "@/lib/data";
 

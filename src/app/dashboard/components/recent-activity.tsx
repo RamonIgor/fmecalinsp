@@ -2,7 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CalendarPlus } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import { useFirestore, useMemoFirebase, useUser } from "@/firebase/provider";
 import { collection, limit, orderBy, query, where } from "firebase/firestore";
 import type { WorkOrder, Equipment, User as UserData } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
