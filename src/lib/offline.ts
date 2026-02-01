@@ -22,8 +22,8 @@ export class OfflineDB extends Dexie {
 
   constructor() {
     super('FmecalOfflineDB');
-    this.version(2).stores({
-      pendingInspections: '++localId, workOrderId',
+    this.version(3).stores({
+      pendingInspections: '++localId, workOrderId, inspectorId',
       workOrders: 'id, inspectorId, status', // Use firestore ID as primary key
       equipment: 'id, clientId',
       clients: 'id',
