@@ -57,11 +57,9 @@ export async function ensureDBOpen(): Promise<OfflineDB> {
     await db.open();
     return db;
   } catch (err) {
-    // Se falhou, tenta fechar e reabrir uma vez
     console.warn('[OfflineDB] Primeira tentativa falhou, tentando reabrir...', err);
     db.close();
     
-    // Pequeno delay para garantir que o recurso foi liberado
     await new Promise(resolve => setTimeout(resolve, 300));
     
     try {
@@ -78,13 +76,122 @@ export async function ensureDBOpen(): Promise<OfflineDB> {
 }
 
 
+// ─── FALLBACK: localStorage quando IndexedDB não está disponível ───
+
+const FALLBACK_KEY = 'cranecheck_pending_inspections';
+
+function getFallbackInspections(): OfflineInspection[] {
+  try {
+    const raw = localStorage.getItem(FALLBACK_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFallbackInspections(inspections: OfflineInspection[]): void {
+  localStorage.setItem(FALLBACK_KEY, JSON.stringify(inspections));
+}
+
+/**
+ * Testa se o IndexedDB está disponível no dispositivo atual.
+ */
+export async function isIndexedDBAvailable(): Promise<boolean> {
+  return new Promise((resolve) => {
+    try {
+      const req = indexedDB.open('__cranecheck_test__', 1);
+      req.onupgradeneeded = () => { /* cria banco vazio */ };
+      req.onsuccess = () => {
+        req.result.close();
+        indexedDB.deleteDatabase('__cranecheck_test__');
+        resolve(true);
+      };
+      req.onerror = () => resolve(false);
+      req.onblocked = () => resolve(false);
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Salva uma inspeção pendente, usando IndexedDB quando possível
+ * ou localStorage como fallback.
+ */
+export async function savePendingInspection(
+  inspection: Omit<OfflineInspection, 'localId'>
+): Promise<{ savedIn: 'indexeddb' | 'localstorage'; localId?: number }> {
+  const indexedDBAvailable = await isIndexedDBAvailable();
+
+  if (indexedDBAvailable) {
+    await ensureDBOpen();
+    const localId = await offlineDB.pendingInspections.add(inspection);
+    return { savedIn: 'indexeddb', localId };
+  }
+
+  // Fallback para localStorage
+  const inspections = getFallbackInspections();
+  const newInspection: OfflineInspection = {
+    ...inspection,
+    localId: Date.now(),
+  };
+  inspections.push(newInspection);
+  saveFallbackInspections(inspections);
+  return { savedIn: 'localstorage', localId: newInspection.localId };
+}
+
+/**
+ * Retorna todas as inspeções pendentes, tanto do IndexedDB quanto do localStorage.
+ */
+export async function getAllPendingInspections(): Promise<OfflineInspection[]> {
+  let fromIndexedDB: OfflineInspection[] = [];
+  const fromLocalStorage: OfflineInspection[] = getFallbackInspections();
+
+  const indexedDBAvailable = await isIndexedDBAvailable();
+
+  if (indexedDBAvailable) {
+    try {
+      await ensureDBOpen();
+      fromIndexedDB = await offlineDB.pendingInspections.toArray();
+    } catch {
+      // se falhar, segue com vazio
+    }
+  }
+
+  return [...fromIndexedDB, ...fromLocalStorage];
+}
+
+/**
+ * Remove uma inspeção pendente após sincronização bem-sucedida.
+ */
+export async function removePendingInspection(localId: number): Promise<void> {
+  const indexedDBAvailable = await isIndexedDBAvailable();
+
+  // Tenta remover do IndexedDB
+  if (indexedDBAvailable) {
+    try {
+      await ensureDBOpen();
+      await offlineDB.pendingInspections.delete(localId);
+    } catch {
+      // se falhar, tenta pelo localStorage mesmo assim
+    }
+  }
+
+  // Tenta remover do localStorage (cobre o caso do fallback)
+  const inspections = getFallbackInspections();
+  const filtered = inspections.filter(i => i.localId !== localId);
+  if (filtered.length !== inspections.length) {
+    saveFallbackInspections(filtered);
+  }
+}
+
+
 /**
  * Fetches all data related to the given work orders and caches it in IndexedDB.
  */
 export async function cacheDataForOffline(firestore: Firestore, workOrders: WorkOrder[]) {
     if (!workOrders || workOrders.length === 0) return;
 
-    // ── Garante que o DB está aberto antes de usar ──
     await ensureDBOpen();
 
     const equipmentIds = [...new Set(workOrders.map(wo => wo.equipmentId))];
@@ -127,13 +234,11 @@ export async function cacheDataForOffline(firestore: Firestore, workOrders: Work
 
 
 /**
- * Attempts to sync all pending inspections from IndexedDB to Firestore.
+ * Attempts to sync all pending inspections from IndexedDB and localStorage to Firestore.
  */
 export async function syncWithFirestore(firestore: Firestore) {
-  // ── Garante que o DB está aberto antes de usar ──
-  await ensureDBOpen();
+  const pending = await getAllPendingInspections();
 
-  const pending = await offlineDB.pendingInspections.toArray();
   if (pending.length === 0) {
     return { synced: 0, failed: 0 };
   }
@@ -163,7 +268,8 @@ export async function syncWithFirestore(firestore: Firestore) {
       
       await batch.commit();
 
-      await offlineDB.pendingInspections.delete(inspection.localId);
+      // Remove de qualquer lugar onde esteja (IndexedDB ou localStorage)
+      await removePendingInspection(inspection.localId);
       synced++;
       console.log(`[Sync] Successfully synced and removed inspection for WO: ${inspection.workOrderId}`);
 
