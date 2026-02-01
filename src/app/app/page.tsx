@@ -9,7 +9,7 @@ import {
   ChevronRight,
   CalendarCheck,
 } from 'lucide-react';
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { WorkOrder, Equipment, Client, Inspection } from '@/lib/data';
@@ -21,35 +21,17 @@ import { useOnlineStatus } from '@/lib/hooks/use-online-status';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { offlineDB } from '@/lib/offline';
 
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
-
-const getDateStatus = (scheduledDate: string): { text: string; variant: 'destructive' | 'default' | 'secondary' } => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const woDateLocal = new Date(scheduledDate);
-    // Adjust for timezone differences by only comparing date parts
-    const woDateUTC = new Date(woDateLocal.getUTCFullYear(), woDateLocal.getUTCMonth(), woDateLocal.getUTCDate());
-
-    if (woDateUTC < today) {
-        return { text: 'Atrasada', variant: 'destructive' };
-    }
-    if (woDateUTC.getTime() === today.getTime()) {
-        return { text: 'Hoje', variant: 'default' };
-    }
-    return { text: 'Próxima', variant: 'secondary' };
-};
-
 
 export default function InspectorAppPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const isOnline = useOnlineStatus();
+  const [clientReady, setClientReady] = useState(false);
+
+  useEffect(() => {
+    // This effect runs once on the client after hydration
+    setClientReady(true);
+  }, []);
 
   // --- ONLINE DATA SOURCES ---
   const workOrdersQuery = useMemoFirebase(
@@ -100,6 +82,31 @@ export default function InspectorAppPage() {
     ? (isLoadingWorkOrders || isLoadingEquipments || isLoadingClients || isLoadingInspections)
     : (offlineWorkOrders === undefined || offlineEquipments === undefined || offlineClients === undefined);
 
+  function getGreeting() {
+    if (!clientReady) return 'Olá'; // Placeholder before client-side runs
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  }
+
+  const getDateStatus = (scheduledDate: string): { text: string; variant: 'destructive' | 'default' | 'secondary' } | null => {
+      if (!clientReady) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+  
+      const woDateLocal = new Date(scheduledDate);
+      const woDateUTC = new Date(woDateLocal.getUTCFullYear(), woDateLocal.getUTCMonth(), woDateLocal.getUTCDate());
+  
+      if (woDateUTC < today) {
+          return { text: 'Atrasada', variant: 'destructive' };
+      }
+      if (woDateUTC.getTime() === today.getTime()) {
+          return { text: 'Hoje', variant: 'default' };
+      }
+      return { text: 'Próxima', variant: 'secondary' };
+  };
+
   const sortedWorkOrders = useMemo(() => {
     if (!pendingWorkOrders) return null;
     return [...pendingWorkOrders].sort((a, b) => {
@@ -113,7 +120,7 @@ export default function InspectorAppPage() {
   const getClient = (id: string) => clients?.find(c => c.id === id);
   
   const { forToday, overdue, upcoming, completedThisMonth } = useMemo(() => {
-    if (!pendingWorkOrders) {
+    if (!clientReady || !pendingWorkOrders) {
       return { forToday: 0, overdue: 0, upcoming: 0, completedThisMonth: 0 };
     }
 
@@ -147,7 +154,7 @@ export default function InspectorAppPage() {
 
     return { forToday: forTodayCount, overdue: overdueCount, upcoming: upcomingCount, completedThisMonth: completedThisMonthCount };
 
-  }, [pendingWorkOrders, inspections]);
+  }, [pendingWorkOrders, inspections, clientReady]);
 
 
   const stats = [
@@ -172,7 +179,7 @@ export default function InspectorAppPage() {
             <CardContent className="p-4 flex flex-col items-start justify-between h-full gap-2">
               <stat.icon className={`h-6 w-6 ${stat.color}`} />
               <div>
-                 {isLoading ? (
+                 {isLoading || !clientReady ? (
                     <Skeleton className="h-8 w-10" />
                 ) : (
                     <p className="text-3xl font-bold">{stat.value}</p>

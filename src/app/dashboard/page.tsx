@@ -10,9 +10,16 @@ import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { collection } from "firebase/firestore";
 import type { Equipment, Inspection } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo, useState, useEffect } from "react";
 
 export default function DashboardPage() {
   const firestore = useFirestore();
+  const [clientReady, setClientReady] = useState(false);
+
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
+
   const equipmentsCollection = useMemoFirebase(
     () => collection(firestore, "equipment"),
     [firestore]
@@ -31,12 +38,17 @@ export default function DashboardPage() {
   const requiresAttention = equipments?.filter(e => e.status === 'Requer Atenção').length ?? 0;
   const outOfService = equipments?.filter(e => e.status === 'Fora de Serviço').length ?? 0;
 
-  const completedThisMonth = inspections?.filter(i => {
-    const inspectionDate = new Date(i.date);
+  const completedThisMonth = useMemo(() => {
+    if (!clientReady || !inspections) {
+      return 0;
+    }
     const today = new Date();
-    return inspectionDate.getMonth() === today.getMonth() &&
-           inspectionDate.getFullYear() === today.getFullYear();
-  }).length ?? 0;
+    return inspections.filter(i => {
+      const inspectionDate = new Date(i.date);
+      return inspectionDate.getMonth() === today.getMonth() &&
+             inspectionDate.getFullYear() === today.getFullYear();
+    }).length;
+  }, [inspections, clientReady]);
 
   const StatCard = ({ title, value, icon: Icon, description, color, isLoading }: {
     title: string;
@@ -52,7 +64,7 @@ export default function DashboardPage() {
         <Icon className={`h-5 w-5 ${color}`} />
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isLoading || !clientReady ? (
           <Skeleton className="h-8 w-1/4" />
         ) : (
           <div className="text-3xl font-bold">{value}</div>
