@@ -71,7 +71,10 @@ export default function InspectorAppPage() {
   const { data: onlineClients, isLoading: isLoadingClients } = useCollection<Client>(clientsCollection);
   
   // --- OFFLINE DATA SOURCES (DEXIE) ---
-  const offlineWorkOrders = useLiveQuery(() => user ? offlineDB.workOrders.where({ inspectorId: user.uid, status: 'Pendente' }).toArray() : [], [user]);
+  const offlineWorkOrders = useLiveQuery(
+    () => user ? offlineDB.workOrders.where('inspectorId').equals(user.uid).and(wo => wo.status === 'Pendente').toArray() : [],
+    [user]
+  );
   const offlineEquipments = useLiveQuery(() => offlineDB.equipment.toArray(), []);
   const offlineClients = useLiveQuery(() => offlineDB.clients.toArray(), []);
   const offlineInspections = useLiveQuery(() => user ? offlineDB.pendingInspections.where('inspectorId').equals(user.uid).toArray() : [], [user]);

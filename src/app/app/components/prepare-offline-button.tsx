@@ -59,7 +59,7 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
 
             // Also pre-fetch pages for the PWA cache
             const pagePromises = pendingWorkOrders.map(wo => fetch(`/app/inspection/${wo.id}`));
-            await Promise.all(pagePromises);
+            await Promise.all([fetch('/app'), ...pagePromises]);
 
             toast({
                 title: "Pronto para trabalhar offline!",
