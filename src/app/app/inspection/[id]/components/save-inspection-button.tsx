@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Cloud, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { offlineDB, type OfflineInspection } from "@/lib/offline";
+import { ensureDBOpen, offlineDB, type OfflineInspection } from "@/lib/offline";
 
 interface SaveInspectionButtonProps {
     inspectionData: Omit<OfflineInspection, 'localId'>;
@@ -14,51 +14,62 @@ interface SaveInspectionButtonProps {
 export function SaveInspectionButton({ inspectionData }: SaveInspectionButtonProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [debugError, setDebugError] = useState<string | null>(null); // ← NOVO
+    const [debugInfo, setDebugInfo] = useState<string | null>(null);
     const router = useRouter();
 
     const handleSave = async () => {
         setLoading(true);
-        setDebugError(null); // limpa erro anterior
+        setDebugInfo(null);
+
+        const logs: string[] = [];
 
         try {
-            // ── DIAGNÓSTICO 1: testa se o banco abre ──
-            let dbReady = false;
+            // ── INFO 1: ambiente básico ──
+            logs.push(`Navigator online: ${navigator.onLine}`);
+            logs.push(`User Agent: ${navigator.userAgent}`);
+            logs.push(`Storage quota: ${JSON.stringify(await navigator.storage?.estimate())}`);
+
+            // ── INFO 2: testa IndexedDB nativo antes do Dexie ──
             try {
-                await offlineDB.open();
-                dbReady = true;
-            } catch (openErr) {
-                setDebugError(`[1] Falha ao abrir DB: ${openErr}`);
-                return;
+                await new Promise<void>((resolve, reject) => {
+                    const req = indexedDB.open('__cranecheck_test__', 1);
+                    req.onupgradeneeded = () => { /* cria banco vazio */ };
+                    req.onsuccess = () => {
+                        req.result.close();
+                        indexedDB.deleteDatabase('__cranecheck_test__');
+                        resolve();
+                    };
+                    req.onerror = () => reject(req.error);
+                    req.onblocked = () => reject(new Error('IndexedDB bloqueado'));
+                });
+                logs.push('IndexedDB nativo: OK');
+            } catch (nativeErr) {
+                logs.push(`IndexedDB nativo FALHOU: ${nativeErr}`);
+                setDebugInfo(logs.join('\n'));
+                return; // Se o IndexedDB nativo falha, não adianta seguir
             }
 
-            // ── DIAGNÓSTICO 2: testa se a tabela existe ──
-            if (!offlineDB.pendingInspections) {
-                setDebugError('[2] Tabela pendingInspections não existe no DB.');
-                return;
-            }
-
-            // ── DIAGNÓSTICO 3: serializa os dados para garantir que são válidos ──
-            let serialized: string;
+            // ── INFO 3: testa o Dexie / ensureDBOpen ──
             try {
-                serialized = JSON.stringify(inspectionData);
-            } catch (serErr) {
-                setDebugError(`[3] Dados não serializáveis: ${serErr}`);
+                const db = await ensureDBOpen();
+                logs.push(`Dexie aberto: OK (nome: ${db.name})`);
+            } catch (dexieErr) {
+                logs.push(`Dexie FALHOU: ${dexieErr}`);
+                setDebugInfo(logs.join('\n'));
                 return;
             }
 
-            // ── DIAGNÓSTICO 4: tenta o add e captura o erro exato ──
+            // ── INFO 4: tenta o add ──
             try {
                 const newId = await offlineDB.pendingInspections.add(inspectionData);
-                console.log('[Offline] Inspeção salva com localId:', newId);
-            } catch (addErr: unknown) {
-                // Captura o nome e mensagem do erro para mostrar na tela
-                const errName = addErr instanceof Error ? addErr.name : 'UnknownError';
-                const errMsg = addErr instanceof Error ? addErr.message : String(addErr);
-                setDebugError(`[4] Erro no add(): [${errName}] ${errMsg}\n\nDados enviados: ${serialized}`);
+                logs.push(`Add bem-sucedido! localId: ${newId}`);
+            } catch (addErr) {
+                logs.push(`Add FALHOU: [${addErr instanceof Error ? addErr.name : 'Unknown'}] ${addErr}`);
+                setDebugInfo(logs.join('\n'));
                 return;
             }
 
+            // ── Tudo funcionou ──
             toast({
                 title: "Inspeção Salva Localmente",
                 description: "Os dados foram salvos no dispositivo e serão sincronizados automaticamente.",
@@ -67,16 +78,20 @@ export function SaveInspectionButton({ inspectionData }: SaveInspectionButtonPro
             router.push('/app');
 
         } catch (error) {
-            const errMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-            setDebugError(`[CATCH GERAL] ${errMsg}`);
+            logs.push(`CATCH GERAL: ${error}`);
             console.error("Error saving inspection locally: ", error);
             toast({
                 title: "Erro ao salvar localmente",
-                description: "Não foi possível salvar a inspeção no seu dispositivo. Por favor, tente novamente.",
+                description: error instanceof Error
+                    ? error.message
+                    : "Não foi possível salvar a inspeção no seu dispositivo.",
                 variant: "destructive"
             });
         } finally {
             setLoading(false);
+            if (logs.length > 0 && !debugInfo) {
+                setDebugInfo(logs.join('\n'));
+            }
         }
     }
 
@@ -93,10 +108,9 @@ export function SaveInspectionButton({ inspectionData }: SaveInspectionButtonPro
                 Finalizar e Salvar Offline
             </Button>
 
-            {/* ── PAINEL DE DEBUG: aparece apenas se houver erro ── */}
-            {debugError && (
-                <div className="mt-2 p-3 bg-red-50 border border-red-300 rounded-lg text-red-800 text-sm whitespace-pre-wrap break-words">
-                    <strong>🔧 Erro (debug):</strong>{"\n"}{debugError}
+            {debugInfo && (
+                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-300 rounded-lg text-yellow-900 text-xs whitespace-pre-wrap break-words">
+                    <strong>🔧 Debug:</strong>{"\n"}{debugInfo}
                 </div>
             )}
         </div>

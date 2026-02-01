@@ -4,27 +4,24 @@ import Dexie, { type Table } from 'dexie';
 import { type Inspection, type WorkOrder, type Equipment, type Client, type EquipmentComponent } from './data';
 import { type Firestore, collection, doc, writeBatch, getDoc, getDocs } from 'firebase/firestore';
 
-// We store the inspection data, but omit properties that are generated upon sync.
 export type OfflineInspection = Omit<Inspection, 'id' | 'status'> & {
-  localId?: number; // Dexie's auto-incrementing primary key
+  localId?: number;
 };
 
-// Add equipmentId to the component type for local storage
 export type OfflineComponent = EquipmentComponent & { equipmentId: string };
 
-export class OfflineDB extends Dexie {
+class OfflineDB extends Dexie {
   pendingInspections!: Table<OfflineInspection, number>;
   workOrders!: Table<WorkOrder, string>;
   equipment!: Table<Equipment, string>;
   clients!: Table<Client, string>;
   components!: Table<OfflineComponent, string>;
 
-
   constructor() {
     super('FmecalOfflineDB');
     this.version(3).stores({
       pendingInspections: '++localId, workOrderId, inspectorId',
-      workOrders: 'id, inspectorId, status', // Use firestore ID as primary key
+      workOrders: 'id, inspectorId, status',
       equipment: 'id, clientId',
       clients: 'id',
       components: 'id, equipmentId',
@@ -32,16 +29,63 @@ export class OfflineDB extends Dexie {
   }
 }
 
-export const offlineDB = new OfflineDB();
+// ─── Instância lazy: só cria quando chamado pela primeira vez ───
+let _db: OfflineDB | null = null;
+
+export function getOfflineDB(): OfflineDB {
+  if (!_db) {
+    _db = new OfflineDB();
+  }
+  return _db;
+}
+
+// Mantém compatibilidade com código existente que usa `offlineDB` diretamente
+export const offlineDB = new Proxy({} as OfflineDB, {
+  get(_target, prop) {
+    return (getOfflineDB() as any)[prop];
+  }
+});
+
+
+// ─── Função que testa e garante que o DB está aberto antes de usar ───
+export async function ensureDBOpen(): Promise<OfflineDB> {
+  const db = getOfflineDB();
+  
+  if (db.isOpen()) return db;
+
+  try {
+    await db.open();
+    return db;
+  } catch (err) {
+    // Se falhou, tenta fechar e reabrir uma vez
+    console.warn('[OfflineDB] Primeira tentativa falhou, tentando reabrir...', err);
+    db.close();
+    
+    // Pequeno delay para garantir que o recurso foi liberado
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    try {
+      await db.open();
+      return db;
+    } catch (err2) {
+      console.error('[OfflineDB] Falhou também na segunda tentativa.', err2);
+      throw new Error(
+        'Não foi possível abrir o armazenamento local. ' +
+        'Verifique se o seu navegador permite armazenamento offline para este site.'
+      );
+    }
+  }
+}
 
 
 /**
  * Fetches all data related to the given work orders and caches it in IndexedDB.
- * @param firestore The Firestore instance.
- * @param workOrders The list of work orders to cache.
  */
 export async function cacheDataForOffline(firestore: Firestore, workOrders: WorkOrder[]) {
     if (!workOrders || workOrders.length === 0) return;
+
+    // ── Garante que o DB está aberto antes de usar ──
+    await ensureDBOpen();
 
     const equipmentIds = [...new Set(workOrders.map(wo => wo.equipmentId))];
     const clientIds = [...new Set(workOrders.map(wo => wo.clientId))];
@@ -55,7 +99,6 @@ export async function cacheDataForOffline(firestore: Firestore, workOrders: Work
     const equipments = equipmentSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Equipment)).filter(e => e.name);
     const clients = clientSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Client)).filter(c => c.name);
 
-    // Fetch all components collections in parallel to improve performance
     const componentPromises = equipments.map(equip => {
         const componentsCollection = collection(firestore, 'equipment', equip.id, 'components');
         return getDocs(componentsCollection).then(snapshot => ({
@@ -85,10 +128,11 @@ export async function cacheDataForOffline(firestore: Firestore, workOrders: Work
 
 /**
  * Attempts to sync all pending inspections from IndexedDB to Firestore.
- * @param firestore The Firestore instance.
- * @returns An object with the count of synced and failed inspections.
  */
 export async function syncWithFirestore(firestore: Firestore) {
+  // ── Garante que o DB está aberto antes de usar ──
+  await ensureDBOpen();
+
   const pending = await offlineDB.pendingInspections.toArray();
   if (pending.length === 0) {
     return { synced: 0, failed: 0 };
@@ -105,10 +149,8 @@ export async function syncWithFirestore(firestore: Firestore) {
     try {
       const batch = writeBatch(firestore);
 
-      // 1. Create a new inspection document ref to get a unique ID
       const inspectionRef = doc(collection(firestore, "inspections"));
       
-      // 2. Prepare the final inspection data with the new ID and final status
       const finalInspectionData: Inspection = {
         ...inspection,
         id: inspectionRef.id,
@@ -116,14 +158,11 @@ export async function syncWithFirestore(firestore: Firestore) {
       };
       batch.set(inspectionRef, finalInspectionData);
 
-      // 3. Update the corresponding work order status to 'Concluída'
       const workOrderRef = doc(firestore, "workOrders", inspection.workOrderId);
       batch.update(workOrderRef, { status: "Concluída" });
       
-      // 4. Commit the batch transaction to Firestore
       await batch.commit();
 
-      // 5. If sync is successful, remove the inspection from the local offline DB
       await offlineDB.pendingInspections.delete(inspection.localId);
       synced++;
       console.log(`[Sync] Successfully synced and removed inspection for WO: ${inspection.workOrderId}`);
@@ -131,7 +170,6 @@ export async function syncWithFirestore(firestore: Firestore) {
     } catch (error) {
       console.error(`[Sync] Failed to sync inspection for WO: ${inspection.workOrderId}`, error);
       failed++;
-      // We don't delete from local DB if sync fails, so it can be retried.
     }
   }
 
