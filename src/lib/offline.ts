@@ -32,19 +32,18 @@ class OfflineDB extends Dexie {
 export const offlineDB = new OfflineDB();
 
 /**
- * Ensures the database is open before performing any operation.
+ * Garante que o banco de dados está aberto antes de qualquer operação.
  */
 async function ensureDBOpen(): Promise<void> {
-  if (offlineDB.isOpen()) {
-    return;
-  }
+  if (offlineDB.isOpen()) return;
+  
   try {
     await offlineDB.open();
-  } catch (err) {
-    console.error('[OfflineDB] Falha ao abrir o banco de dados.', err);
+  } catch (err: any) {
+    console.error('[OfflineDB] Erro crítico ao abrir banco:', err);
     throw new Error(
-      'Não foi possível abrir o armazenamento local. ' +
-      'Verifique se o seu navegador permite armazenamento offline para este site (especialmente em modo anônimo).'
+      `Erro no armazenamento local: ${err.message || 'Desconhecido'}. ` +
+      'Tente fechar abas anônimas ou liberar espaço no navegador.'
     );
   }
 }
@@ -58,206 +57,149 @@ export async function savePendingInspection(
     try {
       await ensureDBOpen();
       
-      // Validação básica dos dados
-      if (!inspection.workOrderId || !inspection.equipmentId || !inspection.inspectorId) {
-        throw new Error('Dados obrigatórios da inspeção estão faltando.');
-      }
-
-      if (!inspection.items || inspection.items.length === 0) {
-        throw new Error('A inspeção deve conter ao menos um item respondido.');
+      if (!inspection.workOrderId || !inspection.equipmentId) {
+        throw new Error('Dados incompletos: IDs da OS ou Equipamento ausentes.');
       }
 
       const localId = await offlineDB.pendingInspections.add(inspection);
-      console.log('[OfflineDB] Inspeção salva localmente com ID:', localId);
+      console.log('[OfflineDB] Sucesso ao salvar inspeção local:', localId);
       return { localId };
     } catch (e: any) {
-        if (e.name === 'QuotaExceededError') {
-            throw new Error('Armazenamento offline cheio. Por favor, sincronize os dados pendentes para liberar espaço.');
-        }
-        console.error("[OfflineDB] Falha ao salvar no IndexedDB:", e);
-        throw new Error(`Falha ao salvar no banco de dados local: ${e.message || 'Erro desconhecido'}`);
+        console.error("[OfflineDB] Erro ao salvar inspeção:", e);
+        throw new Error(`Erro ao salvar no dispositivo: ${e.message || 'Erro de banco de dados'}`);
     }
 }
 
 /**
- * Retorna todas as inspeções pendentes do IndexedDB.
+ * Retorna todas as inspeções pendentes.
  */
 export async function getAllPendingInspections(): Promise<OfflineInspection[]> {
     try {
       await ensureDBOpen();
       return await offlineDB.pendingInspections.toArray();
     } catch (e) {
-      console.error('[OfflineDB] Erro ao buscar inspeções pendentes:', e);
       return [];
     }
 }
 
 /**
- * Remove uma inspeção pendente após sincronização bem-sucedida.
+ * Remove uma inspeção pendente após sincronização.
  */
 export async function removePendingInspection(localId: number): Promise<void> {
     try {
       await ensureDBOpen();
       await offlineDB.pendingInspections.delete(localId);
-      console.log('[OfflineDB] Inspeção pendente removida:', localId);
     } catch(e) {
-      console.error(`[OfflineDB] Falha ao remover inspeção pendente com localId ${localId}`, e);
+      console.error(`[OfflineDB] Erro ao remover localId ${localId}`, e);
     }
 }
 
-
 /**
- * Fetches all data related to the given work orders and caches it in IndexedDB.
+ * Baixa e armazena todos os dados necessários para realizar as inspeções offline.
  */
 export async function cacheDataForOffline(firestore: Firestore, workOrders: WorkOrder[]) {
-    if (!workOrders || workOrders.length === 0) {
-      console.warn('[OfflineDB] Nenhuma ordem de serviço para cachear.');
-      return;
-    }
+    if (!workOrders || workOrders.length === 0) return;
 
     await ensureDBOpen();
 
-    const validWorkOrders = workOrders.filter(wo => wo.equipmentId && wo.clientId);
+    // Filtrar apenas OS que tem IDs válidos para evitar erros de busca
+    const validWos = workOrders.filter(wo => wo.equipmentId && wo.clientId);
     
-    if (validWorkOrders.length === 0) {
-      throw new Error('Nenhuma ordem de serviço válida encontrada (faltam equipmentId ou clientId).');
-    }
-
-    console.log(`[OfflineDB] Cacheando dados de ${validWorkOrders.length} ordens de serviço...`);
-
-    const equipmentIds = [...new Set(validWorkOrders.map(wo => wo.equipmentId))];
-    const clientIds = [...new Set(validWorkOrders.map(wo => wo.clientId))];
+    const equipmentIds = [...new Set(validWos.map(wo => wo.equipmentId))];
+    const clientIds = [...new Set(validWos.map(wo => wo.clientId))];
 
     try {
-      // Buscar equipamentos
+      // Buscar dados do Firestore com tratamento de erro individual
       const equipmentPromises = equipmentIds.map(id => 
-        getDoc(doc(firestore, 'equipment', id))
-          .catch(err => {
-            console.error(`[OfflineDB] Erro ao buscar equipamento ${id}:`, err);
-            return null;
-          })
+        getDoc(doc(firestore, 'equipment', id)).catch(() => null)
       );
-      
-      // Buscar clientes
       const clientPromises = clientIds.map(id => 
-        getDoc(doc(firestore, 'clients', id))
-          .catch(err => {
-            console.error(`[OfflineDB] Erro ao buscar cliente ${id}:`, err);
-            return null;
-          })
+        getDoc(doc(firestore, 'clients', id)).catch(() => null)
       );
       
-      const equipmentSnapshots = (await Promise.all(equipmentPromises)).filter(snap => snap !== null);
-      const clientSnapshots = (await Promise.all(clientPromises)).filter(snap => snap !== null);
+      const [equipSnaps, clientSnaps] = await Promise.all([
+        Promise.all(equipmentPromises),
+        Promise.all(clientPromises)
+      ]);
 
-      const equipments = equipmentSnapshots
-          .filter(snap => snap!.exists())
-          .map(snap => ({ id: snap!.id, ...snap!.data() } as Equipment));
+      const equipments = equipSnaps
+          .filter(s => s && s.exists())
+          .map(s => ({ id: s!.id, ...s!.data() } as Equipment));
       
-      const clients = clientSnapshots
-          .filter(snap => snap!.exists())
-          .map(snap => ({ id: snap!.id, ...snap!.data() } as Client));
+      const clients = clientSnaps
+          .filter(s => s && s.exists())
+          .map(s => ({ id: s!.id, ...s!.data() } as Client));
 
-      console.log(`[OfflineDB] Equipamentos encontrados: ${equipments.length}`);
-      console.log(`[OfflineDB] Clientes encontrados: ${clients.length}`);
+      // Buscar componentes apenas para os equipamentos encontrados
+      const components: OfflineComponent[] = [];
+      for (const equip of equipments) {
+          try {
+              const compSnap = await getDocs(collection(firestore, 'equipment', equip.id, 'components'));
+              compSnap.docs.forEach(d => {
+                  components.push({
+                      ...(d.data() as EquipmentComponent),
+                      id: d.id,
+                      equipmentId: equip.id
+                  });
+              });
+          } catch (e) {
+              console.warn(`[OfflineDB] Pulei componentes do equip ${equip.id} devido a erro.`);
+          }
+      }
 
-      // Buscar componentes
-      const componentPromises = equipments.map(equip => {
-          const componentsCollection = collection(firestore, 'equipment', equip.id, 'components');
-          return getDocs(componentsCollection)
-            .then(snapshot => ({
-              equipmentId: equip.id,
-              docs: snapshot.docs,
-            }))
-            .catch(err => {
-              console.error(`[OfflineDB] Erro ao buscar componentes do equipamento ${equip.id}:`, err);
-              return { equipmentId: equip.id, docs: [] };
-            });
+      // Salva tudo de uma vez
+      await offlineDB.transaction('rw', [
+          offlineDB.workOrders, 
+          offlineDB.equipment, 
+          offlineDB.clients, 
+          offlineDB.components
+      ], async () => {
+          await offlineDB.workOrders.bulkPut(validWos);
+          if (equipments.length > 0) await offlineDB.equipment.bulkPut(equipments);
+          if (clients.length > 0) await offlineDB.clients.bulkPut(clients);
+          if (components.length > 0) await offlineDB.components.bulkPut(components);
       });
 
-      const componentSnapshots = await Promise.all(componentPromises);
-
-      const components = componentSnapshots.flatMap(snapshot => 
-          snapshot.docs.map(d => ({
-              ...(d.data() as EquipmentComponent),
-              id: d.id,
-              equipmentId: snapshot.equipmentId,
-          }))
-      );
-
-      console.log(`[OfflineDB] Componentes encontrados: ${components.length}`);
-      
-      // Salvar tudo no IndexedDB em uma transação
-      await offlineDB.transaction('rw', offlineDB.workOrders, offlineDB.equipment, offlineDB.clients, offlineDB.components, async () => {
-          await offlineDB.workOrders.bulkPut(validWorkOrders);
-          await offlineDB.equipment.bulkPut(equipments);
-          await offlineDB.clients.bulkPut(clients);
-          await offlineDB.components.bulkPut(components);
-      });
-
-      console.log('[OfflineDB] Dados cacheados com sucesso!');
-    } catch (error) {
-      console.error('[OfflineDB] Erro ao cachear dados:', error);
-      throw new Error('Falha ao baixar dados para modo offline. Verifique sua conexão e tente novamente.');
+      console.log('[OfflineDB] Cache concluído com sucesso!');
+    } catch (error: any) {
+      console.error('[OfflineDB] Erro no cache:', error);
+      throw new Error(`Falha no download: ${error.message || 'Erro de rede ou permissão.'}`);
     }
 }
 
-
 /**
- * Attempts to sync all pending inspections from IndexedDB to Firestore.
+ * Sincroniza inspeções do banco local para o Firestore.
  */
 export async function syncWithFirestore(firestore: Firestore) {
   const pending = await getAllPendingInspections();
-
-  if (pending.length === 0) {
-    console.log('[Sync] Nenhuma inspeção pendente para sincronizar.');
-    return { synced: 0, failed: 0 };
-  }
-
-  console.log(`[Sync] Tentando sincronizar ${pending.length} inspeções.`);
+  if (pending.length === 0) return { synced: 0, failed: 0 };
 
   let synced = 0;
   let failed = 0;
-  const errors: string[] = [];
 
   for (const inspection of pending) {
-    if (!inspection.localId) {
-      console.warn('[Sync] Inspeção sem localId, pulando...');
-      continue;
-    }
+    if (!inspection.localId) continue;
     
     try {
       const batch = writeBatch(firestore);
-
       const inspectionRef = doc(collection(firestore, "inspections"));
       
-      const finalInspectionData: Inspection = {
+      const finalData: Inspection = {
         ...inspection,
         id: inspectionRef.id,
         status: 'Finalizado'
       };
-      batch.set(inspectionRef, finalInspectionData);
-
-      const workOrderRef = doc(firestore, "workOrders", inspection.workOrderId);
-      batch.update(workOrderRef, { status: "Concluída" });
+      
+      batch.set(inspectionRef, finalData);
+      batch.update(doc(firestore, "workOrders", inspection.workOrderId), { status: "Concluída" });
       
       await batch.commit();
-
       await removePendingInspection(inspection.localId);
       synced++;
-      console.log(`[Sync] Inspeção sincronizada com sucesso: WO ${inspection.workOrderId}`);
-
-    } catch (error: any) {
-      console.error(`[Sync] Falha ao sincronizar inspeção para WO: ${inspection.workOrderId}`, error);
-      errors.push(`WO ${inspection.workOrderId}: ${error.message}`);
+    } catch (error) {
+      console.error(`[Sync] Falha na WO ${inspection.workOrderId}:`, error);
       failed++;
     }
-  }
-
-  console.log(`[Sync] Finalizado. Sincronizados: ${synced}, Falhas: ${failed}`);
-  
-  if (errors.length > 0) {
-    console.error('[Sync] Erros detalhados:', errors);
   }
 
   return { synced, failed };
