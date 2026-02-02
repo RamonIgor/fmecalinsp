@@ -78,19 +78,66 @@
 }
  
 @media print {
-  body {
-    @apply bg-white text-black;
+  /* Hide all UI elements that are not part of the report content */
+  .dashboard-layout-aside,
+  .dashboard-layout-header,
+  .report-page-header,
+  .dashboard-sheet-trigger,
+  .dashboard-sheet-content {
+    display: none !important;
   }
-  .print-hidden {
-    display: none;
+
+  /* Reset layout for the main content area to fill the page */
+  .dashboard-layout-main-wrapper {
+    padding-left: 0 !important;
   }
+
+  .dashboard-layout-main {
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: white !important;
+  }
+
+  /* Make the report itself the only thing on the page */
   .report-card {
-    @apply shadow-none border-none;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
   }
+
   .print-content {
-    @apply p-0;
+    padding: 1rem !important; /* Add some padding for the printer margins */
   }
+
+  /* Style the textarea to look like a document, not a form field */
   .report-textarea {
-    @apply border-none p-0 h-auto resize-none;
+    border: none !important;
+    padding: 0 !important;
+    height: auto !important;
+    resize: none !important;
+    background-color: white !important;
+    color: black !important;
+    font-family: 'Times New Roman', Times, serif !important; /* Professional print font */
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: 0 0 #0000 !important; /* Remove focus ring */
+  }
+  
+  .report-header, .report-footer {
+      color: black !important;
+  }
+  .report-header p, .report-footer p {
+      color: #333 !important;
+  }
+
+  /* Ensure body is plain for printing */
+  body {
+    background-color: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 }

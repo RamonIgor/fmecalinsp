@@ -79,7 +79,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between print-hidden">
+      <div className="flex items-center justify-between report-page-header">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />

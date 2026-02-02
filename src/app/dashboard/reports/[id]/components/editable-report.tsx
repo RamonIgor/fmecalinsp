@@ -12,13 +12,6 @@ import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import Logo from '@/components/logo';
 
-interface EditableReportProps {
-  inspection: Inspection;
-  workOrder: WorkOrder;
-  equipment: Equipment;
-  client: Client;
-}
-
 function generateReportMarkdown(
   inspection: Inspection,
   workOrder: WorkOrder,
@@ -26,28 +19,31 @@ function generateReportMarkdown(
   client: Client
 ): string {
   const inspectionDate = new Date(inspection.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-  const scheduledDate = workOrder.scheduledDate ? new Date(workOrder.scheduledDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A';
+  
+  const title = "RELATÓRIO TÉCNICO DE INSPEÇÃO DE SEGURANÇA";
+  const separator = "=".repeat(70);
 
   let report = `
-# RELATÓRIO DE INSPEÇÃO DE SEGURANÇA
+${separator}
+${title.padStart(Math.floor((70 + title.length) / 2))}
+${separator}
 
-**Número da OS:** ${workOrder.displayId || 'N/A'}
-**Data da Inspeção:** ${inspectionDate}
+NÚMERO DA OS: ${workOrder.displayId || 'N/A'}
+DATA DA INSPEÇÃO: ${inspectionDate}
+INSPETOR RESPONSÁVEL: ${inspection.inspectorName}
 
----
+----------------------------------------------------------------------
+1. DADOS DO CLIENTE E EQUIPAMENTO
+----------------------------------------------------------------------
 
-## 1. DADOS DO CLIENTE E EQUIPAMENTO
+    CLIENTE:     ${client.name}
+    EQUIPAMENTO: ${equipment.name}
+    TAG:         ${equipment.tag}
+    SETOR:       ${equipment.sector}
 
-| Cliente | Equipamento | TAG | Setor |
-|---|---|---|---|
-| ${client.name} | ${equipment.name} | ${equipment.tag} | ${equipment.sector} |
-
----
-
-## 2. RESULTADOS DA INSPEÇÃO
-
-Abaixo estão os resultados detalhados da inspeção realizada por **${inspection.inspectorName}**.
-
+----------------------------------------------------------------------
+2. RESULTADOS DA INSPEÇÃO
+----------------------------------------------------------------------
 `;
 
   const itemsByConformity = inspection.items.reduce((acc, item) => {
@@ -57,60 +53,62 @@ Abaixo estão os resultados detalhados da inspeção realizada por **${inspectio
 
   if (itemsByConformity['Não Conforme']?.length > 0) {
     report += `
-### ITENS NÃO CONFORMES (REQUEREM AÇÃO)
-
-| Item | Observação |
-|---|---|
+ITENS NÃO CONFORMES (REQUEREM AÇÃO)
+-----------------------------------
 `;
     itemsByConformity['Não Conforme'].forEach(item => {
-      report += `| ${item.questionText} | ${item.observation || 'Nenhuma'} |\n`;
+      report += `
+    ITEM:        ${item.questionText.replace(/:/g, ' -')}
+    OBSERVAÇÃO:  ${item.observation || 'Nenhuma'}
+    
+`;
     });
   }
 
   if (itemsByConformity['Conforme']?.length > 0) {
     report += `
-### ITENS CONFORMES
-
-| Item | Observação |
-|---|---|
+ITENS CONFORMES
+---------------
 `;
     itemsByConformity['Conforme'].forEach(item => {
-      report += `| ${item.questionText} | ${item.observation || 'Nenhuma'} |\n`;
+      report += `
+    ITEM:        ${item.questionText.replace(/:/g, ' -')}
+    OBSERVAÇÃO:  ${item.observation || 'Nenhuma'}
+
+`;
     });
   }
   
     if (itemsByConformity['NA']?.length > 0) {
     report += `
-### ITENS NÃO APLICÁVEIS
-
-| Item |
-|---|
+ITENS NÃO APLICÁVEIS
+--------------------
 `;
     itemsByConformity['NA'].forEach(item => {
-      report += `| ${item.questionText} |\n`;
+      report += `
+    ITEM:        ${item.questionText.replace(/:/g, ' -')}
+
+`;
     });
   }
 
   report += `
----
-
-## 3. OBSERVAÇÕES GERAIS
+----------------------------------------------------------------------
+3. OBSERVAÇÕES GERAIS
+----------------------------------------------------------------------
 
 [Insira aqui quaisquer observações ou recomendações gerais sobre a inspeção.]
 
----
+----------------------------------------------------------------------
+4. CONCLUSÃO
+----------------------------------------------------------------------
 
-## 4. CONCLUSÃO
-
-A inspeção foi concluída na data supracitada, e as seguintes ações são recomendadas:
-- Para itens **Não Conformes**: Planejar manutenção corretiva imediata.
-- Para itens **Conformes**: Manter plano de manutenção preventiva.
+A inspeção foi concluída na data supracitada. Com base nos resultados, as seguintes ações são recomendadas:
+- Para os itens listados como "Não Conformes", recomenda-se o planejamento de manutenção corretiva com a maior brevidade possível a fim de garantir a segurança e a operacionalidade do equipamento.
+- Para os itens listados como "Conformes", recomenda-se a continuidade do plano de manutenção preventiva existente.
 
 A F.Mecal Insp. agradece a confiança e se coloca à disposição para quaisquer esclarecimentos.
 
----
-
-**Assinado por:**
 
 `;
   
@@ -130,7 +128,7 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
     <Card className="report-card">
       <CardContent className="p-0">
         <div className="p-8 md:p-12 print-content">
-          <header className="flex items-center justify-between mb-8">
+          <header className="flex items-center justify-between mb-8 report-header">
             <div className="flex items-center gap-4">
               <Logo className="h-16 w-16" />
               <div>
@@ -151,7 +149,7 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
             placeholder="Edite seu relatório aqui..."
           />
           
-          <footer className="mt-12 text-center">
+          <footer className="mt-12 text-center report-footer">
             {inspection.signatureUrl && (
                 <div className="inline-block">
                     <Image

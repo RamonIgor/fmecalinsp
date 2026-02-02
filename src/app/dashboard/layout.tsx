@@ -128,7 +128,7 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen w-full flex bg-gray-50 dark:bg-zinc-950">
-        <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-secondary sm:flex">
+        <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-secondary sm:flex dashboard-layout-aside">
             <div className="flex h-16 items-center gap-2 px-6 border-b border-sidebar-border">
                 <Logo className="h-8 w-8 text-primary" />
                 <span className="font-headline text-2xl font-bold text-white">F.Mecal Insp.</span>
@@ -153,16 +153,16 @@ export default function DashboardLayout({
             </nav>
         </aside>
 
-        <div className="flex flex-col w-full sm:pl-64">
-            <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-card px-4 sm:justify-end sm:px-6">
+        <div className="flex flex-col w-full sm:pl-64 dashboard-layout-main-wrapper">
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-card px-4 sm:justify-end sm:px-6 dashboard-layout-header">
                  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button size="icon" variant="outline" className="sm:hidden">
+                        <Button size="icon" variant="outline" className="sm:hidden dashboard-sheet-trigger">
                         <PanelLeft className="h-5 w-5" />
                         <span className="sr-only">Toggle Menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="sm:max-w-xs bg-secondary border-r-0 text-secondary-foreground">
+                    <SheetContent side="left" className="sm:max-w-xs bg-secondary border-r-0 text-secondary-foreground dashboard-sheet-content">
                         <SheetTitle className="sr-only">Menu</SheetTitle>
                         <nav className="grid gap-6 text-lg font-medium">
                         <div className="flex h-16 items-center gap-2 px-0 border-b border-sidebar-border">
@@ -191,7 +191,7 @@ export default function DashboardLayout({
                 </Sheet>
                 <UserNav />
             </header>
-            <main className="flex-1 p-4 sm:p-6 bg-gray-100 dark:bg-background">
+            <main className="flex-1 p-4 sm:p-6 bg-gray-100 dark:bg-background dashboard-layout-main">
                 {children}
             </main>
         </div>
