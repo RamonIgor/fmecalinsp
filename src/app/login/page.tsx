@@ -35,12 +35,9 @@ import { useAuth, useFirestore } from '@/firebase/provider';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  setPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
@@ -74,16 +71,24 @@ export default function LoginPage() {
     },
   });
 
+  // On page load, check local storage for a saved email and checkbox preference
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('savedEmailForLogin');
+    const shouldRemember = localStorage.getItem('rememberMePreference') === 'true';
+    
+    // Set the checkbox state first
+    form.setValue('rememberMe', shouldRemember);
+
+    // If the preference was to remember, and an email exists, set it
+    if (shouldRemember && savedEmail) {
+      form.setValue('email', savedEmail);
+    }
+  }, [form]);
+
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const persistenceToSet = values.rememberMe
-        ? browserLocalPersistence
-        : browserSessionPersistence;
-
-      // Explicitly wait for persistence to be set before signing in.
-      await setPersistence(auth, persistenceToSet);
-
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
 
       // Sign in successful
@@ -93,6 +98,16 @@ export default function LoginPage() {
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
+
+        // Handle the "Remember Email" preference
+        if (values.rememberMe) {
+          localStorage.setItem('savedEmailForLogin', values.email);
+          localStorage.setItem('rememberMePreference', 'true');
+        } else {
+          localStorage.removeItem('savedEmailForLogin');
+          localStorage.removeItem('rememberMePreference');
+        }
+
         toast({
           title: 'Login bem-sucedido!',
           description: 'Redirecionando...',
@@ -106,6 +121,9 @@ export default function LoginPage() {
       } else {
         // This case should ideally not happen if user creation is robust
         await auth.signOut(); // Sign out the user from auth
+        // Clean up local storage on failure as well
+        localStorage.removeItem('savedEmailForLogin');
+        localStorage.removeItem('rememberMePreference');
         throw new Error('Perfil de usuário não encontrado no banco de dados.');
       }
     } catch (error: any) {
@@ -267,7 +285,7 @@ export default function LoginPage() {
                           />
                         </FormControl>
                         <Label htmlFor="remember-me" className="cursor-pointer text-white/80">
-                          Manter-me conectado
+                          Lembrar meu email
                         </Label>
                       </FormItem>
                     )}
