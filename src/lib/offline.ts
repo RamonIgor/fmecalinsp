@@ -124,20 +124,34 @@ export async function savePendingInspection(
   const indexedDBAvailable = await isIndexedDBAvailable();
 
   if (indexedDBAvailable) {
-    await ensureDBOpen();
-    const localId = await offlineDB.pendingInspections.add(inspection);
-    return { savedIn: 'indexeddb', localId };
+    try {
+      await ensureDBOpen();
+      const localId = await offlineDB.pendingInspections.add(inspection);
+      return { savedIn: 'indexeddb', localId };
+    } catch (e: any) {
+        if (e.name === 'QuotaExceededError') {
+            throw new Error('Armazenamento offline cheio. Por favor, sincronize os dados pendentes para liberar espaço.');
+        }
+        throw e; // Re-throw other IndexedDB errors
+    }
   }
 
   // Fallback para localStorage
-  const inspections = getFallbackInspections();
-  const newInspection: OfflineInspection = {
-    ...inspection,
-    localId: Date.now(),
-  };
-  inspections.push(newInspection);
-  saveFallbackInspections(inspections);
-  return { savedIn: 'localstorage', localId: newInspection.localId };
+  try {
+    const inspections = getFallbackInspections();
+    const newInspection: OfflineInspection = {
+      ...inspection,
+      localId: Date.now(),
+    };
+    inspections.push(newInspection);
+    saveFallbackInspections(inspections);
+    return { savedIn: 'localstorage', localId: newInspection.localId };
+  } catch (e: any) {
+    if (e.name === 'QuotaExceededError') {
+      throw new Error('Armazenamento local (localStorage) está cheio, possivelmente devido a muitas fotos. Sincronize os dados pendentes.');
+    }
+    throw e; // Re-throw other localStorage errors
+  }
 }
 
 /**
