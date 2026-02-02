@@ -197,8 +197,13 @@ export async function cacheDataForOffline(firestore: Firestore, workOrders: Work
     const equipmentSnapshots = await Promise.all(equipmentPromises);
     const clientSnapshots = await Promise.all(clientPromises);
 
-    const equipments = equipmentSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Equipment)).filter(e => e.name);
-    const clients = clientSnapshots.map(snap => ({ id: snap.id, ...snap.data() } as Client)).filter(c => c.name);
+    const equipments = equipmentSnapshots
+        .filter(snap => snap.exists())
+        .map(snap => ({ id: snap.id, ...snap.data() } as Equipment));
+    
+    const clients = clientSnapshots
+        .filter(snap => snap.exists())
+        .map(snap => ({ id: snap.id, ...snap.data() } as Client));
 
     const componentPromises = equipments.map(equip => {
         const componentsCollection = collection(firestore, 'equipment', equip.id, 'components');
