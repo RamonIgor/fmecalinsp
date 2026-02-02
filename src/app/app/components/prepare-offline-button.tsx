@@ -54,10 +54,10 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
         setLoading(true);
 
         try {
-            // Step 1: Cache all firestore data. This part is already parallel and robust.
+            // Step 1: Cache all firestore data. This part is now more robust.
             await cacheDataForOffline(firestore, pendingWorkOrders);
 
-            // Step 2: Proactively cache the page routes. This is more robust than cache.addAll().
+            // Step 2: Proactively cache the page routes.
             const urlsToCache = [
                 '/app', // Cache the main inspector page.
                 ...pendingWorkOrders.map(wo => `/app/inspection/${wo.id}`)
@@ -66,7 +66,6 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
             const cache = await caches.open('pages-cache');
             let failedPages = 0;
             
-            // This runs all cache operations in parallel and won't fail if a single page fails.
             const cachePromises = urlsToCache.map(url => 
                 cache.add(url).catch(err => {
                     console.warn(`Falha ao salvar a página ${url} no cache:`, err);
@@ -93,7 +92,7 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
             console.error("Error preparing offline data: ", error);
             toast({
                 title: "Erro ao preparar para modo offline",
-                description: "Não foi possível baixar os dados. Verifique sua conexão e tente novamente.",
+                description: error instanceof Error ? error.message : "Não foi possível baixar os dados. Verifique sua conexão e tente novamente.",
                 variant: "destructive"
             });
         } finally {
