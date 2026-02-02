@@ -188,8 +188,8 @@ export async function cacheDataForOffline(firestore: Firestore, workOrders: Work
 
     await ensureDBOpen();
 
-    const equipmentIds = [...new Set(workOrders.map(wo => wo.equipmentId))];
-    const clientIds = [...new Set(workOrders.map(wo => wo.clientId))];
+    const equipmentIds = [...new Set(workOrders.map(wo => wo.equipmentId))].filter(id => !!id);
+    const clientIds = [...new Set(workOrders.map(wo => wo.clientId))].filter(id => !!id);
 
     const equipmentPromises = equipmentIds.map(id => getDoc(doc(firestore, 'equipment', id)));
     const clientPromises = clientIds.map(id => getDoc(doc(firestore, 'clients', id)));
