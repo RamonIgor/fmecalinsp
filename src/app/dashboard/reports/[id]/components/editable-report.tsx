@@ -41,6 +41,8 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
   const naItems = inspection.items.filter(item => item.answer === 'NA');
 
   const itemsWithPhotos = inspection.items.filter(item => item.photoUrls && item.photoUrls.length > 0);
+  
+  let sectionCounter = 1;
 
   return (
     <Card className="report-card font-sans">
@@ -68,7 +70,7 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
           <main className="space-y-8">
             {/* Section 1: Client and Equipment Data */}
             <section>
-              <h2 className="text-lg font-bold border-b pb-2 mb-4">1. DADOS DO CLIENTE E EQUIPAMENTO</h2>
+              <h2 className="text-lg font-bold border-b pb-2 mb-4">{sectionCounter++}. DADOS DO CLIENTE E EQUIPAMENTO</h2>
               <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
                 <div><span className="font-semibold text-gray-600">CLIENTE:</span> {client.name}</div>
                 <div><span className="font-semibold text-gray-600">EQUIPAMENTO:</span> {equipment.name}</div>
@@ -80,7 +82,7 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
             
             {/* Section 2: Inspection Results */}
             <section>
-              <h2 className="text-lg font-bold border-b pb-2 mb-4">2. RESULTADOS DA INSPEÇÃO</h2>
+              <h2 className="text-lg font-bold border-b pb-2 mb-4">{sectionCounter++}. RESULTADOS DA INSPEÇÃO</h2>
 
               {nonConformingItems.length > 0 && (
                 <div className="mb-6">
@@ -141,7 +143,7 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
              {/* Section 3: Photographic Registry */}
             {itemsWithPhotos.length > 0 && (
                 <section className="report-section-break">
-                    <h2 className="text-lg font-bold border-b pb-2 mb-4">3. REGISTRO FOTOGRÁFICO</h2>
+                    <h2 className="text-lg font-bold border-b pb-2 mb-4">{sectionCounter++}. REGISTRO FOTOGRÁFICO</h2>
                     <div className="space-y-6">
                         {itemsWithPhotos.map((item, index) => (
                             <div key={`photo-${index}`}>
@@ -162,7 +164,7 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
 
             {/* Section 4: Conclusion */}
             <section className="report-section-break">
-                <h2 className="text-lg font-bold border-b pb-2 mb-4">4. OBSERVAÇÕES E CONCLUSÃO</h2>
+                <h2 className="text-lg font-bold border-b pb-2 mb-4">{sectionCounter++}. OBSERVAÇÕES E CONCLUSÃO</h2>
                 <div 
                     className="prose prose-sm max-w-none mt-4 p-4 bg-gray-50 border border-dashed border-gray-300 rounded-md print:bg-transparent print:border-none print:p-0"
                 >
