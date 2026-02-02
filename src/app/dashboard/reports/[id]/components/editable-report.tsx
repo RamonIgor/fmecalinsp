@@ -139,8 +139,8 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
               </div>
             </div>
             <div className="text-right">
-              <p className="font-semibold">OS: {workOrder.displayId}</p>
-              <p className="text-sm text-muted-foreground">Data: {new Date(inspection.date).toLocaleDateString('pt-BR')}</p>
+              <p className="font-semibold">OS: ${workOrder.displayId}</p>
+              <p className="text-sm text-muted-foreground">Data: ${new Date(inspection.date).toLocaleDateString('pt-BR')}</p>
             </div>
           </header>
           
