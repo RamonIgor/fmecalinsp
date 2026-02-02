@@ -212,6 +212,7 @@ export default function LoginPage() {
                           <Input
                             type="email"
                             placeholder="seu.email@empresa.com"
+                            autoComplete="email"
                             {...field}
                             className="h-11 bg-background/70 border-border/50"
                           />
@@ -231,6 +232,7 @@ export default function LoginPage() {
                             <Input
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="••••••••"
+                                autoComplete="current-password"
                                 {...field}
                                 className="h-11 bg-background/70 border-border/50 pr-10"
                             />
@@ -302,7 +304,7 @@ export default function LoginPage() {
         <div className="absolute bottom-6 left-6 z-20 hidden md:block text-white">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              “Qualidade significa fazer o certo quando ninguém está olhando.”
+              "Qualidade significa fazer o certo quando ninguém está olhando."
             </p>
             <footer className="text-sm">- Henry Ford</footer>
           </blockquote>
@@ -325,6 +327,7 @@ export default function LoginPage() {
                 onChange={(e) => setResetEmail(e.target.value)}
                 type="email"
                 placeholder="seu.email@empresa.com"
+                autoComplete="email"
               />
             </div>
           </div>

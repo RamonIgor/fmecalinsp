@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect } from 'react';
@@ -11,18 +10,30 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    // Debug log para verificar o estado da autenticação
+    console.log('Auth State:', { 
+      email: user?.email, 
+      role: user?.role, 
+      isLoading: isUserLoading,
+      hasUser: !!user 
+    });
+
     // Wait until the user's auth and profile state is fully resolved.
     if (isUserLoading) {
+      console.log('Still loading user data...');
       return;
     }
 
     // Once loading is complete, we can make a definitive decision.
     if (user?.role === 'admin') {
+      console.log('Redirecting to dashboard (admin)');
       router.replace('/dashboard');
     } else if (user?.role === 'inspector') {
+      console.log('Redirecting to app (inspector)');
       router.replace('/app');
     } else {
       // Fallback for no user, or user with no role (invalid state).
+      console.log('Redirecting to login (no user or invalid role)');
       router.replace('/login');
     }
   }, [user, isUserLoading, router]);
