@@ -12,12 +12,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Inspection, Equipment } from "@/lib/data";
-import { ReportGenerator } from "./components/report-generator";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import { useFirestore, useMemoFirebase } from "@/firebase/provider";
 import { collection } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
+import Link from "next/link";
 
 function getStatusVariant(status: Inspection['status']) {
   switch (status) {
@@ -93,7 +95,12 @@ export default function InspectionsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <ReportGenerator inspection={inspection} />
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/dashboard/reports/${inspection.id}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Ver Relatório
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
