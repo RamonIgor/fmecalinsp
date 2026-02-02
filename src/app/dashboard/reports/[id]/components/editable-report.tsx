@@ -45,7 +45,11 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
   return (
     <Card className="report-card font-sans">
       <CardContent className="p-0 report-content">
-        <div className="p-8 md:p-12 print-content bg-white text-black">
+        <div 
+          contentEditable="true" 
+          suppressContentEditableWarning={true} 
+          className="p-8 md:p-12 print-content bg-white text-black rounded-lg outline-none ring-2 ring-dashed ring-yellow-400/80 focus:ring-primary focus:ring-2 print:ring-0 print:shadow-none"
+        >
           {/* Report Header */}
           <header className="flex items-start justify-between mb-8 report-header">
             <div className="flex items-center gap-4">
@@ -160,16 +164,13 @@ export function EditableReport({ inspection, workOrder, equipment, client }: Edi
             <section className="report-section-break">
                 <h2 className="text-lg font-bold border-b pb-2 mb-4">4. OBSERVAÇÕES E CONCLUSÃO</h2>
                 <div 
-                    contentEditable="true"
-                    suppressContentEditableWarning={true}
-                    className="prose prose-sm max-w-none editable-section p-4 bg-yellow-50 border border-yellow-200 rounded-md"
+                    className="prose prose-sm max-w-none mt-4 p-4 bg-gray-50 border border-dashed border-gray-300 rounded-md print:bg-transparent print:border-none print:p-0"
                 >
-                    <p>A inspeção foi concluída na data supracitada. Com base nos resultados, as seguintes ações são recomendadas:</p>
-                    <ul>
-                    <li>Para os itens listados como <strong>Não Conformes</strong>, recomenda-se o planejamento de manutenção corretiva com a maior brevidade possível a fim de garantir a segurança e a operacionalidade do equipamento.</li>
-                    <li>Para os itens listados como <strong>Conformes</strong>, recomenda-se a continuidade do plano de manutenção preventiva existente.</li>
-                    </ul>
-                    <p><strong>Observações Adicionais:</strong> [Clique aqui para adicionar suas observações]</p>
+                  <h4>Recomendações</h4>
+                  <p>Com base nos itens listados como "Não Conformes", recomenda-se o planejamento de manutenção corretiva para os pontos críticos identificados.</p>
+                  
+                  <h4>Observações Finais</h4>
+                  <p>[Clique aqui para adicionar suas observações finais, parecer técnico ou recomendações adicionais.]</p>
               </div>
             </section>
           </main>

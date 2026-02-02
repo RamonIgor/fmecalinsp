@@ -86,7 +86,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Relatório de Inspeção Editável</h1>
-            <p className="text-muted-foreground">Ajuste o conteúdo e imprima o relatório final.</p>
+            <p className="text-muted-foreground">Ajuste o conteúdo e imprima o relatório final. Clique em qualquer parte do relatório para editar.</p>
           </div>
         </div>
         <Button onClick={handlePrint}>
