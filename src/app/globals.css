@@ -71,28 +71,26 @@
     --chart-1: 48 100% 50%;
     --chart-2: 158 64% 52%;
   }
-}
- 
-@layer base {
+
   body {
     @apply bg-background text-foreground;
   }
-
-  @media print {
-    .print-hidden {
-      display: none;
-    }
-    .report-card {
-      @apply shadow-none border-none;
-    }
-    .print-content {
-      @apply p-0;
-    }
-    .report-textarea {
-      @apply border-none p-0 h-auto resize-none;
-    }
-    body {
-      @apply bg-white text-black;
-    }
+}
+ 
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+  .print-hidden {
+    display: none;
+  }
+  .report-card {
+    @apply shadow-none border-none;
+  }
+  .print-content {
+    @apply p-0;
+  }
+  .report-textarea {
+    @apply border-none p-0 h-auto resize-none;
   }
 }
