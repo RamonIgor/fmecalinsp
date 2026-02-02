@@ -249,7 +249,7 @@ export default function LoginPage() {
                                 placeholder="••••••••"
                                 autoComplete="current-password"
                                 {...field}
-                                className="h-11 bg-background/70 border-border/50 pr-10"
+                                className="h-11 bg-background/70 border-border/50 pr-10 placeholder:text-white/30"
                             />
                             </FormControl>
                             <Button
