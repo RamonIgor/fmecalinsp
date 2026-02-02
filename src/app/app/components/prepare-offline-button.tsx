@@ -24,7 +24,7 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
         };
         window.addEventListener('online', updateOnlineStatus);
         window.addEventListener('offline', updateOnlineStatus);
-        updateOnlineStatus(); // Set initial status
+        updateOnlineStatus();
         return () => {
             window.removeEventListener('online', updateOnlineStatus);
             window.removeEventListener('offline', updateOnlineStatus);
@@ -54,42 +54,55 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
         setLoading(true);
 
         try {
-            // Step 1: Cache all firestore data. This part is now more robust.
+            console.log('[PrepareOffline] Iniciando download de dados...');
+            
+            // Step 1: Cache all firestore data
             await cacheDataForOffline(firestore, pendingWorkOrders);
 
-            // Step 2: Proactively cache the page routes.
+            // Step 2: Cache the page routes using Cache API
             const urlsToCache = [
-                '/app', // Cache the main inspector page.
+                '/app',
                 ...pendingWorkOrders.map(wo => `/app/inspection/${wo.id}`)
             ];
 
-            const cache = await caches.open('pages-cache');
-            let failedPages = 0;
-            
-            const cachePromises = urlsToCache.map(url => 
-                cache.add(url).catch(err => {
-                    console.warn(`Falha ao salvar a página ${url} no cache:`, err);
-                    failedPages++;
-                })
-            );
-            
-            await Promise.all(cachePromises);
+            console.log('[PrepareOffline] Cacheando páginas:', urlsToCache);
 
-            if (failedPages > 0) {
-                 toast({
-                    variant: "destructive",
-                    title: `Preparação Incompleta`,
-                    description: `Os dados foram salvos, mas ${failedPages} de ${urlsToCache.length} páginas não puderam ser cacheadas. Tente novamente.`,
-                });
+            // Verificar se Cache API está disponível
+            if ('caches' in window) {
+                const cache = await caches.open('pages-cache');
+                let failedPages = 0;
+                
+                const cachePromises = urlsToCache.map(url => 
+                    cache.add(url).catch(err => {
+                        console.warn(`[PrepareOffline] Falha ao cachear página ${url}:`, err);
+                        failedPages++;
+                    })
+                );
+                
+                await Promise.all(cachePromises);
+
+                if (failedPages > 0) {
+                     toast({
+                        variant: "default",
+                        title: `Preparação Parcial`,
+                        description: `Os dados foram salvos, mas ${failedPages} de ${urlsToCache.length} páginas não puderam ser cacheadas. Você ainda poderá trabalhar offline.`,
+                    });
+                } else {
+                     toast({
+                        title: "Pronto para trabalhar offline! ✓",
+                        description: `${pendingWorkOrders.length} OS foram baixadas e estão disponíveis offline.`,
+                    });
+                }
             } else {
-                 toast({
-                    title: "Pronto para trabalhar offline!",
-                    description: `Os dados e as páginas de ${pendingWorkOrders.length} OS foram salvos no dispositivo.`,
+                // Cache API não disponível (raro)
+                toast({
+                    title: "Dados salvos",
+                    description: `${pendingWorkOrders.length} OS foram salvas. As páginas podem demorar para carregar offline.`,
                 });
             }
 
         } catch (error) {
-            console.error("Error preparing offline data: ", error);
+            console.error("[PrepareOffline] Erro ao preparar dados offline:", error);
             toast({
                 title: "Erro ao preparar para modo offline",
                 description: error instanceof Error ? error.message : "Não foi possível baixar os dados. Verifique sua conexão e tente novamente.",
@@ -103,13 +116,18 @@ export function PrepareOfflineButton({ workOrders }: PrepareOfflineButtonProps) 
     const pendingCount = workOrders?.filter(wo => wo.status === 'Pendente').length ?? 0;
 
     return (
-        <Button onClick={handlePrepareOffline} disabled={loading || pendingCount === 0 || !isOnline} size="lg" className="w-full h-14 text-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg">
+        <Button 
+            onClick={handlePrepareOffline} 
+            disabled={loading || pendingCount === 0 || !isOnline} 
+            size="lg" 
+            className="w-full h-14 text-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg"
+        >
              {loading ? (
                 <Loader2 className="mr-2 h-6 w-6 animate-spin" />
             ) : (
                 <DownloadCloud className="mr-2 h-6 w-6" />
             )}
-            {loading ? 'Baixando dados e páginas...' : `Baixar ${pendingCount} OS para Trabalho Offline`}
+            {loading ? 'Baixando dados...' : `Baixar ${pendingCount} OS para Trabalho Offline`}
         </Button>
     );
 }

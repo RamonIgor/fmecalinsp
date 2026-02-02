@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Camera, FileSignature, Loader2, Trash2, CheckCheck } from 'lucide-react';
+import { Camera, FileSignature, Loader2, Trash2, CheckCheck, WifiOff } from 'lucide-react';
 import { SignaturePad } from './components/signature-pad';
 import { SaveInspectionButton } from './components/save-inspection-button';
 import { useDoc } from '@/firebase/firestore/use-doc';
@@ -30,6 +30,7 @@ import Image from 'next/image';
 import { useOnlineStatus } from '@/lib/hooks/use-online-status';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { offlineDB, type OfflineComponent } from '@/lib/offline';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function InspectionPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
@@ -48,7 +49,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     () => (firestore && isOnline ? doc(firestore, 'workOrders', workOrderId) : null),
     [firestore, workOrderId, isOnline]
   );
-  const { data: onlineWorkOrder } = useDoc<WorkOrder>(workOrderRef);
+  const { data: onlineWorkOrder, isLoading: isLoadingWO } = useDoc<WorkOrder>(workOrderRef);
 
   const equipmentId = onlineWorkOrder?.equipmentId;
   
@@ -56,13 +57,13 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     () => (firestore && equipmentId && isOnline ? doc(firestore, 'equipment', equipmentId) : null),
     [firestore, equipmentId, isOnline]
   );
-  const { data: onlineEquipment } = useDoc<Equipment>(equipmentRef);
+  const { data: onlineEquipment, isLoading: isLoadingEquip } = useDoc<Equipment>(equipmentRef);
 
   const componentsRef = useMemoFirebase(
     () => (firestore && equipmentId && isOnline ? collection(firestore, 'equipment', equipmentId, 'components') : null),
     [firestore, equipmentId, isOnline]
   );
-  const { data: onlineComponents } = useCollection<EquipmentComponent>(componentsRef);
+  const { data: onlineComponents, isLoading: isLoadingComps } = useCollection<EquipmentComponent>(componentsRef);
 
   // --- OFFLINE DATA SOURCES ---
   const offlineWorkOrder = useLiveQuery(() => offlineDB.workOrders.get(workOrderId), [workOrderId]);
@@ -75,7 +76,7 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
   const equipment = isOnline ? onlineEquipment : offlineEquipment;
   const components = isOnline ? onlineComponents : offlineComponents;
 
-  const isLoading = (isOnline && (!onlineWorkOrder || !onlineEquipment || !onlineComponents)) ||
+  const isLoading = (isOnline && (isLoadingWO || isLoadingEquip || isLoadingComps)) ||
                     (!isOnline && (offlineWorkOrder === undefined || offlineEquipment === undefined || offlineComponents === undefined));
 
 
@@ -155,14 +156,32 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     return (
       <div className="flex h-64 w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-4 text-muted-foreground">Carregando inspeção...</p>
       </div>
     );
   }
 
   if (!workOrder || !equipment || !components) {
-    return <div className="text-center p-8 bg-card rounded-lg">Ordem de Serviço, Equipamento ou Componentes não encontrados. Verifique sua conexão ou se os dados foram baixados para uso offline.</div>;
+    return (
+      <div className="p-4 space-y-4">
+        <Alert variant="destructive">
+          <WifiOff className="h-4 w-4" />
+          <AlertTitle>Dados não encontrados</AlertTitle>
+          <AlertDescription>
+            {isOnline 
+              ? "Ordem de Serviço não encontrada no servidor. Verifique se ela existe."
+              : "Esta OS não foi baixada para uso offline. Conecte-se à internet e baixe os dados primeiro."
+            }
+          </AlertDescription>
+        </Alert>
+        <Button onClick={() => window.history.back()} variant="outline" className="w-full">
+          Voltar
+        </Button>
+      </div>
+    );
   }
 
+  // Agrupar componentes por categoria
   const groupedComponents = components.reduce(
     (acc, component) => {
       const [category] = component.name.split(':');
@@ -179,12 +198,22 @@ export default function InspectionPage({ params }: { params: { id: string } }) {
     inspectorId: user?.uid ?? '',
     inspectorName: user?.displayName ?? 'N/A',
     date: new Date().toISOString(),
-    items: Object.values(inspectionItems).filter(item => item.answer) as InspectionItem[], // Only include answered items
+    items: Object.values(inspectionItems).filter(item => item.answer) as InspectionItem[],
     signatureUrl: signatureDataUrl,
   };
 
   return (
     <div className="space-y-6">
+      {!isOnline && (
+        <Alert>
+          <WifiOff className="h-4 w-4" />
+          <AlertTitle>Modo Offline</AlertTitle>
+          <AlertDescription>
+            Você está trabalhando offline. A inspeção será salva localmente e sincronizada quando houver conexão.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="font-headline text-2xl">
