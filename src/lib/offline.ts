@@ -29,49 +29,28 @@ class OfflineDB extends Dexie {
   }
 }
 
-// ─── Instância lazy: só cria quando chamado pela primeira vez ───
-let _db: OfflineDB | null = null;
+// Create and export the singleton instance immediately.
+// The 'use client' directive ensures this only happens on the client.
+export const offlineDB = new OfflineDB();
 
-export function getOfflineDB(): OfflineDB {
-  if (!_db) {
-    _db = new OfflineDB();
+
+/**
+ * Ensures the database is open before performing any operation.
+ * Dexie auto-opens on first query, but explicit open is safer for writes.
+ */
+async function ensureDBOpen(): Promise<void> {
+  if (offlineDB.isOpen()) {
+    return;
   }
-  return _db;
-}
-
-// Mantém compatibilidade com código existente que usa `offlineDB` diretamente
-export const offlineDB = new Proxy({} as OfflineDB, {
-  get(_target, prop) {
-    return (getOfflineDB() as any)[prop];
-  }
-});
-
-
-// ─── Função que testa e garante que o DB está aberto antes de usar ───
-export async function ensureDBOpen(): Promise<OfflineDB> {
-  const db = getOfflineDB();
-  
-  if (db.isOpen()) return db;
-
   try {
-    await db.open();
-    return db;
+    // db.open() is idempotent and will only open if it's not already open.
+    await offlineDB.open();
   } catch (err) {
-    console.warn('[OfflineDB] Primeira tentativa falhou, tentando reabrir...', err);
-    db.close();
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    try {
-      await db.open();
-      return db;
-    } catch (err2) {
-      console.error('[OfflineDB] Falhou também na segunda tentativa.', err2);
-      throw new Error(
-        'Não foi possível abrir o armazenamento local. ' +
-        'Verifique se o seu navegador permite armazenamento offline para este site.'
-      );
-    }
+    console.error('[OfflineDB] Falha ao abrir o banco de dados.', err);
+    throw new Error(
+      'Não foi possível abrir o armazenamento local. ' +
+      'Verifique se o seu navegador permite armazenamento offline para este site (especialmente em modo anônimo).'
+    );
   }
 }
 
@@ -132,7 +111,8 @@ export async function savePendingInspection(
         if (e.name === 'QuotaExceededError') {
             throw new Error('Armazenamento offline cheio. Por favor, sincronize os dados pendentes para liberar espaço.');
         }
-        throw e; // Re-throw other IndexedDB errors
+        console.error("Falha ao salvar no IndexedDB:", e);
+        throw new Error(`Falha ao salvar no banco de dados local: ${e.message || 'Erro desconhecido'}`);
     }
   }
 
@@ -266,6 +246,7 @@ export async function syncWithFirestore(firestore: Firestore) {
     if (!inspection.localId) continue;
     
     try {
+      await ensureDBOpen();
       const batch = writeBatch(firestore);
 
       const inspectionRef = doc(collection(firestore, "inspections"));
