@@ -78,7 +78,15 @@
 }
  
 @media print {
-  /* Hide all UI elements that are not part of the report content */
+  body {
+    background-color: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact; /* Chrome, Safari */
+    print-color-adjust: exact; /* Standard */
+  }
+
   .dashboard-layout-aside,
   .dashboard-layout-header,
   .report-page-header,
@@ -87,7 +95,6 @@
     display: none !important;
   }
 
-  /* Reset layout for the main content area to fill the page */
   .dashboard-layout-main-wrapper {
     padding-left: 0 !important;
   }
@@ -98,46 +105,46 @@
     background-color: white !important;
   }
 
-  /* Make the report itself the only thing on the page */
   .report-card {
     box-shadow: none !important;
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
     border-radius: 0 !important;
-  }
-
-  .print-content {
-    padding: 1rem !important; /* Add some padding for the printer margins */
-  }
-
-  /* Style the textarea to look like a document, not a form field */
-  .report-textarea {
-    border: none !important;
-    padding: 0 !important;
-    height: auto !important;
-    resize: none !important;
-    background-color: white !important;
-    color: black !important;
-    font-family: 'Times New Roman', Times, serif !important; /* Professional print font */
-    font-size: 11pt !important;
-    line-height: 1.5 !important;
-    box-shadow: none !important;
-    --tw-ring-shadow: 0 0 #0000 !important; /* Remove focus ring */
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
   }
   
-  .report-header, .report-footer {
-      color: black !important;
-  }
-  .report-header p, .report-footer p {
-      color: #333 !important;
+  .print-content {
+     color: black !important;
+     background-color: white !important;
   }
 
-  /* Ensure body is plain for printing */
-  body {
-    background-color: white !important;
-    color: black !important;
+  /* Make the editable section look like normal text */
+  .editable-section {
+    background-color: transparent !important;
+    border: none !important;
     padding: 0 !important;
-    margin: 0 !important;
+  }
+  
+  /* Prevent page breaks inside key sections */
+  .report-header, .report-footer, section, table, figure {
+      break-inside: avoid;
+  }
+  
+  /* Handle page breaks before major sections for better flow */
+  .report-section-break {
+      break-before: page;
+  }
+
+  /* Ensure table headers repeat on new pages if table breaks */
+  table thead {
+    display: table-header-group;
+  }
+  
+  /* Reset link colors for print */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
   }
 }
